@@ -1972,6 +1972,40 @@
   // tile sits in its bottom-left cell; these fill the rest, point back at it (fpart = [cells right, cells up]) and draw their slice of its art.
   // (Added last so every older tile keeps its number.)
   [["X_fpart_r", [1, 0]], ["X_fpart_t", [0, 1]], ["X_fpart_tr", [1, 1]]].forEach(function (q) { tile(q[0], "Furniture", "#8a6a44", "#c49a6a", 0.4, 0, null, false, 0, "fpart", { fpart: q[1] }); }); ART.fpart = function () {};
+  // ---------- STORAGE UPDATE (Nov 2026): late-game logistics. Added last so every older tile keeps its number. ----------
+  // Chests (non-solid, stand on solid ground like the Wooden Chest): Big Chest (60 kinds), Filter Chest (only takes the items on its filter),
+  // Linked Chest (chests on the same rune colour share one inventory anywhere in the world), Vacuum Chest (pulls in dropped items nearby).
+  // Storage Terminal: one screen for every chest within 32 blocks. Hopper (solid block): pulls from the chest on top of it and pushes down or
+  // sideways. Conveyor Belt (solid block): carries items along to the next belt, hopper or chest. Logistics Core: the material they all use.
+  function stchest(k, n, body, rim, gem, art2) {
+    var id = tile("X_" + k, n, "#000", body, 0.6, 0, k, false, gem ? 3 : 0, k, { store: k });
+    ART[k] = function (rect) {   // the Wooden Chest's shape in this chest's colours, plus its own mark
+      rect(1, 7, 14, 8, body); rect(1, 7, 14, 1, rim); rect(1, 12, 14, 1, rim, 0.6);
+      rect(1, 3, 14, 4, body); rect(2, 2, 12, 1, body); rect(2, 2, 12, 1, "#ffffff", 0.18); rect(1, 3, 14, 1, "#ffffff", 0.12); rect(1, 6, 14, 1, rim);
+      rect(3, 2, 2, 13, "#3a3c44"); rect(11, 2, 2, 13, "#3a3c44"); rect(3, 2, 1, 13, "#9aa0ac"); rect(11, 2, 1, 13, "#9aa0ac");
+      rect(1, 15, 14, 1, "#1a120a"); rect(1, 3, 1, 12, "#000", 0.2); rect(14, 3, 1, 12, "#000", 0.25);
+      if (art2) art2(rect);
+    };
+    if (gem) glow(id, gem, 1.4, 0.12);
+    item(k, n, { tile: id }); return id;
+  }
+  stchest("bigchest", "Big Chest", "#6a4a2a", "#3e2a16", null, function (rect) { rect(7, 3, 2, 12, "#3a3c44"); rect(7, 3, 1, 12, "#9aa0ac"); rect(5, 7, 2, 3, "#f2c14e"); rect(9, 7, 2, 3, "#f2c14e"); rect(5, 7, 2, 1, "#fff2b0"); rect(9, 7, 2, 1, "#fff2b0"); });
+  stchest("filterchest", "Filter Chest", "#2e5a6a", "#163440", "120,220,255", function (rect) { rect(5, 8, 6, 1, "#9fe8ff"); rect(6, 9, 4, 1, "#9fe8ff"); rect(7, 10, 2, 2, "#9fe8ff"); rect(5, 8, 6, 1, "#ffffff", 0.4); rect(7, 4, 2, 2, "#f2c14e"); });
+  stchest("linkchest", "Linked Chest", "#4a2a6a", "#2a1440", "200,140,255", function (rect) { rect(6, 8, 4, 4, "#c890ff"); rect(7, 9, 2, 2, "#f4eaff"); rect(5, 9, 1, 2, "#c890ff"); rect(10, 9, 1, 2, "#c890ff"); rect(7, 4, 2, 2, "#c890ff"); });
+  stchest("vacchest", "Vacuum Chest", "#2a5a3a", "#143020", "120,255,180", function (rect) { rect(5, 8, 6, 4, "#0e1e14"); rect(6, 9, 4, 2, "#7af0b0"); rect(7, 9, 2, 2, "#e8fff0"); rect(4, 4, 8, 1, "#7af0b0", 0.6); });
+  var TERM = tile("X_terminal", "Storage Terminal", "#000", "#3a4a5a", 0.6, 0, "terminal", false, 4, "terminal", { store: "terminal" });
+  ART.terminal = function (rect) { rect(2, 3, 12, 12, "#2a3440"); rect(2, 3, 12, 1, "#4a5a6a"); rect(3, 4, 10, 7, "#0a1a14"); rect(4, 5, 3, 2, "#7af0d0"); rect(8, 5, 4, 1, "#7af0d0", 0.6); rect(8, 7, 3, 1, "#7af0d0", 0.5); rect(4, 8, 7, 1, "#7af0d0", 0.35);
+    rect(3, 12, 10, 2, "#1a2028"); rect(4, 12, 1, 1, "#f2c14e"); rect(6, 12, 1, 1, "#ff6a5a"); rect(8, 12, 4, 1, "#9aa0ac"); rect(2, 15, 12, 1, "#10141a"); rect(2, 3, 1, 12, "#000", 0.25); rect(13, 3, 1, 12, "#000", 0.3); };
+  glow(TERM, "120,240,210", 1.5, 0.14); item("terminal", "Storage Terminal", { tile: TERM });
+  var HOP = tile("X_hopper", "Hopper", "#4a4e58", "#6a707c", 1.2, 1, "hopper", true, 0, "hopper", { store: "hopper" });
+  ART.hopper = function (rect) { rect(0, 0, 16, 4, "#5a606c"); rect(0, 0, 16, 1, "#9aa0ac"); rect(1, 1, 14, 2, "#24282e"); rect(2, 4, 12, 4, "#4a4e58"); rect(4, 8, 8, 4, "#3e424a"); rect(6, 12, 4, 4, "#34383e");
+    rect(2, 4, 1, 4, "#7a808c"); rect(4, 8, 1, 4, "#6a707c"); rect(6, 12, 1, 4, "#5a606c"); rect(13, 4, 1, 4, "#1a1c20"); rect(11, 8, 1, 4, "#1a1c20"); rect(9, 12, 1, 4, "#1a1c20"); rect(7, 2, 2, 1, "#f2c14e", 0.7); };
+  item("hopper", "Hopper", { tile: HOP });
+  var BELT = tile("X_conveyor", "Conveyor Belt", "#3a3c42", "#5a5e66", 0.8, 1, "conveyor", true, 0, "conveyor", { store: "belt" });
+  ART.conveyor = function (rect) { rect(0, 0, 16, 16, "#2a2c30"); rect(0, 0, 16, 5, "#1a1c20"); rect(0, 1, 16, 3, "#3a3c42"); for (var i = 0; i < 16; i += 4) rect(i, 1, 2, 3, "#4a4e56"); rect(0, 0, 16, 1, "#6a707c");
+    rect(1, 6, 4, 4, "#5a606c"); rect(11, 6, 4, 4, "#5a606c"); rect(2, 7, 2, 2, "#f2c14e"); rect(12, 7, 2, 2, "#f2c14e"); rect(0, 11, 16, 5, "#34363c"); rect(0, 11, 16, 1, "#4a4e56"); rect(0, 15, 16, 1, "#141518"); };
+  item("conveyor", "Conveyor Belt", { tile: BELT });
+  mat("lcore", "Logistics Core", "#7af0d0");
   var api = { HOMEFARM: HOMEFARM, HCROPS: HCROPS, FISH2: FISH2, OCEAN: OCEAN, MOTO: MOTO, GQ: GQ, CONT: CONT, contLoot: contLoot, CONTK: CONTK, CONTOF: CONTOF, VALUE: VALUE, LOOTI: LOOTI, FURN2: FURN2, DISC: DISC, SECRETS: SECRETS, FUN: FUN, INTERIOR: INTERIOR, TREATS: TREATS, BPACK: BPACK, NEW: NEW, ART: ART, WALL_ART: WALL_ART, RECIPES: RECIPES, DECOR: DECOR, GOALS: GOALS, STN: STN, STNTILE: STNTILE, populate: populate, loot: loot, CROPS: CROPS, SEEDS: SEEDS, tileCount: nid };
   if (typeof module !== "undefined" && module.exports) module.exports = api; else root.SbxExtra = api;
 })(typeof window !== "undefined" ? window : this);

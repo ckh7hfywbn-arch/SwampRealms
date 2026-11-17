@@ -109,6 +109,15 @@
     { id: "door", n: "Swamp Door", out: { door: 1 }, cost: { planks: 6, fiber: 2 }, d: "A two-tall wooden door. Place it on the ground in a doorway. Walk into it to open it (it shuts behind you), tap it or press F to open or close it by hand, and hold on it to break it. Closed doors stop bugs, frogs and bats." },
     { id: "ladder", n: "Ladder (4)", out: { ladder: 4 }, cost: { planks: 3 }, d: "Stick it to a wall or stack it up or down. Hold Jump to climb up, S or Down to climb down (on a phone you slowly slide down when not climbing)." },
     { id: "chest", n: "Wooden Chest", out: { chest: 1 }, cost: { planks: 8, fiber: 2 }, d: "Place it at camp on solid ground. Tap it (or press F nearby) to open it and stash up to 30 kinds of items. Empty it before you pick it up." },
+    // STORAGE UPDATE: late-game logistics. Every piece needs a Logistics Core (one of each boss trophy plus deep-cave loot), so it waits until you've beaten the bosses; after that it's an easy grind.
+    { id: "lcore", n: "Logistics Core (4)", out: { lcore: 4 }, bench: true, bl: 4, cost: { queenchitin: 1, wyrmscale: 1, alphamane: 1, ironingot: 2, amethyst: 1 }, d: "The heart of every storage block. Made from one of each boss trophy (re-fight a boss with its lure for more) plus Iron and an Amethyst. Makes 4." },
+    { id: "bigchest", n: "Big Chest", out: { bigchest: 1 }, bench: true, bl: 4, cost: { chest: 2, lcore: 1, ironingot: 2 }, d: "An iron-banded chest that holds 60 kinds of items, double a Wooden Chest." },
+    { id: "filterchest", n: "Filter Chest", out: { filterchest: 1 }, bench: true, bl: 4, cost: { chest: 1, lcore: 1, amethyst: 1 }, d: "Choose up to 12 items and it only takes those: by hand, from hoppers and belts, and from the Storage Terminal. Put it under a Conveyor Belt and it grabs its items as they ride past: an automatic sorter." },
+    { id: "linkchest", n: "Linked Chests (2)", out: { linkchest: 2 }, bench: true, bl: 4, cost: { chest: 2, lcore: 2, moonstone: 1 }, d: "Pick one of 8 rune colours. Every Linked Chest on the same rune shares one inventory, anywhere in the world. Makes 2." },
+    { id: "vacchest", n: "Vacuum Chest", out: { vacchest: 1 }, bench: true, bl: 4, cost: { chest: 1, lcore: 2, crystal: 6 }, d: "Sucks in every dropped item within 6 blocks. Put it next to a mob farm or under a tree farm." },
+    { id: "terminal", n: "Storage Terminal", out: { terminal: 1 }, bench: true, bl: 4, cost: { lcore: 4, sapphire: 1, ruby: 1, ironingot: 4, crystal: 4 }, d: "One screen for every chest within 32 blocks: search it all, take from anywhere, and Store all sorts your things into the right chests." },
+    { id: "hopper", n: "Hoppers (2)", out: { hopper: 2 }, bench: true, bl: 4, cost: { lcore: 1, ironingot: 3 }, d: "Pulls items out of the chest on top of it (or catches items dropped on it) and pushes them down, left or right into a chest, belt or hopper. Tap it to turn it. Makes 2." },
+    { id: "conveyor", n: "Conveyor Belts (8)", out: { conveyor: 8 }, bench: true, bl: 4, cost: { lcore: 1, ironingot: 2, cinder: 4 }, d: "Carries items along its top. Runs right, left, up or down (tap it to turn it) and drops what it carries into the chest, hopper or belt at its end. Makes 8." },
     { id: "bag1", n: "Reed Backpack", bag: 1, cost: { fiber: 10, leaves: 6, stick: 4 }, d: "A woven reed pack you wear on your back. Adds 12 bag slots (42 in all). Made by hand, no Workbench needed." },
     { id: "w_plank", n: "Plank Wall (4)", out: { wall_plank: 4 }, cost: { planks: 1 }, d: "A back wall. Select it and tap an empty tile next to a block or another wall: it goes BEHIND you, so you can walk and decorate in front of it. Hold your pick on an empty walled tile to take a wall down." },
     { id: "w_log", n: "Log Wall (4)", out: { wall_log: 4 }, cost: { wood: 1 }, d: "Round vertical logs for a cabin look. A back wall you can walk in front of." },
@@ -759,7 +768,7 @@
     S.animal = charPick; try { localStorage.setItem("swamp-delve-char", charPick); } catch (e) {} mkSprite(); hbDirty = true; save(); closeStory(); if (titleOpen) renderTitle();
     toast("You are playing as " + charName(charPick) + ".", "#4ee6b4"); if (MP.on) mpMe();
   }
-  function fresh(seed) { return { v: 2, wv: SW.WORLDVER, trv: 2, seed: seed, e: "", ex: "", we: "", p: null, animal: defaultAnimal(), inv: {}, slots: emptySlots(0), extra: {}, bag: 0, can: 0, water: 0, mru: [], tier: 0, wpn: 0, arm: 0, bow: 0, bl: 1, trail: 0, hp: MAXHP, bed: null, shovel: 0, dur: { pick: 0, shovel: 0, wpn: 0, arm: 0 }, chests: {}, wp: [], time: 60, days: 0, ms: {}, st: { fmreads: 0, fmpaid: 0, croakamet: 0, orders: 0, croakaf: 0, hbuilt: 0, hsprk: 0, sprktip: 0, preserves: 0, seedsmade: 0, petted: 0, aprod: 0, hanimals: 0, hups: 0, shipped: 0, homevisit: 0, ditches: 0, hometip: 0, canaltip: 0, paddies: 0, paddytip: 0, moontip: 0, composted: 0, prize: 0, paddyharv: 0, moonharv: 0, giants: 0, giantharv: 0, legfish: 0, croako: 0, fbreads: 0, volc: 0, volcDeep: 0, volctip: 0, implodes: 0, seafish: 0, ocvisit: 0, ocdeep: 0, dives: 0, divetip: 0, ockills: 0, occhests: 0, clams: 0, pirates: 0, captain: 0, oboops: 0, sails: 0, sailtip: 0, piratetip: 0, pships: 0, islands: 0, sitedives: 0, boatParts: 0, boatDone: 0, boatLook: 0, lilies: 0, imps: 0, brutes: 0, crawlers: 0, birds: 0, fetched: 0, felled: 0, lorepages: 0, lorethreads: 0, vmet: 0, vtrades: 0, vchats: 0, landmarks: 0, blessings: 0, wishes: 0, signs: 0, bchests: 0, templeLoot: 0, mwork: 0, fine: 0, perfbrew: 0, discs: 0, forged: 0, brewed: 0, mixes: 0, nexus: 0, bloodmoons: 0, bmkills: 0, rainbows: 0, pots_gold: 0, bounces: 0, confetti: 0, grapples: 0, maps: 0, dug: 0, waystones: 0, warps: 0, songs: 0, starfell: 0, starsmined: 0, booms: 0, blasted: 0, thrown: 0, fireworks: 0, kegs: 0, deaths: 0, mined: 0, placed: 0, torches: 0, wood: 0, maxDepth: 0, swim: 0, stick: 0, fiber: 0, pebble: 0, spore: 0, benches: 0, swings: 0, bugs: 0, frogs: 0, bats: 0, wolves: 0, gators: 0, witches: 0, spiders: 0, slimes: 0, wasps: 0, seen: 0, cchests: 0, pots: 0, ckills: 0, cclear: 0, heart: 0, fish: 0, rarefish: 0, fishloot: 0, boots: 0, lavafish: 0, tamed: 0, collected: 0, babies: 0, talks: 0, realm: 0, stained: 0, wchests: 0, glided: 0, drunk: 0, socketed: 0, saplings: 0, treesgrown: 0, shots: 0, arrowhits: 0, trapped: 0, homes: 0, gatepl: 0, gatewake: 0, gatein: 0, scooped: 0, fireflies: 0, baited: 0, stands: 0, tilled: 0, hoeharv: 0, charmswap: 0, boss: 0, bossk: 0, summons: 0, bounties: 0, shopbuys: 0, eaten: 0, planted: 0, harvests: 0, cooked: 0, cropbits: 0, htip: 0, beds: 0, sleeps: 0, warned: 0, doors: 0, ladders: 0, chests: 0, stashed: 0, caves: 0, cmined: 0, caveDeep: 0, rigOre: 0, rigs: 0, mineLift: 0, mineIntro: 0, campfires: 0, sleepbags: 0, decor: 0, dbenches: 0, dcraft: 0, watered: 0, grown: 0, walls: 0 }, zoom: 1, tv: 2, qv: 6, rod: 0, hoe: 0, bucket: 0, bkt: "", net: 0, cg: 0, diff: 1, lossPct: null, keepInv: 0, graves: [], graveMin: 5, wings: 0, stain: {}, wstain: {}, shape: {}, dflip: {}, whut: {}, wloot: {}, genL: 0, genR: 0, stands: {}, traps: {}, gates: {}, saps: {}, pity: {}, fx: {}, gems: { wpn: "", arm: "", pick: "", bow: "" }, done: 0, gv: 1, bossOn: "", wx: null, charms: { own: {}, on: [] }, gear: { back: "", lamp: "", mount: "", ride: 1 }, bty: { day: -1, wk: -1, d: [], w: null, rr: 0, full: 0 }, pets: [], fdex: {}, fn: {}, fbig: {}, fpay: {}, hb: {}, hq: {}, hbpay: {}, qi: 0, qch: -1, mk: {}, mw: {}, disc: {}, bvar: { c: 1, L: 0, R: 0, sp: 3 }, stars: [], starRoll: -1, blessDay: -1, vf: {}, vg: {}, lore: {}, lorew: {}, gdrop: [], pleaf: {}, bird: null, ways: [], tmap: null, pot: null, bmNext: -1, gmet: 0, vis: {}, food: 100, nohunger: 0, farm: {}, ate: {} }; }
+  function fresh(seed) { return { v: 2, wv: SW.WORLDVER, trv: 2, seed: seed, e: "", ex: "", we: "", p: null, animal: defaultAnimal(), inv: {}, slots: emptySlots(0), extra: {}, bag: 0, can: 0, water: 0, mru: [], tier: 0, wpn: 0, arm: 0, bow: 0, bl: 1, trail: 0, hp: MAXHP, bed: null, shovel: 0, dur: { pick: 0, shovel: 0, wpn: 0, arm: 0 }, chests: {}, wp: [], time: 60, days: 0, ms: {}, st: { fmreads: 0, fmpaid: 0, croakamet: 0, orders: 0, croakaf: 0, hbuilt: 0, hsprk: 0, sprktip: 0, preserves: 0, seedsmade: 0, petted: 0, aprod: 0, hanimals: 0, hups: 0, shipped: 0, homevisit: 0, ditches: 0, hometip: 0, canaltip: 0, paddies: 0, paddytip: 0, moontip: 0, composted: 0, prize: 0, paddyharv: 0, moonharv: 0, giants: 0, giantharv: 0, legfish: 0, croako: 0, fbreads: 0, volc: 0, volcDeep: 0, volctip: 0, implodes: 0, seafish: 0, ocvisit: 0, ocdeep: 0, dives: 0, divetip: 0, ockills: 0, occhests: 0, clams: 0, pirates: 0, captain: 0, oboops: 0, sails: 0, sailtip: 0, piratetip: 0, pships: 0, islands: 0, sitedives: 0, boatParts: 0, boatDone: 0, boatLook: 0, lilies: 0, imps: 0, brutes: 0, crawlers: 0, birds: 0, fetched: 0, felled: 0, lorepages: 0, lorethreads: 0, vmet: 0, vtrades: 0, vchats: 0, landmarks: 0, blessings: 0, wishes: 0, signs: 0, bchests: 0, templeLoot: 0, mwork: 0, fine: 0, perfbrew: 0, discs: 0, forged: 0, brewed: 0, mixes: 0, nexus: 0, bloodmoons: 0, bmkills: 0, rainbows: 0, pots_gold: 0, bounces: 0, confetti: 0, grapples: 0, maps: 0, dug: 0, waystones: 0, warps: 0, songs: 0, starfell: 0, starsmined: 0, booms: 0, blasted: 0, thrown: 0, fireworks: 0, kegs: 0, deaths: 0, mined: 0, placed: 0, torches: 0, wood: 0, maxDepth: 0, swim: 0, stick: 0, fiber: 0, pebble: 0, spore: 0, benches: 0, swings: 0, bugs: 0, frogs: 0, bats: 0, wolves: 0, gators: 0, witches: 0, spiders: 0, slimes: 0, wasps: 0, seen: 0, cchests: 0, pots: 0, ckills: 0, cclear: 0, heart: 0, fish: 0, rarefish: 0, fishloot: 0, boots: 0, lavafish: 0, tamed: 0, collected: 0, babies: 0, talks: 0, realm: 0, stained: 0, wchests: 0, glided: 0, drunk: 0, socketed: 0, saplings: 0, treesgrown: 0, shots: 0, arrowhits: 0, trapped: 0, homes: 0, gatepl: 0, gatewake: 0, gatein: 0, scooped: 0, fireflies: 0, baited: 0, stands: 0, tilled: 0, hoeharv: 0, charmswap: 0, boss: 0, bossk: 0, summons: 0, bounties: 0, shopbuys: 0, eaten: 0, planted: 0, harvests: 0, cooked: 0, cropbits: 0, htip: 0, beds: 0, sleeps: 0, warned: 0, doors: 0, ladders: 0, chests: 0, stashed: 0, caves: 0, cmined: 0, caveDeep: 0, rigOre: 0, rigs: 0, mineLift: 0, mineIntro: 0, campfires: 0, sleepbags: 0, decor: 0, dbenches: 0, dcraft: 0, watered: 0, grown: 0, walls: 0 }, zoom: 1, tv: 2, qv: 6, rod: 0, hoe: 0, bucket: 0, bkt: "", net: 0, cg: 0, diff: 1, lossPct: null, keepInv: 0, graves: [], graveMin: 5, wings: 0, stain: {}, wstain: {}, shape: {}, dflip: {}, whut: {}, wloot: {}, genL: 0, genR: 0, stands: {}, traps: {}, gates: {}, saps: {}, pity: {}, fx: {}, gems: { wpn: "", arm: "", pick: "", bow: "" }, done: 0, gv: 1, bossOn: "", wx: null, charms: { own: {}, on: [] }, stor: {}, belt: {}, gear: { back: "", lamp: "", mount: "", ride: 1 }, bty: { day: -1, wk: -1, d: [], w: null, rr: 0, full: 0 }, pets: [], fdex: {}, fn: {}, fbig: {}, fpay: {}, hb: {}, hq: {}, hbpay: {}, qi: 0, qch: -1, mk: {}, mw: {}, disc: {}, bvar: { c: 1, L: 0, R: 0, sp: 3 }, stars: [], starRoll: -1, blessDay: -1, vf: {}, vg: {}, lore: {}, lorew: {}, gdrop: [], pleaf: {}, bird: null, ways: [], tmap: null, pot: null, bmNext: -1, gmet: 0, vis: {}, food: 100, nohunger: 0, farm: {}, ate: {} }; }
   // KEEP WHAT THIS VERSION DOESN'T KNOW. The live game and the test version share saves. When the cleaner meets an item, a setting or a
   // piece of the boat this version doesn't understand, it is kept aside in S.xk instead of being thrown away, and put back the next time a
   // version that knows it loads the save. Without this, playing the test version and then the live one wiped the newer things.
@@ -835,7 +844,7 @@
     d.time = clamp(+o.time || 60, 0, CYCLE - 0.01);
     if (o.bed && isFinite(o.bed.x) && isFinite(o.bed.y)) d.bed = { x: clamp(Math.floor(o.bed.x), 0, W - 1), y: clamp(Math.floor(o.bed.y), 0, H - 1) };   // checked against the world on respawn
     if (o.chests && typeof o.chests === "object" && o.wv === SW.WORLDVER) Object.keys(o.chests).forEach(function (ck) {   // chest contents, keyed by "x,y" (dropped if the world was rebuilt)
-      if (!/^\d+,\d+$/.test(ck) || !o.chests[ck] || typeof o.chests[ck] !== "object") return; var c = {};
+      if (!/^(\d+,\d+|lk:[0-7])$/.test(ck) || !o.chests[ck] || typeof o.chests[ck] !== "object") return; var c = {};
       ORDER.forEach(function (k) { var n = Math.floor(+o.chests[ck][k]); if (n > 0) c[k] = Math.min(n, 99999); }); d.chests[ck] = c;
     });
     if (o.ms && typeof o.ms === "object") GOALS.forEach(function (g) { if (o.ms[g.id]) d.ms[g.id] = 1; });
@@ -959,6 +968,10 @@
     // DECORATING: the decorations (checked record by record when the world starts: decoInit), what you were carrying, lamps you turned off and dyes
     if (o.deco && typeof o.deco === "object" && !Array.isArray(o.deco) && o.deco.o && typeof o.deco.o === "object") d.deco = { n: Math.max(1, Math.floor(+o.deco.n) || 1), o: o.deco.o };
     if (+o.dmig >= 1) d.dmig = 1;
+    if (o.stor && typeof o.stor === "object" && o.wv === SW.WORLDVER) { d.stor = {}; Object.keys(o.stor).slice(0, 6000).forEach(function (k) { var v = o.stor[k]; if (!/^\d+,\d+$/.test(k) || !v || typeof v !== "object") return; var q = {};   // STORAGE settings per block
+      if (v.d !== undefined) q.d = clamp(Math.floor(+v.d) || 0, 0, 3); if (v.ch !== undefined) q.ch = clamp(Math.floor(+v.ch) || 0, 0, 7); if (Array.isArray(v.f)) q.f = v.f.filter(function (f) { return ITEMS[f] && !ITEMS[f].tool; }).slice(0, 12);
+      if (v.b && ITEMS[v.b.k] && v.b.n > 0) q.b = { k: v.b.k, n: clamp(Math.floor(+v.b.n), 1, 4) }; d.stor[k] = q; }); }
+    if (o.belt && typeof o.belt === "object" && o.wv === SW.WORLDVER) { d.belt = {}; Object.keys(o.belt).slice(0, 6000).forEach(function (k) { var v = o.belt[k]; if (/^\d+,\d+$/.test(k) && Array.isArray(v)) { var L = v.filter(function (q) { return q && ITEMS[q.k]; }).slice(0, 3).map(function (q) { return { k: q.k, p: clamp(+q.p || 0, 0, 1) }; }); if (L.length) d.belt[k] = L; } }); }
     if (o.chown && typeof o.chown === "object" && o.wv === SW.WORLDVER) { d.chown = {}; Object.keys(o.chown).forEach(function (k) { var w = o.chown[k]; if (/^-?\d+,-?\d+$/.test(k) && w && typeof w.o === "string" && w.o.length <= 40) d.chown[k] = w.l ? { o: w.o, l: 1 } : { o: w.o }; }); }   // SHARED AND LOCKED STORAGE
     ["dcarry", "dcarryD"].forEach(function (f) { var c = o[f]; if (c && typeof c === "object" && typeof c.k === "string" && ITEMS[c.k]) d[f] = c; });
     ["loff", "dvar"].forEach(function (f) { var src = o[f]; if (src && typeof src === "object" && o.wv === SW.WORLDVER) { d[f] = {}; Object.keys(src).forEach(function (k) { var v = Math.floor(+src[k]); if (/^\d+$/.test(k) && v >= 1 && v <= 9) d[f][k] = v; }); } });
@@ -2941,7 +2954,8 @@
     if (td.kind === "lorenote") readNote(x, y);
     if (td.kind === "lootchest" && !S.chests[x + "," + y]) { var LL = x + "," + y === aerieKey() ? aerieLoot() : rollLoot("chest", world.bio[x], lootTier(y)); LL.forEach(function (q) { give(q[0], q[1], x, y - 0.4); }); treasureFound(LL.length); }   // broken before it was opened: the loot spills out
     if (td.kind === "lootpot") { S.st.pots++; rollLoot("pot", world.bio[x], lootTier(y)).forEach(function (q) { give(q[0], q[1], x, y - 0.4); }); chips(x + 0.5, y + 0.5, "#b87444", 12, 6); thud(420, 0.06); checkGoals(); }
-    if (isChest(id)) delete S.chests[x + "," + y];
+    if (isChest(id) && TILES[id].store !== "linkchest") delete S.chests[x + "," + y];
+    if (td.store) stBroken(x, y, td);   // STORAGE: settings go; a belt's riders and a hopper's held items drop
     if (td.top !== undefined && y > 0 && TILES[get(x, y - 1)].small) { var ab = get(x, y - 1); setT(x, y - 1, T.AIR); give(dropOf(TILES[ab]), 1, x, y - 1); }   // INTERIOR: a piece left standing on furniture you break comes back to you
     if ((td.kind === "farmland" || td.kind === "farmwet") && cropAt(x, y - 1)) { var tc = cropAt(x, y - 1); setT(x, y - 1, T.AIR); harvestCrop(x, y - 1, tc); }   // the crop on top comes with it
     setT(x, y, T.AIR); S.st.mined++; if (inMC()) S.st.mcdug = (S.st.mcdug || 0) + 1; p8Mined(x, y, id);
@@ -3049,6 +3063,7 @@
     if (item === "fishtrap") { S.traps[tx + "," + ty] = { f: [], t: 0 }; if (!trapWet(tx, ty)) toast("A Fish Trap only catches fish under water. Put it on the bottom of a lake.", "#f2c14e"); }
     if (item === "swampheart" && !S.st.heart) { S.st.heart = 1; chips(tx + 0.5, ty + 0.3, "#4ee6b4", 40, 12); snd("open", "Epic"); checkGoals(); }
     if (item === "chest") S.st.chests++;
+    if (TILES[ITEMS[item].tile] && TILES[ITEMS[item].tile].store) stPlaced(item, tx, ty);   // STORAGE: belts and hoppers face the way you face; a Filter Chest asks for its filter
     chips(tx + 0.5, ty + 0.5, TILES[ITEMS[item].tile].c2 || "#fff", 4, 3); thud(item === "torch" ? 420 : 240, 0.05);
     if (S.inv[item] <= 0) { delete S.inv[item]; if (sel === item) sel = "pick", bare = true; }
     hbDirty = true; if (panelOpen) renderPanel();
@@ -13179,7 +13194,8 @@
   // S.chests["x,y"] = { itemId: count }. A chest holds up to CHEST_KINDS kinds of item. Tap it or press F nearby to open the Chest tab. A chest must be empty before you can pick it up.
   var CHEST_KINDS = 30, chestKey = "";
   // Cave Chests (content pack) work like Wooden Chests, but are found in caves and come filled: the loot is rolled the first time one is opened (or broken unopened).
-  function isChest(id) { return id === T.CHEST || TILES[id].kind === "lootchest" || !!(TILES[id] && TILES[id].cont); }   // LOOT PACK: containers you place hold items too
+  function isChest(id) { var td = TILES[id]; return id === T.CHEST || !!td && (td.kind === "lootchest" || !!td.cont || !!STCH[td.store]); }   // (+ the Storage update's chests and the Terminal)
+  var STCH = { bigchest: 1, filterchest: 1, linkchest: 1, vacchest: 1, terminal: 1 };   // LOOT PACK: containers you place hold items too
   function lootTier(y) { var d = y - SURF; return d < 35 ? 0 : d < 80 ? 1 : 2; }
   // MALCRUOR LOOT: chests and pots there hold Malcruor's things (deeper = better), with a little SwampRealms gold mixed in
   function mcLoot(kind, tier) {
@@ -13205,12 +13221,15 @@
   }
   function openChest(x, y) {
     var cid = get(x, y); if (!isChest(cid)) return false; var key = x + "," + y;
+    if (TILES[cid].store === "terminal") { if (MP.on && MP.role === "guest") { nag("Only the world's host can use a Storage Terminal."); return true; } chestKey = "term:" + key; CFILT = false; snd("coin"); openPanel("chest"); S.st.termuse = (S.st.termuse || 0) + 1; return true; }
+    CFILT = false;
     if (MP.on && MP.role === "guest") { CHQ = { k: key, t: performance.now() }; mpSend({ t: "chq", k: key }); return true; }   // SHARED STORAGE: the host's machine holds the contents; it answers with them
     chestInit(x, y);
     chestKey = key; snd("coin"); openPanel("chest"); return true;
   }
   function chestInit(x, y, remote) {   // a cave chest rolls its loot the first time anyone opens it (remote: a guest opened it; the lore page is theirs, not the host's)
     var cid = get(x, y), key = x + "," + y;
+    if (TILES[cid] && TILES[cid].store === "linkchest") { var lk = sK(key); if (!S.chests[lk]) S.chests[lk] = {}; return; }   // a Linked Chest's things live in its rune's shared store
     if (!S.chests[key]) {
       S.chests[key] = {};
       if (TILES[cid].kind === "lootchest") { if (!remote) loreChest(loreSrcAt(x, y), y > col[clamp(x, 0, W - 1)] + 6 ? 0.55 : 0.4); var L = key === aerieKey() ? aerieLoot() : rollLoot("chest", world.bio[x], lootTier(y)); L.forEach(function (q) { S.chests[key][q[0]] = q[1]; }); chips(x + 0.5, y + 0.3, "#f2c14e", 18, 7); treasureFound(L.length); }
@@ -13254,7 +13273,7 @@
       if (m.t === "chq" || m.t === "chm") {
         if (!isChest(get(x, y))) { mpSend({ t: "chs", to: m.from, k: m.k, gone: 1, rid: m.rid }); if (m.t === "chm") mpSend({ t: "chr", to: m.from, rid: m.rid, n: 0 }); return true; }
         if (w && w.l && w.o !== who) { mpSend({ t: "chs", to: m.from, k: m.k, deny: w.o }); if (m.t === "chm") mpSend({ t: "chr", to: m.from, rid: m.rid, n: 0 }); return true; }
-        chestInit(x, y, true); var c = S.chests[m.k];
+        chestInit(x, y, true); var c = S.chests[sK(m.k)];
         if (m.t === "chq") { mpSend({ t: "chs", to: m.from, k: m.k, c: c, w: w, open: 1 }); return true; }
         var it = ITEMS[m.item], n = Math.max(0, Math.min(99999, Math.floor(+m.n) || 0)), got = 0;
         if (it && !it.tool && n > 0) { if (m.dir === "put") { if (c[m.item] || chestKinds(c) < CHEST_KINDS) { got = n; c[m.item] = Math.min(99999, (c[m.item] || 0) + n); } }
@@ -13285,15 +13304,17 @@
     if (ITEMS[item] && ITEMS[item].tool) { nag("Tools stay with you."); return; }   // dir "put": bag -> chest, "take": chest -> bag. all = whole stack
     if (MP.on && MP.role === "guest") { if (ITEMS[item]) chestReq(item, all, dir); return; }   // SHARED STORAGE: the host does it
     if (MP.on && MP.role === "host") setTimeout(function () { chestBcast(chestKey); }, 0);
-    var c = S.chests[chestKey]; if (!c || !ITEMS[item]) return;
+    if (/^term:/.test(chestKey)) return termMove(item, all, dir);   // STORAGE TERMINAL
+    var c = S.chests[sK(chestKey)]; if (!c || !ITEMS[item]) return;
     if (all === 1) {   // PC: right-click moves just one
-      if (dir === "put") { if (!(S.inv[item] > 0)) return; if (!c[item] && chestKinds(c) >= CHEST_KINDS) { toast("This chest is full.", "#f2c14e"); return; } c[item] = (c[item] || 0) + 1; S.inv[item]--; if (S.inv[item] <= 0) { delete S.inv[item]; if (sel === item) sel = "pick", bare = true; } }
+      if (dir === "put") { if (!(S.inv[item] > 0)) return; if (!stOk(chestKey, item)) return; if (!c[item] && chestKinds(c) >= chestCap(chestKey)) { toast("This chest is full.", "#f2c14e"); return; } c[item] = (c[item] || 0) + 1; S.inv[item]--; if (S.inv[item] <= 0) { delete S.inv[item]; if (sel === item) sel = "pick", bare = true; } }
       else { if (!(c[item] > 0)) return; if (addInv(item, 1) <= 0) { toast("Your bag is full: make room to take this.", "#f2c14e"); uiSnd("error", 0.3); return; } c[item]--; if (c[item] <= 0) delete c[item]; }
       snd("coin"); hbDirty = true; renderPanel(); return;
     }
     if (dir === "put") {
       var have = S.inv[item] || 0; if (have <= 0) return;
-      if (!c[item] && chestKinds(c) >= CHEST_KINDS) { toast("This chest is full.", "#f2c14e"); return; }
+      if (!stOk(chestKey, item)) return;
+      if (!c[item] && chestKinds(c) >= chestCap(chestKey)) { toast("This chest is full.", "#f2c14e"); return; }
       c[item] = Math.min(99999, (c[item] || 0) + have); S.st.stashed += have; delete S.inv[item]; if (sel === item) sel = "pick", bare = true; snd("coin");
     } else {
       var n = c[item] || 0; if (n <= 0) return; var fit = addInv(item, n);
@@ -13302,7 +13323,172 @@
     }
     hbDirty = true; renderPanel(); checkTrail();
   }
-  function chestAll(dir) { var c = S.chests[chestKey]; if (!c) return; (dir === "put" ? ORDER.filter(function (k) { return (S.inv[k] || 0) > 0 && !ITEMS[k].tool; }) : Object.keys(c)).forEach(function (k) { chestMove(k, true, dir); }); }
+  function chestAll(dir) { var c = /^term:/.test(chestKey) ? termStore() : S.chests[sK(chestKey)]; if (!c) return; (dir === "put" ? ORDER.filter(function (k) { return (S.inv[k] || 0) > 0 && !ITEMS[k].tool; }) : Object.keys(c)).forEach(function (k) { chestMove(k, true, dir); }); }
+  // ---------- STORAGE UPDATE (Nov 2026): Big, Filter, Linked and Vacuum Chests, the Storage Terminal, Hoppers and Conveyor Belts ----------
+  // S.stor["x,y"] = per-block settings: { d: direction (belts 0 right 1 left 2 up 3 down; hoppers 3 down 0 right 1 left), f: [filter items],
+  //   ch: rune 0-7 (Linked Chests), b: { k, n } (what a hopper holds) }. S.belt["x,y"] = [{ k, p }] items riding a belt (p = 0..1 along it).
+  // A Linked Chest's things live in S.chests["lk:<rune>"], shared by every Linked Chest on that rune. sK(key) gives the store for a chest.
+  var CFILT = false, LOGI = { acc: 0, vac: 0, dirty: 0 }, LDX = [1, -1, 0, 0], LDY = [0, 0, -1, 1], RUNES = ["#ff6a5a", "#ffb03a", "#ffe066", "#6ee06a", "#4ee6e6", "#5a8aff", "#c890ff", "#ff7ab8"], RUNEN = ["Red", "Orange", "Yellow", "Green", "Teal", "Blue", "Violet", "Pink"];
+  function stTile(key) { var q = key.split(","); return TILES[get(+q[0], +q[1])] || {}; }
+  function stOf(key) { S.stor = S.stor || {}; return S.stor[key] || (S.stor[key] = {}); }
+  function sK(key) { if (!/^\d+,\d+$/.test(key) || (MP.on && MP.role === "guest")) return key; return stTile(key).store === "linkchest" ? "lk:" + ((S.stor && S.stor[key] && S.stor[key].ch) | 0) : key; }
+  function chestCap(key) { var st = /^\d+,\d+$/.test(key) ? stTile(key).store : ""; return st === "bigchest" ? 60 : CHEST_KINDS; }
+  function stOk(key, item) {   // a Filter Chest only takes what is on its filter
+    if (!/^\d+,\d+$/.test(key) || stTile(key).store !== "filterchest") return true; var f = (S.stor && S.stor[key] && S.stor[key].f) || [];
+    if (f.indexOf(item) >= 0) return true; nag(f.length ? "This Filter Chest only takes " + f.map(function (k) { return ITEMS[k].n; }).slice(0, 4).join(", ") + (f.length > 4 ? " and more" : "") + "." : "Set this Filter Chest's filter first (Edit filter)."); return false;
+  }
+  function storFits(x, y, k) {   // could this chest take one more of k? (no messages)
+    var key = x + "," + y, td = TILES[get(x, y)]; if (!td || !isChest(get(x, y)) || td.store === "terminal" || !ITEMS[k] || ITEMS[k].tool) return false;
+    if (td.store === "filterchest" && ((S.stor[key] && S.stor[key].f) || []).indexOf(k) < 0) return false;
+    if (td.kind === "lootchest" && !S.chests[key]) return false;   // an unopened cave chest stays sealed
+    var c = S.chests[sK(key)] || {}; return (c[k] || 0) < 99999 && (c[k] > 0 || chestKinds(c) < chestCap(key));
+  }
+  function storPut(x, y, k, n) { if (!storFits(x, y, k)) return 0; var sk = sK(x + "," + y), c = S.chests[sk] || (S.chests[sk] = {}), a = Math.min(n, 99999 - (c[k] || 0)); c[k] = (c[k] || 0) + a; LOGI.dirty = 1; return a; }
+  function storTakeOne(x, y, ok) {   // a hopper pulls one thing (the first kind its output can take)
+    var key = x + "," + y, td = TILES[get(x, y)]; if (!td || !isChest(get(x, y)) || td.store === "terminal") return null; if (td.kind === "lootchest" && !S.chests[key]) return null;
+    var c = S.chests[sK(key)]; if (!c) return null; for (var k in c) if (c[k] > 0 && ok(k)) { c[k]--; if (c[k] <= 0) delete c[k]; LOGI.dirty = 1; return k; } return null;
+  }
+  function stPlaced(item, x, y) {
+    var td = TILES[ITEMS[item].tile], o = stOf(x + "," + y), f = p.face || 1;
+    if (td.store === "belt") { o.d = f > 0 ? 0 : 1; toast("Conveyor Belt placed, running " + (o.d ? "left" : "right") + ". Tap it to turn it (right, left, up, down).", "#7af0d0"); }
+    else if (td.store === "hopper") { o.d = 3; toast("Hopper placed. It pulls from a chest on top of it and pushes down; tap it to point it left or right.", "#7af0d0"); }
+    else if (td.store === "filterchest") { o.f = []; toast("Filter Chest placed. Open it and tap Edit filter to choose what it takes.", "#7af0d0"); }
+    else if (td.store === "linkchest") { o.ch = 0; toast("Linked Chest placed on the Red rune. Every Linked Chest on the same rune shares one inventory, anywhere.", "#c890ff"); }
+    else if (td.store === "vacchest") toast("Vacuum Chest placed. It pulls in dropped items within 6 blocks.", "#7af0d0");
+    else if (td.store === "terminal") toast("Storage Terminal placed. Open it to see and use every chest within 32 blocks.", "#7af0d0");
+    S.st.logi = (S.st.logi || 0) + 1;
+  }
+  function stBroken(x, y, td) {
+    var key = x + "," + y, o = S.stor && S.stor[key];
+    if (S.belt && S.belt[key]) { S.belt[key].forEach(function (q) { spawnDrop(q.k, 1, x, y - 1); }); delete S.belt[key]; }
+    if (o && o.b) spawnDrop(o.b.k, o.b.n, x, y); if (S.stor) delete S.stor[key];
+  }
+  function stTurn(x, y) {   // tap a belt or hopper: turn it
+    var td = TILES[get(x, y)], o = stOf(x + "," + y); if (td.store === "belt") o.d = ((o.d | 0) + 1) % 4;
+    if (td.store === "belt") toast("Belt runs " + ["right", "left", "up", "down"][o.d] + ".", "#7af0d0");
+    else if (td.store === "hopper") { o.d = o.d === 3 ? 0 : o.d === 0 ? 1 : 3; toast("Hopper pushes " + { 3: "down", 0: "right", 1: "left" }[o.d] + ".", "#7af0d0"); }
+    thud(520, 0.04); save();
+  }
+  function beltFree(key) { var L = S.belt[key]; if (!L || !L.length) return true; var mn = 1; L.forEach(function (q) { mn = Math.min(mn, q.p); }); return mn >= 0.34 && L.length < 3; }
+  // where an item goes when it leaves a belt end or a hopper: another belt, a hopper, a chest; true when it got in
+  function handOff(nx, ny, k) {
+    var nid = get(nx, ny), td = TILES[nid]; if (!td) return false; var nk = nx + "," + ny;
+    if (td.store === "belt") { if (!beltFree(nk)) return false; (S.belt[nk] = S.belt[nk] || []).push({ k: k, p: 0 }); return true; }
+    if (td.store === "hopper") { var o = stOf(nk); if (o.b && (o.b.k !== k || o.b.n >= 4)) return false; o.b = o.b ? { k: k, n: o.b.n + 1 } : { k: k, n: 1 }; return true; }
+    if (isChest(nid)) return storPut(nx, ny, k, 1) > 0;
+    return false;
+  }
+  function logiTick(dt) {
+    if (cave || HOME || OCS || (MP.on && MP.role === "guest")) return; S.stor = S.stor || {}; S.belt = S.belt || {};
+    // BELTS: riders slide along (1.8 blocks a second), keep a little gap, and hop to whatever is at the end
+    var v = 1.8 * dt, k, i;
+    for (k in S.belt) {
+      var L = S.belt[k], q = k.split(","), x = +q[0], y = +q[1], td = TILES[get(x, y)]; if (!td || td.store !== "belt") { delete S.belt[k]; continue; }
+      var d = (S.stor[k] && S.stor[k].d) | 0; L.sort(function (a, b) { return b.p - a.p; });
+      for (i = 0; i < L.length; i++) { var lim = i === 0 ? 1 : L[i - 1].p - 0.34; L[i].p = Math.min(lim, L[i].p + v);
+        if (i === 0 && L[0].p >= 1) { var nx = x + LDX[d], ny = y + LDY[d], ok = handOff(nx, ny, L[0].k);
+          if (!ok && (d < 2 ? !TILES[get(nx, ny)].solid && !isChest(get(nx, ny)) && TILES[get(nx, y - 1)] && !TILES[get(nx, y - 1)].solid : !TILES[get(nx, ny)].solid && !isChest(get(nx, ny)))) { spawnDrop(L[0].k, 1, d < 2 ? nx : nx, d < 2 ? y - 1 : ny); ok = true; }   // off the end into open air: it drops
+          if (ok) { L.splice(0, 1); i--; } else L[0].p = 1; } }
+      if (d < 2 && TILES[get(x, y + 1)] && TILES[get(x, y + 1)].store === "filterchest") for (i = L.length - 1; i >= 0; i--) if (!L[i].c && L[i].p >= 0.5) { L[i].c = 1;   // SORTING: a Filter Chest under a belt grabs the items it wants as they pass over
+        if (storPut(x, y + 1, L[i].k, 1)) { if (onScreen(x + 0.5, y)) chips(x + 0.5, y + 0.6, "#9fe8ff", 3, 2); L.splice(i, 1); } }
+      if (!L.length) delete S.belt[k];
+    }
+    LOGI.acc += dt; if (LOGI.acc < 0.25) return; var step = LOGI.acc; LOGI.acc = 0;
+    // HOPPERS: four things a second: hand on what it holds, then pull one from the chest on top (or catch a dropped item sitting on it)
+    for (k in S.stor) {
+      var o = S.stor[k], q2 = k.split(","), hx = +q2[0], hy = +q2[1], ht = TILES[get(hx, hy)]; if (!ht || ht.store !== "hopper") continue;
+      var hd = o.d === undefined ? 3 : o.d, ox2 = hx + (hd === 3 ? 0 : LDX[hd]), oy2 = hy + (hd === 3 ? 1 : 0);
+      if (o.b && handOff(ox2, oy2, o.b.k)) { o.b.n--; if (o.b.n <= 0) delete o.b; }
+      if (!o.b) { var got = storTakeOne(hx, hy - 1, function (it) { var tdo = TILES[get(ox2, oy2)]; return tdo.store === "belt" ? beltFree(ox2 + "," + oy2) : tdo.store === "hopper" ? true : isChest(get(ox2, oy2)) ? storFits(ox2, oy2, it) : false; });
+        if (got) o.b = { k: got, n: 1 };
+        else for (var j = 0; j < drops.length; j++) { var dd = drops[j]; if (dd.t > 0.4 && Math.floor(dd.x) === hx && Math.floor(dd.y + 0.3) === hy - 1) { var tk = Math.min(dd.n, 4); o.b = { k: dd.k, n: tk }; dd.n -= tk; if (dd.n <= 0) drops.splice(j, 1); break; } } }
+    }
+    // BELTS catch items dropped on top of them
+    for (var j2 = drops.length - 1; j2 >= 0; j2--) { var dp = drops[j2]; if (dp.t < 0.3) continue; var bx = Math.floor(dp.x), by = Math.floor(dp.y + 0.45), bk = bx + "," + by;
+      if (TILES[get(bx, by)] && TILES[get(bx, by)].store === "belt" && beltFree(bk)) { (S.belt[bk] = S.belt[bk] || []).push({ k: dp.k, p: 0.15 }); dp.n--; if (dp.n <= 0) drops.splice(j2, 1); } }
+    // VACUUM CHESTS: pull dropped items within 6 blocks
+    for (k in S.stor) { var q3 = k.split(","), vx = +q3[0], vy = +q3[1]; if (!TILES[get(vx, vy)] || TILES[get(vx, vy)].store !== "vacchest") continue;
+      for (var j3 = drops.length - 1; j3 >= 0; j3--) { var dv = drops[j3]; if (dv.t < 0.6) continue; var ddx = dv.x - vx - 0.5, ddy = dv.y - vy - 0.5; if (ddx * ddx + ddy * ddy > 36) continue;
+        var put = storPut(vx, vy, dv.k, dv.n); if (put > 0) { if (onScreen(dv.x, dv.y)) chips(dv.x, dv.y, "#7af0b0", 3, 2); dv.n -= put; if (dv.n <= 0) drops.splice(j3, 1); } } }
+    if (LOGI.dirty && panelOpen && tab === "chest" && chestKey) { LOGI.dirty = 0; if (/^term:/.test(chestKey)) { var tl = $("stTermList"); if (tl) tl.innerHTML = termList(); } else renderPanel(); } else LOGI.dirty = 0;
+  }
+  function onScreen(x, y) { var sx = ox + x * ts, sy = oy + y * ts; return sx > -ts && sx < vw + ts && sy > -ts && sy < vh + ts; }
+  function drawLogi(g, now) {   // the belts' moving treads and their riders, the hoppers' spouts, the Linked Chests' runes
+    if (!S.stor) return; var t = now / 1000, k;
+    for (k in S.stor) {
+      var q = k.split(","), x = +q[0], y = +q[1]; if (!onScreen(x + 0.5, y + 0.5)) continue; var td = TILES[get(x, y)], o = S.stor[k]; if (!td || !td.store) continue;
+      var sx = ox + x * ts, sy = oy + y * ts;
+      if (td.store === "belt") {
+        var d = o.d | 0; g.save();
+        if (d >= 2) { g.fillStyle = "#24262b"; g.fillRect(sx, sy, ts, ts); g.fillStyle = "#3a3c42"; g.fillRect(sx + ts * 0.2, sy, ts * 0.6, ts); g.fillStyle = "#6a707c"; g.fillRect(sx + ts * 0.18, sy, ts * 0.06, ts); g.fillRect(sx + ts * 0.76, sy, ts * 0.06, ts); }
+        g.beginPath(); if (d < 2) g.rect(sx, sy + ts * 0.06, ts, ts * 0.2); else g.rect(sx + ts * 0.24, sy, ts * 0.52, ts); g.clip();
+        var off = ((t * 1.8) % 0.5) * ts * (d === 1 || d === 2 ? -1 : 1);
+        g.strokeStyle = "rgba(242,193,78,.85)"; g.lineWidth = Math.max(1.5, ts * 0.06); g.lineCap = "round";
+        for (var i = -1; i < 3; i++) { g.beginPath();
+          if (d < 2) { var cx = sx + i * ts * 0.5 + off, cy = sy + ts * 0.16, dir = d === 0 ? 1 : -1; g.moveTo(cx - dir * ts * 0.07, cy - ts * 0.07); g.lineTo(cx + dir * ts * 0.05, cy); g.lineTo(cx - dir * ts * 0.07, cy + ts * 0.07); }
+          else { var cy2 = sy + i * ts * 0.5 + off, cx2 = sx + ts * 0.5, dv = d === 3 ? 1 : -1; g.moveTo(cx2 - ts * 0.12, cy2 - dv * ts * 0.08); g.lineTo(cx2, cy2 + dv * ts * 0.06); g.lineTo(cx2 + ts * 0.12, cy2 - dv * ts * 0.08); }
+          g.stroke(); }
+        g.restore();
+        var L = S.belt && S.belt[k]; if (L) L.forEach(function (r) { var im = dropIcon(r.k); if (!im || !im.complete) return; var s2 = ts * 0.5, px, py;
+          if (d < 2) { px = sx + (d === 0 ? r.p : 1 - r.p) * ts - s2 / 2; py = sy - s2 * 0.82; } else { px = sx + ts / 2 - s2 / 2; py = sy + (d === 3 ? r.p : 1 - r.p) * ts - s2 / 2; }
+          g.drawImage(im, px, py, s2, s2); });
+      } else if (td.store === "hopper") {
+        var hd = o.d === undefined ? 3 : o.d; g.save(); g.fillStyle = "#f2c14e"; g.strokeStyle = "#3a2a08"; g.lineWidth = Math.max(1, ts * 0.03); g.beginPath();
+        var ax = sx + ts * 0.5, ay = sy + ts * 0.62, a = ts * 0.13; if (hd === 3) { g.moveTo(ax - a, ay - a * 0.4); g.lineTo(ax + a, ay - a * 0.4); g.lineTo(ax, ay + a); } else { var hs = hd === 0 ? 1 : -1; g.moveTo(ax - hs * a * 0.4, ay - a); g.lineTo(ax - hs * a * 0.4, ay + a); g.lineTo(ax + hs * a, ay); }
+        g.closePath(); g.fill(); g.stroke(); if (o.b) { var hi = dropIcon(o.b.k); if (hi && hi.complete) g.drawImage(hi, sx + ts * 0.32, sy + ts * 0.05, ts * 0.36, ts * 0.36); } g.restore();
+      } else if (td.store === "linkchest") { g.save(); g.fillStyle = RUNES[o.ch | 0]; g.shadowColor = RUNES[o.ch | 0]; g.shadowBlur = ts * 0.3; g.fillRect(sx + ts * 0.4, sy + ts * 0.5, ts * 0.2, ts * 0.2); g.restore(); }
+    }
+  }
+  // ---------- STORAGE TERMINAL: every chest within 32 blocks as one ----------
+  function termChests() {   // [{ x, y, sk }] chests the open terminal reaches (each store once)
+    var m = /^term:(\d+),(\d+)$/.exec(chestKey); if (!m) return []; var tx = +m[1], ty = +m[2], out = [], seen = {};
+    Object.keys(S.chests).concat(Object.keys(S.stor || {})).forEach(function (key) { if (!/^\d+,\d+$/.test(key)) return; var q = key.split(","), x = +q[0], y = +q[1];
+      if (Math.abs(x - tx) > 32 || Math.abs(y - ty) > 32) return; var id = get(x, y), td = TILES[id]; if (!isChest(id) || !td || td.store === "terminal" || (td.kind === "lootchest" && !S.chests[key])) return;
+      var sk = sK(key); if (seen[sk]) return; seen[sk] = 1; out.push({ x: x, y: y, sk: sk, key: key }); });
+    return out;
+  }
+  function termStore() { var all = {}; termChests().forEach(function (c) { var cc = S.chests[c.sk] || {}; for (var k in cc) if (cc[k] > 0) all[k] = (all[k] || 0) + cc[k]; }); return all; }
+  function termMove(item, all, dir) {
+    var CH = termChests(); if (!CH.length) { nag("No chests within 32 blocks of this terminal."); return; }
+    if (dir === "take") { var want = all === 1 ? 1 : 1e9, got = 0;
+      CH.forEach(function (c) { var cc = S.chests[c.sk]; if (!cc || !(cc[item] > 0) || got >= want) return; var n = Math.min(cc[item], want - got), fit = addInv(item, n); if (fit > 0) { cc[item] -= fit; got += fit; if (cc[item] <= 0) delete cc[item]; } });
+      if (!got) { toast("Your bag is full: make room to take this.", "#f2c14e"); uiSnd("error", 0.3); return; } }
+    else { var have = all === 1 ? Math.min(1, S.inv[item] || 0) : S.inv[item] || 0; if (have <= 0) return; var left = have;
+      // where it goes: chests that already hold it, then Filter Chests made for it, then the emptiest chest with room
+      var order = CH.slice().sort(function (a, b) { var A = S.chests[a.sk] || {}, B = S.chests[b.sk] || {}, fa = stTile(a.key).store === "filterchest", fb = stTile(b.key).store === "filterchest";
+        return ((B[item] > 0) - (A[item] > 0)) || (fb - fa) || (chestKinds(A) - chestKinds(B)); });
+      order.forEach(function (c) { if (left <= 0) return; left -= storPut(c.x, c.y, item, left); });
+      var moved = have - left; if (!moved) { toast("No chest here has room for " + ITEMS[item].n + ".", "#f2c14e"); return; }
+      S.inv[item] -= moved; if (S.inv[item] <= 0) { delete S.inv[item]; if (sel === item) { sel = "pick"; bare = true; } } reslot(); S.st.stashed += moved; }
+    snd("coin"); hbDirty = true; renderPanel(); save();
+  }
+  // chest window extras: the filter, the rune, the terminal's search
+  var STQ = "";
+  function stChestHtml() {   // the part of the Chest tab that belongs to the new chests (above "In the chest")
+    if (!/^\d+,\d+$/.test(chestKey)) return ""; var td = stTile(chestKey), o = S.stor && S.stor[chestKey] || {}, h = "";
+    if (td.store === "filterchest") { var f = o.f || [];
+      h += '<div class="st-filt"><div class="st-fh"><b>Filter</b><small>' + (CFILT ? "Tap items in your backpack to add them, tap one here to remove it." : f.length ? "Only these go in (by hand, hoppers, belts and the terminal)." : "Empty: nothing goes in until you set it.") + '</small><button type="button" class="btn' + (CFILT ? "" : " ghost") + '" data-st-filt>' + (CFILT ? "Done" : "Edit filter") + "</button></div>" +
+        '<div class="st-fl">' + (f.length ? f.map(function (k) { return '<button type="button" class="st-fi" data-st-unf="' + k + '" title="' + esc(ITEMS[k].n) + '"' + (CFILT ? "" : " disabled") + '><img alt="" src="' + icon(k) + '">' + (CFILT ? "<i>×</i>" : "") + "</button>"; }).join("") : "") + Array(Math.max(0, 12 - f.length) + 1).join('<span class="st-fe"></span>') + "</div></div>"; }
+    if (td.store === "linkchest") { var ch = o.ch | 0;
+      h += '<div class="st-rune"><b>Rune</b><small>Every Linked Chest on the ' + RUNEN[ch] + " rune shares this inventory.</small><div>" + RUNES.map(function (c, i) { return '<button type="button" class="st-rb' + (i === ch ? " on" : "") + '" data-st-rune="' + i + '" style="--rc:' + c + '" aria-label="' + RUNEN[i] + ' rune"></button>'; }).join("") + "</div></div>"; }
+    if (td.store === "vacchest") h += '<p class="sbx-note">Pulls in dropped items within 6 blocks.</p>';
+    return h;
+  }
+  function termHtml() {
+    var all = termStore(), CH = termChests(), keys = ORDER.filter(function (k) { return all[k] > 0 && (!STQ || ITEMS[k].n.toLowerCase().indexOf(STQ.toLowerCase()) >= 0); }), mine = ORDER.filter(function (k) { return (S.inv[k] || 0) > 0 && !ITEMS[k].tool; });
+    var btn = function (k, n, attr) { return '<button type="button" class="sbx-it" ' + attr + '="' + k + '"><img alt="" src="' + icon(k) + '"><b>' + n + "</b><small>" + esc(ITEMS[k].n) + "</small></button>"; };
+    var h = '<div class="st-term"><div class="st-th"><img alt="" src="' + icon("terminal") + '"><div><b>Storage Terminal</b><small>' + CH.length + " chest" + (CH.length === 1 ? "" : "s") + " within 32 blocks · " + Object.keys(all).length + " kinds of items</small></div></div>" +
+      '<label class="st-ts"><input id="stTermQ" type="search" placeholder="Search your storage" value="' + esc(STQ) + '" autocomplete="off"></label></div>';
+    h += '<div id="stTermList">' + termList(all, CH) + "</div>";
+    return h;
+  }
+  function termList(all, CH) {
+    all = all || termStore(); CH = CH || termChests(); var h = "", keys = ORDER.filter(function (k) { return all[k] > 0 && (!STQ || ITEMS[k].n.toLowerCase().indexOf(STQ.toLowerCase()) >= 0); }), mine = ORDER.filter(function (k) { return (S.inv[k] || 0) > 0 && !ITEMS[k].tool && (!STQ || ITEMS[k].n.toLowerCase().indexOf(STQ.toLowerCase()) >= 0); });
+    var btn = function (k, n, attr) { return '<button type="button" class="sbx-it" ' + attr + '="' + k + '"><img alt="" src="' + icon(k) + '"><b>' + n + "</b><small>" + esc(ITEMS[k].n) + "</small></button>"; };
+    h += "<h3>In storage</h3>" + (keys.length ? '<div class="sbx-bag">' + keys.map(function (k) { return btn(k, all[k], "data-ch-take"); }).join("") + "</div>" : '<p class="sbx-note">' + (STQ ? "Nothing matches." : CH.length ? "Your chests are empty." : "No chests within 32 blocks.") + "</p>");
+    h += "<h3>In your backpack</h3>" + (mine.length ? '<div class="sbx-bag">' + mine.map(function (k) { return btn(k, S.inv[k], "data-ch-put"); }).join("") + "</div>" : '<p class="sbx-note">Your backpack is empty.</p>') + '<button type="button" class="btn ghost" data-ch-all="put"' + (mine.length ? "" : " disabled") + ">Store all</button>";
+    return h;
+  }
   // ---------- DOORS ----------
   // A door is two tiles (bottom + top) that always switch together. Closed halves are solid, open halves are not.
   // Walking into a closed door opens it and it shuts by itself shortly after you leave; tapping it (or pressing F nearby) opens/closes it by hand and it then stays as you left it.
@@ -13522,7 +13708,7 @@
       if (td.kind === "door" || td.hatch || td.kind === "chest" || td.kind === "lootchest" || td.cont) {   // a quick tap opens/closes the door, so breaking it needs a short hold first
         var dk = tx + "," + ty; if (doorHoldKey !== dk) { doorHoldKey = dk; doorHoldT = 0; }
         doorHoldT += dt; if (doorHoldT < 0.3) { mine = null; return; }
-        if ((td.kind === "chest" || td.kind === "lootchest" || td.cont) && chestCount(tx + "," + ty) > 0) { nag("Empty the " + (td.cont ? td.n : "chest") + " before picking it up."); mine = null; return; }
+        if ((td.kind === "chest" || td.kind === "lootchest" || td.cont || (STCH[td.store] && td.store !== "linkchest")) && chestCount(tx + "," + ty) > 0) { nag("Empty the " + (td.cont ? td.n : "chest") + " before picking it up."); mine = null; return; }
       } else if (td.kind === "armorstand" || td.kind === "fishtrap" || td.kind === "realmgate" || td.kind === "jeweltable" || td.kind === "blastkeg" || td.kind === "waystone") { var sk2 = tx + "," + ty; if (doorHoldKey !== sk2) { doorHoldKey = sk2; doorHoldT = 0; } doorHoldT += dt; if (doorHoldT < 0.35) { mine = null; return; } }   // a tap dresses it, a hold picks it up
       else doorHoldKey = "";
       if (!mine || mine.x !== tx || mine.y !== ty) mine = { x: tx, y: ty, p: 0, tick: 0 };
@@ -14388,7 +14574,7 @@
     // aim tile follows the camera while a finger or mouse is held still
     aim.tx = Math.floor((aim.mx - ox) / ts); aim.ty = Math.floor((aim.my - oy) / ts);
     if (aim.tx < 0 || aim.tx >= W || aim.ty < 0 || aim.ty >= H) aim.tx = -1;
-    tickDrops(dt); tickFell(dt); tickDecay(dt); tickBirds(dt); tickPet(dt);   // GROUND DROPS, FELLING, LEAF DECAY, BIRDS
+    tickDrops(dt); logiTick(dt); tickFell(dt); tickDecay(dt); tickBirds(dt); tickPet(dt);   // GROUND DROPS, FELLING, LEAF DECAY, BIRDS
     tickMw(dt); fTick(); decoTick(); tickGrow(dt); tickFlow(dt); tickAmbient(dt); stepBlast(dt); tickStars(dt); tickMeteors(dt); tickFlood(dt); tickMig(dt); tickJuke(dt); tickWarp(dt); tickHook(dt); tickConfetti(dt); tickRainbow(dt); tickBlood(dt); mcTick(dt); useTool(dt); updateGrow(dt); updateEnemies(dt); updateAnimals(dt); updateNpc(dt); tickBrawl(dt); tickRide(dt); tickVein(dt); tickFun(dt); tickBounties(dt); tickFarm(dt); tickHunger(dt); tickFx(dt); questHelp(dt); if (fishing && sel !== "rod") fishing = null;
     var working = pawOn || (sel === "weapon" ? (WCB.swT > 0 && S.wpn > 0) : sel === "can" ? canBusy : (!!mine || (aim.down && sel !== "pick" && sel !== "shovel" && aim.tx >= 0))); pawOn = false; heldAmt += ((working ? 1 : 0) - heldAmt) * Math.min(1, dt * 12); if (working) heldPh += dt * (sel === "pick" || sel === "shovel" ? 5.4 : sel === "weapon" ? 1 / Math.max(0.15, WCB.swD || WEAPONS[S.wpn].cd) : 3);
     // particles and floating text
@@ -17835,7 +18021,7 @@
     if (SHQ.length) drawShapeTops(g);   // MALLET: the ramps' grass and edges, after every block, so the next block can't cover them
     mcGrade(g, now, above); mcLand(g, now);   // MALCRUOR: the land and sky stained blood red and black (creatures, you and the portal are drawn after)
     if (!cave) { drawMcGate(g, now); drawFarmGates(g, now); drawMineShaft(g, now); drawBldSigns(g); drawGates(g, X0, X1, Y0, Y1); drawStands(g, X0, X1, Y0, Y1); drawTraps(g, X0, X1, Y0, Y1); drawAmbientNear(g, now); drawMig(g); }
-    decoDrawAll(g); decoPreview(g, now); drawMailbox(g, now); drawDinner(g, now); p4WorldDraw(g, now); drawNpc(g, now); drawVillagers(g, now); drawDrops(g, now); drawGraves(g, now); drawBirds(g, now); drawAnimals(g, now); drawBrawl(g, now); drawFoot(g); drawCrit(g, now); drawAmb2(g, now); drawEnemies(g, now); drawShots(g, now); drawArrows(g, false); drawBlast(g, now); drawHook(g); drawBossBar(); drawMini(); tickMusic(); tickCloud();
+    decoDrawAll(g); decoPreview(g, now); drawMailbox(g, now); drawDinner(g, now); p4WorldDraw(g, now); drawNpc(g, now); drawVillagers(g, now); drawLogi(g, now); drawDrops(g, now); drawGraves(g, now); drawBirds(g, now); drawAnimals(g, now); drawBrawl(g, now); drawFoot(g); drawCrit(g, now); drawAmb2(g, now); drawEnemies(g, now); drawShots(g, now); drawArrows(g, false); drawBlast(g, now); drawHook(g); drawBossBar(); drawMini(); tickMusic(); tickCloud();
     drawPierGate(g, now); drawVents(g, now); drawRemotes(g, now); trailDraw(g, now); drawPlayer(g, now); if (sel === "weapon") drawCharge(g, ox + p.x * ts, oy + (p.y - PH * 0.5) * ts); drawTag(g, now); drawPet(g, now); drawFishing(g, now);
     parts.forEach(function (q) { var al = clamp(q.life / q.max * 1.4, 0, 1); g.globalAlpha = al; g.fillStyle = q.c; var px = ox + q.x * ts, py = oy + q.y * ts; if (q.glw) return; if (q.conf) { var cw = q.s * 1.6, chh = Math.max(1, q.s * (q.s2 || 0.5)); g.fillRect(Math.round(px - cw / 2), Math.round(py - chh / 2), cw, chh); return; } g.fillRect(Math.round(px - q.s / 2), Math.round(py - q.s / 2), q.s, q.s); }); g.globalAlpha = 1;
     drawWaterFx(g);
@@ -19351,8 +19537,10 @@
   var CHEST_PULL = 14, poolC = null, poolT = 0;   // (was 10)
   function nearChestKeys() {
     if (cave || OCS || HOME || (MP.on && MP.role === "guest")) return [];
-    return Object.keys(S.chests).map(function (key) { var q = key.split(","), x = +q[0], y = +q[1]; return { key: key, x: x, y: y, d: Math.abs(x + 0.5 - p.x) + Math.abs(y + 0.5 - (p.y - 1)) }; })
-      .filter(function (c) { return Math.abs(c.x + 0.5 - p.x) <= CHEST_PULL && Math.abs(c.y + 0.5 - (p.y - 1)) <= CHEST_PULL && isChest(get(c.x, c.y)); })
+    var seen = {};
+    return Object.keys(S.chests).concat(Object.keys(S.stor || {})).filter(function (k) { return /^\d+,\d+$/.test(k); }).map(function (key) { var q = key.split(","), x = +q[0], y = +q[1]; return { key: sK(key), x: x, y: y, d: Math.abs(x + 0.5 - p.x) + Math.abs(y + 0.5 - (p.y - 1)) }; })
+      .filter(function (c) { if (seen[c.key + "|" + c.x + "," + c.y]) return false; seen[c.key + "|" + c.x + "," + c.y] = 1; var td = TILES[get(c.x, c.y)]; return Math.abs(c.x + 0.5 - p.x) <= CHEST_PULL && Math.abs(c.y + 0.5 - (p.y - 1)) <= CHEST_PULL && isChest(get(c.x, c.y)) && !(td && td.store === "terminal"); })
+      .filter(function (c, i, a) { return a.findIndex(function (o) { return o.key === c.key; }) === i; })   // (two Linked Chests of one rune are one store)
       .sort(function (a, b) { return a.d - b.d; });
   }
   function chestPool() {   // item -> how many are in nearby chests (worked out at most a few times a second)
@@ -19440,7 +19628,7 @@
     ["Walls|Wallpaper & Panels", "x_w_stripe x_w_floral x_w_panel"],
     ["Furniture|Seating", "d_chair d_stool x_sofa d_throne"],
     ["Furniture|Tables & Desks", "d_table x_desk"],
-    ["Furniture|Storage", "chest d_shelf d_wardrobe x_dresser x_crate x_sack d_barrel d_bucket"],
+    ["Furniture|Storage", "chest bigchest filterchest linkchest vacchest terminal hopper conveyor lcore d_shelf d_wardrobe x_dresser x_crate x_sack d_barrel d_bucket"],
     ["Furniture|Beds & Rugs", "bed d_rug"],
     ["Furniture|Clocks & Curios", "x_harp x_clock x_globe x_telescope"],
     ["Lighting|Torches & Fires", "torch x_torch_cap x_slimetorch d_campfire d_hearth x_bonfire d_brazier"],
@@ -20243,15 +20431,16 @@
       h += achHtml();
     } else if (tab === "lore") {
       h += famJournalHtml() + loreHtml();
+    } else if (tab === "chest" && /^term:/.test(chestKey)) { h += termHtml();
     } else if (tab === "chest") {
-      var cc = S.chests[chestKey] || {}, ck = Object.keys(cc), mine2 = ORDER.filter(function (k) { return (S.inv[k] || 0) > 0 && !ITEMS[k].tool; }), btn = function (k, n, attr) { return '<button type="button" class="sbx-it" ' + attr + '="' + k + '"><img alt="" src="' + icon(k) + '"><b>' + n + "</b><small>" + esc(ITEMS[k].n) + "</small></button>"; };
-      var ckx = chestKey.split(","), ctd = TILES[get(+ckx[0], +ckx[1])], cname = ctd.kind === "lootchest" ? "Cave Chest" : ctd.cont ? ctd.n : "Wooden Chest";
-      h += '<p class="sbx-note"><b>' + cname + '</b> (' + ck.length + " of " + CHEST_KINDS + ' kinds). Tap an item to move the whole stack.</p>';
+      var cc = S.chests[sK(chestKey)] || {}, ck = Object.keys(cc), mine2 = ORDER.filter(function (k) { return (S.inv[k] || 0) > 0 && !ITEMS[k].tool; }), btn = function (k, n, attr) { return '<button type="button" class="sbx-it" ' + attr + '="' + k + '"><img alt="" src="' + icon(k) + '"><b>' + n + "</b><small>" + esc(ITEMS[k].n) + "</small></button>"; };
+      var ckx = chestKey.split(","), ctd = TILES[get(+ckx[0], +ckx[1])], cname = ctd.kind === "lootchest" ? "Cave Chest" : ctd.cont ? ctd.n : STCH[ctd.store] ? ctd.n : "Wooden Chest";
+      h += '<p class="sbx-note"><b>' + cname + '</b> (' + ck.length + " of " + chestCap(chestKey) + ' kinds). Tap an item to move the whole stack.</p>' + stChestHtml();
       if (MP.on || chOwn(chestKey)) { var cow = chOwn(chestKey), myc = MP.on && MP.role === "guest" ? !!cow && cow.o === chMe() : true;   // SHARED AND LOCKED STORAGE
         h += '<p class="sbx-note sbx-chown">' + (cow && cow.l ? "🔒 Locked" : "🔓 Shared") + " · owner: <b>" + esc(cow ? (cow.o === chMe() ? "you" : cow.o) : chOwnerName(chestKey)) + "</b>" + (cow && cow.l ? " (only the owner and the host can open it)" : " (everyone in the world can use it)") +
           (myc ? ' <button type="button" class="btn ghost" data-ch-lock>' + (cow && cow.l ? "Unlock" : "Lock") + "</button>" : "") + "</p>"; }
       h += '<h3>In the chest</h3>' + (ck.length ? '<div class="sbx-bag">' + ORDER.filter(function (k) { return cc[k]; }).map(function (k) { return btn(k, cc[k], "data-ch-take"); }).join("") + "</div>" : '<p class="sbx-note">Empty.</p>') + '<button type="button" class="btn ghost" data-ch-all="take"' + (ck.length ? "" : " disabled") + ">Take all</button>";
-      h += '<h3>In your backpack</h3>' + (mine2.length ? '<div class="sbx-bag">' + mine2.map(function (k) { return btn(k, S.inv[k], "data-ch-put"); }).join("") + "</div>" : '<p class="sbx-note">Your backpack is empty.</p>') + '<button type="button" class="btn ghost" data-ch-all="put"' + (mine2.length ? "" : " disabled") + ">Store all</button>";
+      h += '<h3>In your backpack</h3>' + (mine2.length ? '<div class="sbx-bag' + (CFILT ? " st-pick" : "") + '">' + mine2.map(function (k) { return btn(k, S.inv[k], CFILT ? "data-st-addf" : "data-ch-put"); }).join("") + "</div>" : '<p class="sbx-note">Your backpack is empty.</p>') + '<button type="button" class="btn ghost" data-ch-all="put"' + (mine2.length ? "" : " disabled") + ">Store all</button>";
     } else {
       var an = (typeof Crystals !== "undefined" && Crystals.animals) ? Crystals.animals : [{ id: "frog", name: "Boggy the Frog" }];
       // Options: grouped cards. Each setting is one row: a name, a one-line hint, and its control on the right.
@@ -21064,7 +21253,7 @@
       var zr = cv.getBoundingClientRect(), zx = (e.clientX - zr.left - ox) / ts, zy = (e.clientY - zr.top - oy) / ts;
       if (Math.abs(zx - GD.x) < 1.6 && zy > GD.y - 1.9 && zy < GD.y + 0.4) { if (Math.abs(GD.x - cp.x) < 7 && Math.abs(GD.y - cp.y) < 7) gdWake(); else nag("Walk closer to wake Zaruk."); return; }
     }
-    aim.id = e.pointerId; aim.down = true; setAim(e); aim.press = 1; aim.ptx = aim.tx; aim.pty = aim.ty; cool = 0; aim.t0 = performance.now(); tapEat(); aim.dx = Math.floor((aim.mx - ox) / ts); aim.dy = Math.floor((aim.my - oy) / ts); if (!cave) { var fpa2 = fAnchor(aim.dx, aim.dy); if (fpa2) { aim.dx = fpa2[0]; aim.dy = fpa2[1]; } } aim.door = !cave && (TILES[get(aim.dx, aim.dy)].kind === "door" || isHatch(get(aim.dx, aim.dy))); aim.chest = !cave && isChest(get(aim.dx, aim.dy)); aim.hole = !cave && get(aim.dx, aim.dy) === T.HOLE; aim.stn = stnKeyAt(aim.dx, aim.dy);
+    aim.id = e.pointerId; aim.down = true; setAim(e); aim.press = 1; aim.ptx = aim.tx; aim.pty = aim.ty; cool = 0; aim.t0 = performance.now(); tapEat(); aim.dx = Math.floor((aim.mx - ox) / ts); aim.dy = Math.floor((aim.my - oy) / ts); if (!cave) { var fpa2 = fAnchor(aim.dx, aim.dy); if (fpa2) { aim.dx = fpa2[0]; aim.dy = fpa2[1]; } } aim.door = !cave && (TILES[get(aim.dx, aim.dy)].kind === "door" || isHatch(get(aim.dx, aim.dy))); aim.chest = !cave && isChest(get(aim.dx, aim.dy)); aim.logi = !cave && /^(belt|hopper)$/.test(TILES[get(aim.dx, aim.dy)].store || ""); aim.hole = !cave && get(aim.dx, aim.dy) === T.HOLE; aim.stn = stnKeyAt(aim.dx, aim.dy);
     aim.lad = cave ? (aim.dx === cave.F.up.x && (aim.dy === cave.F.up.y || aim.dy === cave.F.up.y - 1) ? "up" : aim.dx === cave.F.down.x && aim.dy === cave.F.down.y ? "down" : "") : ""; try { cv.setPointerCapture(e.pointerId); } catch (x) {}
     $("sbxHint").classList.remove("on"); if (ac && ac.state === "suspended") ac.resume();
   });
@@ -21077,6 +21266,9 @@
     }
     if (e.pointerId === aim.id && e.type === "pointerup" && performance.now() - aim.t0 < 260 && aim.stn && !isStainTool(sel) && !holdsBuild() && stnKeyAt(aim.dx, aim.dy) === aim.stn) tapStation(aim.dx, aim.dy);   // quick tap on a crafting station: open its window
     if (e.pointerId === aim.id && e.type === "pointerup" && performance.now() - aim.t0 < 300 && !cave && !isStainTool(sel)) { var an = animalAt((aim.mx - ox) / ts, (aim.my - oy) / ts); if (critAt((aim.mx - ox) / ts, (aim.my - oy) / ts)) { boopCrit(critAt((aim.mx - ox) / ts, (aim.my - oy) / ts)); aim.chest = false; } else if (npcAt((aim.mx - ox) / ts, (aim.my - oy) / ts)) { talkCroaker(); aim.chest = false; } else if (vilAt((aim.mx - ox) / ts, (aim.my - oy) / ts)) { openVil(vilAt((aim.mx - ox) / ts, (aim.my - oy) / ts)); aim.chest = false; } else if (birdAt((aim.mx - ox) / ts, (aim.my - oy) / ts)) { feedBird(birdAt((aim.mx - ox) / ts, (aim.my - oy) / ts)); aim.chest = false; } else if (an) { useAnimal(an); aim.chest = false; } else if (aim.tx >= 0 && isStand(aim.tx, aim.ty)) { openStand(aim.tx, aim.ty); aim.chest = false; } else if (aim.tx >= 0 && isTrap(aim.tx, aim.ty)) { emptyTrap(aim.tx, aim.ty); aim.chest = false; } else if (aim.tx >= 0 && isGate(aim.tx, aim.ty)) { openGate(aim.tx, aim.ty); aim.chest = false; } else if (aim.tx >= 0 && isJewel(aim.tx, aim.ty)) { openJewel(aim.tx, aim.ty); aim.chest = false; } else if (aim.tx >= 0 && tapHook(aim.tx, aim.ty)) { aim.chest = false; } }   // quick tap on an animal
+    if (e.pointerId === aim.id && e.type === "pointerup" && performance.now() - aim.t0 < 260 && aim.logi && /^(belt|hopper)$/.test(TILES[get(aim.dx, aim.dy)].store || "")) {   // STORAGE: quick tap on a belt or hopper turns it
+      var ldx = aim.dx + 0.5 - p.x, ldy = aim.dy + 0.5 - (p.y - PH / 2); aim.logi = false; if (ldx * ldx + ldy * ldy <= REACH * REACH) stTurn(aim.dx, aim.dy); else nag("Walk closer to turn it.");
+    }
     if (e.pointerId === aim.id && e.type === "pointerup" && performance.now() - aim.t0 < 260 && aim.chest && isChest(get(aim.dx, aim.dy))) {   // quick tap on a chest: open it
       var cdx = aim.dx + 0.5 - p.x, cdy = aim.dy + 0.5 - (p.y - PH / 2);
       if (cdx * cdx + cdy * cdy <= REACH * REACH) openChest(aim.dx, aim.dy); else nag("That chest is too far away.");
@@ -21258,6 +21450,10 @@
     if (t.hasAttribute("data-ch-put")) return chestMove(t.getAttribute("data-ch-put"), true, "put");
     if (t.hasAttribute("data-ch-all")) return chestAll(t.getAttribute("data-ch-all"));
     if (t.hasAttribute("data-ch-lock")) return chestLock();
+    if (t.hasAttribute("data-st-filt")) { CFILT = !CFILT; uiSnd("click", 0.3); return renderPanel(); }   // STORAGE: Filter Chest, Linked Chest runes
+    if (t.hasAttribute("data-st-addf")) { var fo = stOf(chestKey); fo.f = fo.f || []; var fk = t.getAttribute("data-st-addf"); if (fo.f.indexOf(fk) < 0) { if (fo.f.length >= 12) { nag("A filter holds up to 12 items."); return; } fo.f.push(fk); uiSnd("click", 0.4); } save(); return renderPanel(); }
+    if (t.hasAttribute("data-st-unf")) { var fo2 = stOf(chestKey); fo2.f = (fo2.f || []).filter(function (k) { return k !== t.getAttribute("data-st-unf"); }); uiSnd("click", 0.3); save(); return renderPanel(); }
+    if (t.hasAttribute("data-st-rune")) { stOf(chestKey).ch = +t.getAttribute("data-st-rune"); chestInit(+chestKey.split(",")[0], +chestKey.split(",")[1]); snd("coin"); save(); return renderPanel(); }
     if (t.getAttribute("data-sx-repair")) return repair(t.getAttribute("data-sx-repair"));
     if (t.hasAttribute("data-sx-bup")) return upgradeBench();
     if (t.hasAttribute("data-csel")) { var ck2 = stnOpen ? stnOpen.k : "bag", cv = t.getAttribute("data-csel"); CG_SEL[ck2] = CG_SEL[ck2] === cv ? "" : cv; snd("tick"); return renderPanel(); }   // CRAFT GRID: pick a slot (the picked one again clears it)
@@ -21308,6 +21504,7 @@
   });
   $("sbxStnBody").addEventListener("keydown", function (e) { if (e.target.id !== "sbxStnSearch") return; e.stopPropagation(); if (e.key === "Escape") { e.preventDefault(); if (stnOpen && stnQ[stnOpen.k]) { stnQ[stnOpen.k] = ""; renderStn(); } else e.target.blur(); } else if (e.key === "Enter") { e.preventDefault(); e.target.blur(); } });
   $("sbxStnBody").addEventListener("click", function (e) { var b = e.target.closest && e.target.closest("[data-stnclear]"); if (b && stnOpen) { stnQ[stnOpen.k] = ""; renderStn(); var i = $("sbxStnSearch"); if (i) i.focus(); } });
+  $("sbxBody").addEventListener("input", function (e) { if (e.target.id === "stTermQ") { STQ = e.target.value.slice(0, 40); var tl = $("stTermList"); if (tl) tl.innerHTML = termList(); } });   // TERMINAL SEARCH: only the list redraws
   $("sbxBody").addEventListener("input", function (e) {   // CRAFT SEARCH: results update as you type (the box keeps focus)
     if (e.target.id !== "sbxCSearch") return;
     var was = !!csearch.trim(); csearch = e.target.value; var now = !!csearch.trim();
@@ -27499,7 +27696,7 @@ var ATK = { on: false, mine: false };
     return out.filter(function (m, i) { return out.indexOf(m) === i; });
   }
   window.__W = { cvStepDown: cvStepDown, enterHome: typeof enterHome !== "undefined" ? enterHome : null, leaveHome: typeof leaveHome !== "undefined" ? leaveHome : null, clean: clean, openStall: openStall, homeS: homeS, flPut: flPut, isPlantT: isPlantT, craftSort: craftSort, trySpecial: trySpecial, get panelOpen() { return panelOpen; }, FOC: FOC, DODGE: DODGE, rarItem: rarItem, rarRec: rarRec, get RECIPES() { return RECIPES; }, openStn: openStn, get drops() { return drops; }, place: place, nearFree: nearFree, get p2() { return p; }, grassGrow: grassGrow, razeStruct: razeStruct, blocks: blocks, setT: setT, breakTile: breakTile, save: save, get rmask() { return rmask; }, get world() { return world; }, get S() { return S; }, get: get, get col() { return col; }, W: W, H: H, T: T, get tiles() { return tiles; }, p: p, cam: cam, TILES: TILES, edit: function () { editN++; }, OPT: OPT, setSel: function (v) { sel = v; bare = false; hbDirty = true; }, get ox() { return ox; }, get oy() { return oy; }, get ts() { return ts; }, setT: setT, recalc: recalc, save: save, get sel() { return sel; }, shapeCount: shapeCount, autoShape: function (x, y) { return autoShape(y * W + x); }, FOOT: FOOT, NLOG: NLOG, pawChop: function (x, y) { return pawChop(get(x, y), x, y); }, pcol: function () { return pcol(); }, place: function (x, y, k) { place(x, y, k); }, tileItem: function (id) { for (var k in ITEMS) if (ITEMS[k].tile === id) return k; return null; }, pscr: function () { return [ox + p.x * ts, oy + p.y * ts, ts]; }, swo: function () { return [SWO.arc.length, SWO.th, heldAmt, toolPose().kind, toolPose().has, toolPose().phi]; }, enterBuilding: function (s) { enterBuilding(s); }, structs: function () { return world.structs; }, showTip: function (m) { showTip(m, "", "#f2c14e"); }, toast: function (m) { toast(m); }, step: function (h, d, j) { step(h, d, j); }, get orig() { return orig; } };
-  window.__sbx = { stn: function (k) { var bx = Math.floor(p.x) + 1, by = Math.floor(p.y); setT(bx, by, T.BENCH !== undefined && k === "bench" ? T.BENCH : get(bx, by)); openStn(k, bx, by); }, fell: function (x, y) { fellTree(x, y); }, T: T, place: function (x, y, it) { place(x, y, it); }, tileAt: function (x, y) { return get(x, y); }, rarItem: function (id) { return rarItem(id); }, rarOf: function (id) { var r = RECIPES.filter(function (q) { return q.id === id; })[0]; return r ? rarRec(r) : null; }, mc: { ls: function (k, o) { loadScreen(k, function () {}, o || { min: 3000 }); }, on: inMC, enter: function () { malcS().warned = 1; mcEnter(); }, leave: mcLeave, S: function () { return malcS(); }, gate: mcGate, gy: mcGateY, world: function () { return world; }, enemies: function () { return enemies; }, hp: function (v) { if (v !== undefined) hp = v; return hp; }, hit: function (k, d) { var e = enemies.find(function (q) { return q.k === k && !q.def; }); if (e) damageEnemy(e, d, 1); return e ? e.hp : null; }, brk: function (dx, dy) { var x = Math.floor(p.x) + dx, y = Math.floor(p.y) + dy, id = get(x, y); breakTile(x, y); return TILES[id].n; }, drops: function () { return drops.map(function (d) { return d.k || d.item || d.id; }); }, find: function (n) { var tid = T[n]; for (var r = 1; r < 60; r++) for (var dx = -r; dx <= r; dx++) for (var dy = -12; dy <= 12; dy++) if (get(Math.floor(p.x) + dx, Math.floor(p.y) + dy) === tid) return [dx, dy]; return null; } }, lair: { capt: function () { return cave && cave.F && cave.F.mobs && cave.F.mobs.filter(function (m) { return m.k === "captain"; })[0]; }, hit: hitCaptain, rig: rigAct, btn: rigBtn, fix: rigFix, count: rigCount, total: rigTotal, cap: rigCap, S: function () { return lairS(); } }, audit: auditGame, birds: { w: function () { return wbirds; }, pet: function () { return pet; }, feed: function (b) { feedBird(b); }, drops: function () { return drops; }, drop: function (k, n, x, y) { spawnDrop(k, n, x, y); } }, lore: { pick: function (a, g) { return lorePick(a, g); }, find: function (id, o) { loreFind(LPG[id], o); }, open: function (id) { openLore(id); }, note: function (x, y) { return readNote(x, y); }, F: function () { return cave && cave.F; } }, openPanel: function (t) { openPanel(t); }, growWorld: function (f) { return growWorld(f); }, amb: AMB, tickAmb: function (dt, n) { for (var k = 0; k < (n || 1); k++) tickAmbient(dt); return { reduce: reduce, cave: !!cave, lowq: lowq, surf: p.y < pcol() + 8, col: pcol() }; }, recStatus: function (id) { var r = craftAll().filter(function (q) { return q.id === id; })[0]; return r ? recStatus(r) : null; }, nearBench: function () { return nearBench(); }, MP: MP, canPlace: function (x, y, k) { QUIET = 1; var r = canPlace(x, y, k); QUIET = 0; return r; }, place: function (x, y, k) { place(x, y, k); }, flipDecor: function (x, y) { return flipDecor(x, y); }, breakTile: function (x, y) { breakTile(x, y); }, icon: function (k) { return icon(k); }, drink: function (k) { drink(k); }, wDmg: function () { return wDmg(); }, charms: CHARMS, flow: { lv: function (x, y) { return lvAt(y * W + x); }, q: function () { return FLQ.length; }, tick: function (n) { for (var k = 0; k < n; k++) { flAcc = FLOW.dt; tickFlow(0); } } }, setWall: setWall, get titleOpen() { return titleOpen; }, openTitle: openTitle, closeTitle: closeTitle, cam: cam, exAll: function () { ex.fill(1); }, hurt: function (n, w) { hurt(n, w); }, get hp() { return hp; }, craftAll: function () { return craftAll(); }, BENCH_LV: BENCH_LV, PICKS: PICKS, dropQty: dropQty, openJewel: openJewel, wDmg: function () { return wDmg(); }, armRed: function () { return armRed(); }, openGate: openGate, gateAct: gateAct, gates: function () { return S.gates; }, curCh: function () { return curCh(); }, place: place, breakTile: breakTile, tickTraps: tickTraps, emptyTrap: emptyTrap, sprinkled: sprinkled, trapNear: trapNear, plantCrop: plantCrop, enterBuilding: enterBuilding, structNear: structNear, structs: function () { return world.structs; }, get cave() { return cave; }, cp: cp, enterCave: enterCave, useLadder: useLadder, holeNear: holeNear, ladderNear: ladderNear, leaveCaveNow: leaveCaveNow, setFloor: setFloor, get trans() { return trans; }, blocks: blocks, worlds: function () { return wIdx; }, createWorld: createWorld, switchWorld: switchWorld, deleteWorld: deleteWorld, openWorlds: openWorlds, save: save, enemies: enemies, newEnemy: newEnemy, spawnBat: spawnBat, trySleep: trySleep, wear: wear, durOf: durOf, repair: repair, openChest: openChest, chestNear: chestNear, toggleDoor: toggleDoor, doorNear: doorNear, bedNear: bedNear, spawnEnemy: spawnEnemy, strike: strike, ENEMY: ENEMY, ITEMS: ITEMS, KSTAT: KSTAT, AMB: AMB, wbirds: function () { return wbirds; }, pl: function () { return cave || HOME ? [cp.x, cp.y] : [p.x, p.y]; }, caveF: function () { return cave && cave.F; }, craft: function (id) { craft(id); }, slots: function () { return S.slots; }, over: function () { return S.over || {}; }, setSlot: function (i, k, n) { S.slots[i] = k ? { k: k, n: n } : null; S.inv = totals(S.slots); hbDirty = true; }, toast: function (m, c) { return toast(m, c); }, nag: function (m) { nagT = 0; nag(m); }, inv: function (k, n) { S.inv[k] = n; hbDirty = true; }, selIt: function (k) { choose(k); hbDirty = true; return sel; }, wallAt: function (x, y) { return walls[y * W + x]; }, spots: function () { return { mine: world.holes && world.holes[0], gate: FGLAST, home: (typeof HOMEP !== "undefined" ? HOMEP : null) }; }, scr: function (x, y) { return [ox + x * ts, oy + y * ts, ts]; }, setHp: function (v) { hp = v; }, WEAPONS: WEAPONS, bar: function () { return barEntries().map(function (e) { return e.id; }).filter(Boolean); }, room: room, reslot: reslot, view: function () { return { ts: ts, ox: ox, oy: oy }; }, get S() { return S; }, p: p, get: get, tiles: function () { return tiles; }, world: function () { return world; }, choose: choose, craft: craft, openPanel: openPanel, give: give, reveal: reveal, trail: function () { return S.trail; }, TRAIL: TRAIL, checkTrail: checkTrail, farmStep: farmStep, eat: eat, clean: clean, wilds: function () { return wilds; }, newAnimal: newAnimal, useAnimal: useAnimal, get fishing() { return fishing; }, standNear: standNear, openStand: openStand, flies: function () { return flies; }, aim: aim, get sel() { return sel; }, get bare() { return bare; }, npc: npc, openStn: openStn, MP: MP, mpHost: mpHost, mpJoin: mpJoin, mpLeave: mpLeave, openMPV: openMPV, openChat: openChat, CHARMS: CHARMS, wearCharm: wearCharm, hasCharm: hasCharm, WX: WX, wxNew: wxNew, wxLabel: wxLabel, CLOUD: CLOUD, cloudPush: cloudPush, cloudPull: cloudPull, wIdx: function () { return wIdx; }, curId: function () { return curId; }, MUS: MUS, MINI: MINI, musicMood: musicMood, rollBounties: rollBounties, btyReady: btyReady, claimBty: claimBty, buyShop: buyShop, BSHOP: BSHOP, renderTalk: renderTalk, activeBoss: activeBoss, newBoss: newBoss, bshots: bshots, BOSS: BOSS, useSummon: useSummon, talkCroaker: talkCroaker, giftsWaiting: giftsWaiting, MAIN: MAIN, SIDE: SIDE, showStory: showStory, get qi() { return S.qi; }, colAt: function (x) { return col[x]; }, setT: setT };
+  window.__sbx = { chest: function (x, y) { return openChest(x, y); }, stn: function (k) { var bx = Math.floor(p.x) + 1, by = Math.floor(p.y); setT(bx, by, T.BENCH !== undefined && k === "bench" ? T.BENCH : get(bx, by)); openStn(k, bx, by); }, fell: function (x, y) { fellTree(x, y); }, T: T, place: function (x, y, it) { place(x, y, it); }, tileAt: function (x, y) { return get(x, y); }, rarItem: function (id) { return rarItem(id); }, rarOf: function (id) { var r = RECIPES.filter(function (q) { return q.id === id; })[0]; return r ? rarRec(r) : null; }, mc: { ls: function (k, o) { loadScreen(k, function () {}, o || { min: 3000 }); }, on: inMC, enter: function () { malcS().warned = 1; mcEnter(); }, leave: mcLeave, S: function () { return malcS(); }, gate: mcGate, gy: mcGateY, world: function () { return world; }, enemies: function () { return enemies; }, hp: function (v) { if (v !== undefined) hp = v; return hp; }, hit: function (k, d) { var e = enemies.find(function (q) { return q.k === k && !q.def; }); if (e) damageEnemy(e, d, 1); return e ? e.hp : null; }, brk: function (dx, dy) { var x = Math.floor(p.x) + dx, y = Math.floor(p.y) + dy, id = get(x, y); breakTile(x, y); return TILES[id].n; }, drops: function () { return drops.map(function (d) { return d.k || d.item || d.id; }); }, find: function (n) { var tid = T[n]; for (var r = 1; r < 60; r++) for (var dx = -r; dx <= r; dx++) for (var dy = -12; dy <= 12; dy++) if (get(Math.floor(p.x) + dx, Math.floor(p.y) + dy) === tid) return [dx, dy]; return null; } }, lair: { capt: function () { return cave && cave.F && cave.F.mobs && cave.F.mobs.filter(function (m) { return m.k === "captain"; })[0]; }, hit: hitCaptain, rig: rigAct, btn: rigBtn, fix: rigFix, count: rigCount, total: rigTotal, cap: rigCap, S: function () { return lairS(); } }, audit: auditGame, birds: { w: function () { return wbirds; }, pet: function () { return pet; }, feed: function (b) { feedBird(b); }, drops: function () { return drops; }, drop: function (k, n, x, y) { spawnDrop(k, n, x, y); } }, lore: { pick: function (a, g) { return lorePick(a, g); }, find: function (id, o) { loreFind(LPG[id], o); }, open: function (id) { openLore(id); }, note: function (x, y) { return readNote(x, y); }, F: function () { return cave && cave.F; } }, openPanel: function (t) { openPanel(t); }, growWorld: function (f) { return growWorld(f); }, amb: AMB, tickAmb: function (dt, n) { for (var k = 0; k < (n || 1); k++) tickAmbient(dt); return { reduce: reduce, cave: !!cave, lowq: lowq, surf: p.y < pcol() + 8, col: pcol() }; }, recStatus: function (id) { var r = craftAll().filter(function (q) { return q.id === id; })[0]; return r ? recStatus(r) : null; }, nearBench: function () { return nearBench(); }, MP: MP, canPlace: function (x, y, k) { QUIET = 1; var r = canPlace(x, y, k); QUIET = 0; return r; }, place: function (x, y, k) { place(x, y, k); }, flipDecor: function (x, y) { return flipDecor(x, y); }, breakTile: function (x, y) { breakTile(x, y); }, icon: function (k) { return icon(k); }, drink: function (k) { drink(k); }, wDmg: function () { return wDmg(); }, charms: CHARMS, flow: { lv: function (x, y) { return lvAt(y * W + x); }, q: function () { return FLQ.length; }, tick: function (n) { for (var k = 0; k < n; k++) { flAcc = FLOW.dt; tickFlow(0); } } }, setWall: setWall, get titleOpen() { return titleOpen; }, openTitle: openTitle, closeTitle: closeTitle, cam: cam, exAll: function () { ex.fill(1); }, hurt: function (n, w) { hurt(n, w); }, get hp() { return hp; }, craftAll: function () { return craftAll(); }, BENCH_LV: BENCH_LV, PICKS: PICKS, dropQty: dropQty, openJewel: openJewel, wDmg: function () { return wDmg(); }, armRed: function () { return armRed(); }, openGate: openGate, gateAct: gateAct, gates: function () { return S.gates; }, curCh: function () { return curCh(); }, place: place, breakTile: breakTile, tickTraps: tickTraps, emptyTrap: emptyTrap, sprinkled: sprinkled, trapNear: trapNear, plantCrop: plantCrop, enterBuilding: enterBuilding, structNear: structNear, structs: function () { return world.structs; }, get cave() { return cave; }, cp: cp, enterCave: enterCave, useLadder: useLadder, holeNear: holeNear, ladderNear: ladderNear, leaveCaveNow: leaveCaveNow, setFloor: setFloor, get trans() { return trans; }, blocks: blocks, worlds: function () { return wIdx; }, createWorld: createWorld, switchWorld: switchWorld, deleteWorld: deleteWorld, openWorlds: openWorlds, save: save, enemies: enemies, newEnemy: newEnemy, spawnBat: spawnBat, trySleep: trySleep, wear: wear, durOf: durOf, repair: repair, openChest: openChest, chestNear: chestNear, toggleDoor: toggleDoor, doorNear: doorNear, bedNear: bedNear, spawnEnemy: spawnEnemy, strike: strike, ENEMY: ENEMY, ITEMS: ITEMS, KSTAT: KSTAT, AMB: AMB, wbirds: function () { return wbirds; }, pl: function () { return cave || HOME ? [cp.x, cp.y] : [p.x, p.y]; }, caveF: function () { return cave && cave.F; }, craft: function (id) { craft(id); }, slots: function () { return S.slots; }, over: function () { return S.over || {}; }, setSlot: function (i, k, n) { S.slots[i] = k ? { k: k, n: n } : null; S.inv = totals(S.slots); hbDirty = true; }, toast: function (m, c) { return toast(m, c); }, nag: function (m) { nagT = 0; nag(m); }, inv: function (k, n) { S.inv[k] = n; hbDirty = true; }, selIt: function (k) { choose(k); hbDirty = true; return sel; }, wallAt: function (x, y) { return walls[y * W + x]; }, spots: function () { return { mine: world.holes && world.holes[0], gate: FGLAST, home: (typeof HOMEP !== "undefined" ? HOMEP : null) }; }, scr: function (x, y) { return [ox + x * ts, oy + y * ts, ts]; }, setHp: function (v) { hp = v; }, WEAPONS: WEAPONS, bar: function () { return barEntries().map(function (e) { return e.id; }).filter(Boolean); }, room: room, reslot: reslot, view: function () { return { ts: ts, ox: ox, oy: oy }; }, get S() { return S; }, p: p, get: get, tiles: function () { return tiles; }, world: function () { return world; }, choose: choose, craft: craft, openPanel: openPanel, give: give, reveal: reveal, trail: function () { return S.trail; }, TRAIL: TRAIL, checkTrail: checkTrail, farmStep: farmStep, eat: eat, clean: clean, wilds: function () { return wilds; }, newAnimal: newAnimal, useAnimal: useAnimal, get fishing() { return fishing; }, standNear: standNear, openStand: openStand, flies: function () { return flies; }, aim: aim, get sel() { return sel; }, get bare() { return bare; }, npc: npc, openStn: openStn, MP: MP, mpHost: mpHost, mpJoin: mpJoin, mpLeave: mpLeave, openMPV: openMPV, openChat: openChat, CHARMS: CHARMS, wearCharm: wearCharm, hasCharm: hasCharm, WX: WX, wxNew: wxNew, wxLabel: wxLabel, CLOUD: CLOUD, cloudPush: cloudPush, cloudPull: cloudPull, wIdx: function () { return wIdx; }, curId: function () { return curId; }, MUS: MUS, MINI: MINI, musicMood: musicMood, rollBounties: rollBounties, btyReady: btyReady, claimBty: claimBty, buyShop: buyShop, BSHOP: BSHOP, renderTalk: renderTalk, activeBoss: activeBoss, newBoss: newBoss, bshots: bshots, BOSS: BOSS, useSummon: useSummon, talkCroaker: talkCroaker, giftsWaiting: giftsWaiting, MAIN: MAIN, SIDE: SIDE, showStory: showStory, get qi() { return S.qi; }, colAt: function (x) { return col[x]; }, setT: setT };
   window.__sbx.star = { launch: launchFaller, impact: starImpact, fallers: fallers, tick: tickStars, get shower() { return SHOWER; }, set shower(v) { SHOWER = v; } };
   window.__sbx.jb = { JB: JB, SONGS: SONGS, play: jbPlay, stop: jbStop, list: jbList, tick: tickJuke };
   window.__sbx.way = { open: openWay, act: wayAct, list: wayList, dests: function () { return wayDst; }, get warp() { return warp; } };
@@ -29033,6 +29230,22 @@ var ATK = { on: false, mine: false };
     if (t === "go") return DEVA.go.slice(0, 15).concat(BIOMES.map(function (B, i) { return ["Biome: " + B.n, function () { devAct("tp:" + i); }]; })).concat(devPlaces()).concat(DEVA.go.slice(15));
     return DEVA[t] || [];
   }
+  function devStorDemo() {   // STORAGE: a working line in front of you. Vacuum Chest -> Hopper -> belt -> Filter Chest (Pebbles) ... Big Chest; a Terminal at the end
+    if (cave || HOME || OCS) { nag("Go to the surface first."); return; } if (panelOpen) closePanel();
+    var f = p.face || 1, x0 = Math.floor(p.x) + (f > 0 ? 2 : -12), gy = Math.floor(p.y), id = function (k) { return ITEMS[k].tile; };
+    for (var x = x0 - 1; x <= x0 + 11; x++) { for (var y = gy - 6; y < gy; y++) setT(x, y, T.AIR); if (!TILES[get(x, gy)].solid) setT(x, gy, T.STONE); }
+    var pl = function (x, y, k, o) { setT(x, y, id(k)); S.stor = S.stor || {}; S.stor[x + "," + y] = o || {}; };
+    pl(x0, gy - 4, "vacchest"); S.chests[x0 + "," + (gy - 4)] = { pebble: 12, wood: 8, fiber: 6, stick: 5 };
+    pl(x0, gy - 3, "hopper", { d: 3 });
+    for (var i = 0; i < 6; i++) pl(x0 + i, gy - 2, "conveyor", { d: 0 });
+    pl(x0 + 2, gy - 1, "filterchest", { f: ["pebble"] }); S.chests[(x0 + 2) + "," + (gy - 1)] = {};
+    pl(x0 + 4, gy - 1, "filterchest", { f: ["wood", "stick"] }); S.chests[(x0 + 4) + "," + (gy - 1)] = {};
+    pl(x0 + 6, gy - 2, "bigchest"); S.chests[(x0 + 6) + "," + (gy - 2)] = {}; setT(x0 + 6, gy - 1, T.STONE);
+    pl(x0 + 8, gy - 1, "linkchest", { ch: 5 }); chestInit(x0 + 8, gy - 1);
+    pl(x0 + 10, gy - 1, "terminal");
+    toast("Storage demo built: a hopper empties the Vacuum Chest onto a belt, Filter Chests under the belt sort out Pebbles and Wood, the rest rides on into a Big Chest.", "#7af0d0");
+    setTimeout(function () { chestKey = "term:" + (x0 + 10) + "," + (gy - 1); openPanel("chest"); }, 1500);
+  }
   function devGive(o) { Object.keys(o).forEach(function (k) { if (ITEMS[k]) give(k, o[k], undefined, undefined, true); }); reslot(); hbDirty = true; }
   var DEVA = {
     go: [
@@ -29094,6 +29307,8 @@ var ATK = { on: false, mine: false };
       ["Every potion", function () { var o = {}; ORDER.forEach(function (k) { if (/^tonic_/.test(k)) o[k] = 3; }); devGive(o); }],
       ["Every spare tool", function () { var o = {}; ORDER.forEach(function (k) { if (/^sp_/.test(k)) o[k] = 1; }); devGive(o); }],
       ["Every motorbike part", function () { var o = {}; ORDER.forEach(function (k) { if (/^moto_/.test(k)) o[k] = 1; }); devGive(o); }],
+      ["Storage kit (every chest type, Terminal, 8 hoppers, 32 belts, 8 Logistics Cores)", function () { devGive({ bigchest: 4, filterchest: 4, linkchest: 4, vacchest: 2, terminal: 1, hopper: 8, conveyor: 32, lcore: 8, chest: 4 }); }],
+      ["Logistics Core materials (boss trophies + deep loot x4)", function () { devGive({ queenchitin: 4, wyrmscale: 4, alphamane: 4, ironingot: 20, amethyst: 6, moonstone: 2, sapphire: 1, ruby: 1, crystal: 20, cinder: 16, chest: 6 }); }],
       ["Every real-size furniture piece", function () { var o = {}; Object.keys(FSZK).forEach(function (k) { if (ITEMS[k]) o[k] = 1; }); devGive(o); }],
       ["Every dive item", function () { var o = {}; ["scubasuit", "suit2", "suit3", "suit4", "tank1", "tank2", "tank3", "tank4", "flippers", "divelamp"].forEach(function (k) { o[k] = 1; }); devGive(o); }]
     ],
@@ -29131,6 +29346,7 @@ var ATK = { on: false, mine: false };
       ["Turn world cheats on (commands)", function () { S.cheats = 1; toast("Cheats on for this world: press / for commands.", "#ffd23f"); }]
     ],
     open: [
+      ["Storage demo: build a hopper + belt + Filter Chest line here, then open the Terminal", function () { devStorDemo(); }],
       ["Map of this place (caves, homestead, pier, Malcruor...)", function () { if (panelOpen) closePanel(); setTimeout(openMap, 50); }],
       ["Codex", function () { cxOpen(); }],
       ["Codex: Gear & Fighting (damage chart)", function () { cxOpen("gear", "f:chart"); }],

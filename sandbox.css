@@ -3270,3 +3270,29 @@ html.sbx-txbig .sbx-stage>.sbx-pack,html.sbx-txbig .sbx-stage>.sbx-panel,html.sb
   #sbxPanel.craftwin .crg-side .crg-dh small{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 }
 @media (prefers-reduced-motion:reduce){#sbxStnBox>.sbx-phead,#sbxPanel.craftwin>.sbx-phead,#sbxStnBox .sbx-cbar,#sbxPanel.craftwin .sbx-cbar,#sbxStnBox .crg-side{transition:none}}
+/* STORAGE UPDATE: Filter Chest filter, Linked Chest runes, Storage Terminal */
+.st-filt,.st-rune,.st-term{margin:8px 0 4px;padding:12px;border-radius:16px;background:linear-gradient(180deg,#0e2a24,#081813);border:1px solid #7af0d080;box-shadow:0 0 18px -6px #7af0d066,inset 0 1px 0 #ffffff12}
+.st-rune{border-color:#c890ff80;box-shadow:0 0 18px -6px #c890ff66,inset 0 1px 0 #ffffff12;background:linear-gradient(180deg,#221634,#120a1e)}
+.st-fh,.st-rune{display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px}
+#sbxBody .st-fh b,#sbxBody .st-rune>b,#sbxBody .st-th b{font-family:"DelveBagel","Bagel Fat One",Nunito,sans-serif;font-weight:400;color:#fff4d0;font-size:17px;letter-spacing:.3px}
+.st-fh small,.st-rune small,.st-th small{flex:1 1 180px;color:#bfe8dc;font:700 12px/1.35 Nunito,system-ui,sans-serif}
+.st-rune small{color:#dccaf4}
+.st-fh .btn{margin-left:auto}
+.st-fl{display:grid;grid-template-columns:repeat(auto-fill,minmax(44px,1fr));gap:6px;margin-top:10px}
+.st-fi,.st-fe{position:relative;height:44px;border-radius:12px;display:grid;place-items:center}
+.st-fe{border:1px dashed #7af0d03a;background:#0006}
+.st-fi{border:1px solid #9fe8ff;background:radial-gradient(circle at 50% 40%,#2e6a7a,#10303a);padding:0;cursor:pointer}
+.st-fi:disabled{cursor:default;opacity:1}
+.st-fi img{width:30px;height:30px;image-rendering:pixelated;filter:drop-shadow(0 2px 0 #0008)}
+.st-fi i{position:absolute;top:-6px;right:-6px;width:18px;height:18px;border-radius:50%;background:#ff6a5a;color:#fff;font:900 13px/18px Nunito,sans-serif;font-style:normal;box-shadow:0 2px 4px #0008}
+.st-rune>div{display:flex;gap:8px;flex-wrap:wrap;width:100%;margin-top:6px}
+.st-rb{width:40px;height:40px;border-radius:12px;border:2px solid #0008;background:radial-gradient(circle at 40% 35%,#fff8,transparent 45%),var(--rc);box-shadow:0 0 0 1px #ffffff22,0 3px 0 #0007;cursor:pointer;transition:transform .12s}
+.st-rb.on{transform:translateY(-2px) scale(1.08);box-shadow:0 0 0 3px #fff4d0,0 0 18px var(--rc)}
+.sbx-bag.st-pick .sbx-it{outline:2px dashed #9fe8ff88;outline-offset:-3px}
+.st-th{display:flex;align-items:center;gap:12px}
+.st-th img{width:44px;height:44px;image-rendering:pixelated;filter:drop-shadow(0 0 8px #7af0d0aa)}
+.st-th>div{display:flex;flex-direction:column;gap:2px}
+#sbxBody .st-th small{flex:none}
+.st-ts{display:block;margin-top:10px}
+.st-ts input{width:100%;box-sizing:border-box;padding:10px 14px;border-radius:12px;border:1.5px solid #7af0d066;background:#06100b;color:#fff;font:700 16px Nunito,system-ui,sans-serif;outline:none}
+.st-ts input:focus{border-color:#7af0d0;box-shadow:0 0 0 3px #7af0d040}
