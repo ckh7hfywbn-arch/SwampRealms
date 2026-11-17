@@ -5316,6 +5316,9 @@
     g.save(); g.translate(!e.def && h > 0 ? Math.sin(t * 90) * 1.6 * h : 0, e.wet && !e.def ? Math.sin(t * 2.4) * 0.8 : 0);
     g.scale(e.dir * (1 + 0.5 * pd + 0.08 * h), 1 - 0.75 * pd);
     if (!e.def) eGlow(g, 6, -6, wind ? 34 : 26, wind || e.st === "snap" ? "#ff6a5a" : d.glow, wind ? 0.35 : 0.12);
+    var gspr = pixOn() && !e.def && pixFrame("gator", jaw > 0.05 || wind ? "jaw" : "walk", jaw > 0.05 || wind ? Math.max(1, Math.min(4, Math.round(jaw * 4))) : walk ? Math.floor(t * 8) % 4 : 0, flash);
+    if (gspr) pixPut(g, gspr, 35, 24);   // PIXEL GATOR (hand-drawn frames, delve-pixmobs.js)
+    else {
     g.lineCap = "round"; g.lineJoin = "round";
     var sw = Math.sin(t * (walk ? 7 : 1.6)) * (walk ? 4 : 1.5);
     g.fillStyle = sk; g.strokeStyle = ln; g.lineWidth = 1.5;
@@ -5335,6 +5338,7 @@
     g.fillStyle = "#0c1408"; g.beginPath(); g.ellipse(4.2, -7, 0.5, 1.4, 0, 0, 7); g.fill();
     g.fillStyle = ln; g.beginPath(); g.arc(18.5, -3.2, 0.8, 0, 7); g.fill();
     g.restore();
+    }
     g.restore();
     if (e.wet && !e.def) {   // the waterline: tint the part of the gator that is under the surface
       var wy = Math.floor(e.y - 1.5), xx = Math.floor(e.x); while (wy < e.y + 1 && get(xx, wy) !== T.WATER) wy++;
@@ -5345,6 +5349,10 @@
   function drawSlime(g, e, d, flash, h, pd) {
     var MC = !!e.mc, t = e.tt, P = MC ? { c: "#8e1426", dk: "#2a0408", hi: "#e85a6a", glow: "#ff2a3a" } : SLIME_PAL[e.b] || SLIME_PAL[0], s0 = e.small ? 0.62 : 1, air = !e.on && !e.def, sxx = 1, syy = 1;
     if (air) { var k = clamp(-e.vy / 10, -1, 1); sxx = 1 - 0.14 * k; syy = 1 + 0.2 * k; } else { var q = e.sq || 0; sxx = 1 + 0.25 * q + 0.03 * Math.sin(t * 5); syy = 1 - 0.22 * q - 0.03 * Math.sin(t * 5); }
+    var sspr = pixOn() && !e.def && pixFrame(MC ? "slimemc" : "slime" + (e.b || 0), syy < 0.9 ? "squash" : syy > 1.12 ? "up" : syy > 1.04 ? "down" : "idle", Math.sin(t * 5) > 0 ? 1 : 0, flash);
+    if (sspr) {   // PIXEL SLIME (hand-drawn frames, delve-pixmobs.js): idle wobble, squash, stretch up, stretch down
+      g.save(); g.translate(!e.def && h > 0 ? Math.sin(t * 90) * 1.6 * h : 0, 0); g.scale(e.dir * s0 * (1 + 0.6 * pd), s0 * (1 - 0.8 * pd));
+      eGlow(g, 0, -9, 26, P.glow, e.b === 1 ? 0.45 : 0.28); pixPut(g, sspr, 20, 32); g.restore(); return; }
     g.save(); g.translate(!e.def && h > 0 ? Math.sin(t * 90) * 1.6 * h : 0, 0); g.scale(e.dir * s0 * sxx * (1 + 0.6 * pd), s0 * syy * (1 - 0.8 * pd));
     if (!e.def) eGlow(g, 0, -9, 26, P.glow, e.b === 1 ? 0.45 : 0.28);
     var body = flash ? "#ffffff" : P.c;
@@ -6056,6 +6064,7 @@
     g.restore();
   }
   var PXF = {};
+  function pixPut(g, spr, ax, H) { var u = 30 / 32, sm = g.imageSmoothingEnabled; g.imageSmoothingEnabled = false; g.drawImage(spr, -ax * u, -H * u + 1, spr.width / Math.max(1, Math.round(spr.height / H)) * u, H * u); g.imageSmoothingEnabled = sm; }   // a hand frame, feet on the ground
   function pixFrame(kind, st, n, flash) {   // a hand-drawn pixel frame enlarged to the screen's pixels (crisp), or null
     if (typeof DelvePix === "undefined" || !DelvePix.has(kind)) return null; var src = DelvePix.frame(kind, st, n, flash); if (!src) return null;
     var k = Math.max(1, Math.ceil(ts * dpr / 32)), key = kind + st + n + (flash ? "f" : "") + "_" + k; if (PXF[key]) return PXF[key];
@@ -6101,7 +6110,7 @@
     c.putImageData(im, 0, 0);
   }
   function drawEnemies(g, now) { var mc = inMC(); enemies.forEach(function (e) { if (e.bm && !e.boss) drawBMEnemy(g, e, now); else if (mc && e.mc && e.k !== "treant" && e.k !== "mcheart" && !e.boss && !MCN[e.k]) mcCorruptDraw(g, e, now, function (c) { drawEnemy(c, e, now); }); else if (pixOn() && !e.boss && !PXHAND[e.k] && (e.k !== "bug" || e.mc) && enOnScr(e)) pixDraw(g, e, now, (PXSPAN[e.k] || 4.4) * (e.sz || 1), function (c) { drawEnemy(c, e, now); }); else drawEnemy(g, e, now); }); drawEliteFx(g, now); }
-  var PXHAND = { wolf: 1 };   // creatures with hand-drawn pixel frames (delve-pixmobs.js) skip the stopgap renderer
+  var PXHAND = { wolf: 1, gator: 1, slime: 1, spider: 1, witch: 1 };   // creatures with hand-drawn pixel frames (delve-pixmobs.js) skip the stopgap renderer
   var PXSPAN = { brute: 5.4, witch: 5.4, wyrm: 6, rottree: 6, treant: 6, gator: 5.2, buccaneer: 5 };
   function enOnScr(e) { var sx = ox + e.x * ts, sy = oy + e.y * ts; return sx > -ts * 3 && sx < vw + ts * 3 && sy > -ts * 3 && sy < vh + ts * 3; }
 
@@ -12373,6 +12382,8 @@
     g.save(); g.translate(!e.def && h > 0 ? Math.sin(t * 90) * 1.6 * h : 0, 0); g.scale(f * (1 + 0.4 * pd), 1 - 0.7 * pd);
     var PC = MC ? "#ff2a3a" : "#d08aff", PB = MC ? "#c8101e" : "#b06aff";   // the potion's glow and colour
     if (!e.def) eGlow(g, 0, -26, wind ? 30 : 22, wind || MC ? PC : d.glow, wind ? 0.5 : 0.28);
+    var wtspr = pixOn() && !e.def && pixFrame(MC ? "witchmc" : "witch", wind ? "wind" : "walk", Math.sin(t * 2.6) > 0 ? 1 : 0, flash);
+    if (wtspr) { if (wind) eGlow(g, 9, -54, 12, PC, 0.7); pixPut(g, wtspr, 22, 80); g.restore(); return; }   // PIXEL BOG WITCH (hand-drawn frames, delve-pixmobs.js)
     g.lineCap = "round"; g.lineJoin = "round";
     var s1 = Math.sin(t * 3) * 1.2, s2 = Math.sin(t * 3 + 1) * 1.2;
     // the far arm, holding a gnarled broom-stick staff
@@ -12861,6 +12872,10 @@
     if (e.st === "hang" && !cave && e.ay !== undefined) {   // the silk thread up to the ceiling
       g.strokeStyle = MC ? "rgba(220,40,50,.85)" : "rgba(240,240,250,.85)"; g.lineWidth = 1.1; g.beginPath(); g.moveTo(0, -10); g.lineTo(0, -10 - (e.y - e.ay) * 30); g.stroke();
     }
+    var pspr = pixOn() && !e.def && pixFrame(MC ? "spidermc" : "spider" + (e.b || 0), crouch ? "crouch" : "walk", mv && !crouch ? Math.floor(t * 14) % 4 : 0, flash);
+    if (pspr) {   // PIXEL SPIDER (hand-drawn frames, delve-pixmobs.js): skitter cycle and the crouch before a pounce
+      g.save(); g.translate(!e.def && h > 0 ? Math.sin(t * 90) * 1.6 * h : 0, 0); g.scale(f * (1 + 0.4 * pd), 1 - 0.7 * pd);
+      eGlow(g, 2, -8, crouch ? 26 : 20, MC ? "#ff2a3a" : d.glow, crouch ? 0.5 : 0.3); pixPut(g, pspr, 32, 32); g.restore(); return; }
     g.save(); g.translate(!e.def && h > 0 ? Math.sin(t * 90) * 1.6 * h : 0, crouch ? 2 : 0); g.scale(f * 1.3 * (1 + 0.4 * pd), 1.3 * (1 - 0.7 * pd) * (crouch ? 0.85 : 1));
     if (!e.def) eGlow(g, 2, -8, crouch ? 26 : 20, MC ? "#ff2a3a" : d.glow, crouch ? 0.5 : 0.3);
     g.lineCap = "round"; g.lineJoin = "round";
