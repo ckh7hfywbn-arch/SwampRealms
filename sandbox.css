@@ -3246,3 +3246,14 @@ html.sbx-txbig .sbx-stage>.sbx-pack,html.sbx-txbig .sbx-stage>.sbx-panel,html.sb
 }
 .sbx-stage.home .sbx-ctl>[data-k="a"],.sbx-stage.home .sbx-pad .jump.atk{display:none}
 .sbx-mvp .sbx-mov{z-index:1;pointer-events:none;cursor:default}
+
+/* AUTO-HIDING BARS in crafting: scrolled down, the window's top bar and the search + category bar slide away; scroll up to bring them back */
+#sbxPanel>.sbx-phead,#sbxStnBox>.sbx-phead{transition:margin-top .24s ease,opacity .2s ease}
+#sbxPanel.barhide>.sbx-phead,#sbxStnBox.barhide>.sbx-phead{margin-top:calc(-1 * var(--phh,52px));opacity:0;pointer-events:none}
+#sbxPanel .sbx-cbar,#sbxStnBox .sbx-cbar{transition:transform .24s ease,opacity .2s ease}
+#sbxPanel.barhide .sbx-cbar,#sbxStnBox.barhide .sbx-cbar{transform:translateY(calc(-100% - 16px));opacity:0;pointer-events:none}
+#sbxStnBox .crg-side{transition:top .24s ease}
+#sbxStnBox.barhide .crg-side{top:-4px}
+/* ... and on a short screen the recipe card slims down too (name, cost and Craft stay; the blurb, rarity tag and note step aside) */
+@media (max-height:500px){ #sbxPanel.barhide .crg-side .crg-dh small,#sbxPanel.barhide .crg-side .rar-tag,#sbxPanel.barhide .crg-side .crg-note{display:none} #sbxPanel.barhide .crg-side .crg-big{width:40px;height:40px} #sbxPanel.barhide .crg-side .crg-big img{width:30px;height:30px} }
+@media (prefers-reduced-motion:reduce){#sbxPanel>.sbx-phead,#sbxStnBox>.sbx-phead,#sbxPanel .sbx-cbar,#sbxStnBox .sbx-cbar,#sbxStnBox .crg-side{transition:none}}

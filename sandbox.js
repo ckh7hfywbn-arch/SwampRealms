@@ -19758,6 +19758,7 @@
     if (mapOpen) closeMap(); if (packOpen) closePack(); if (panelOpen && !stnOpen) closePanel();
     var same = stnOpen && stnOpen.x === x && stnOpen.y === y;
     stnOpen = { k: k, x: x, y: y }; panelOpen = true; confirmNew = false; $("sbxStn").hidden = false; stageEl.classList.add("panel");
+    barAuto("sbxStnBody", "sbxStnBox", function () { return !!stnOpen; }); barShow("sbxStnBox");
     keys.l = keys.r = keys.j = 0; tk.l = tk.r = tk.j = 0; aim.down = false; mine = null; snd("coin");
     renderStn(); if (!same) $("sbxStnBody").scrollTop = 0;
     var xb = $("sbxStn").querySelector(".sbx-x"); if (xb) xb.focus({ preventScroll: true });
@@ -19766,6 +19767,20 @@
     var tm = 0; ["sbxStnBody"].concat([].slice.call(document.querySelectorAll("#sbxPanel .sbx-body"))).forEach(function (id) { var el = typeof id === "string" ? $(id) : id; if (!el) return;
       el.addEventListener("scroll", function () { if (!el.classList.contains("scrolling")) el.classList.add("scrolling"); clearTimeout(tm); tm = setTimeout(function () { el.classList.remove("scrolling"); }, 160); }, { passive: true }); });
   })();
+  // AUTO-HIDING BARS (crafting): scrolling down through recipes slides the window's top bar and the search + category bar away, for more
+  // room for the icons; scrolling back up (or reaching the top) brings them straight back. Never while you are typing a search.
+  function barAuto(bodyId, boxId, on) {
+    var bd = $(bodyId), box = $(boxId); if (!bd || !box) return; if (bd.__ab) return; bd.__ab = 1; var last = 0, acc = 0;
+    function set(v) { if (box.classList.contains("barhide") === v) return; if (v) { var hd = box.querySelector(".sbx-phead"); if (hd) box.style.setProperty("--phh", hd.offsetHeight + "px"); } box.classList.toggle("barhide", v); }
+    box.__abset = set;
+    bd.addEventListener("scroll", function () {
+      var st = bd.scrollTop, dy = st - last; last = st; var ae = document.activeElement;
+      if (!on() || st < 30 || (ae && ae.type === "search" && bd.contains(ae))) { acc = 0; set(false); return; }
+      if (dy * acc < 0) acc = 0; acc += dy;
+      if (acc > 28) set(true); else if (acc < -16) set(false);
+    }, { passive: true });
+  }
+  function barShow(boxId) { var b = $(boxId); if (b && b.__abset) b.__abset(false); }
   function closeStn() { stnOpen = null; panelOpen = false; $("sbxStn").hidden = true; stageEl.classList.remove("panel"); $("sbxMenuBtn").focus({ preventScroll: true }); }
   function holdsBuild() { var it = ITEMS[sel]; return !!(it && (it.wall || it.tile !== undefined) && !it.tool && (S.inv[sel] || 0) > 0); }   // holding a block or wall: a click places it (a wall goes up behind the station) instead of opening the station
   function tapStation(x, y) {   // quick tap on a station tile
@@ -20717,7 +20732,7 @@
     window.addEventListener("resize", function () { if (mapOpen) { mapSize(); mapClamp(); } });
     if (window.ResizeObserver) new ResizeObserver(function () { if (mapOpen) { mapSize(); mapClamp(); } }).observe(VP);
   })();
-  function openPanel(t) { if (!panelOpen) uiSnd("open"); if (storyOpen >= 0) { storyOpen = -1; $("sbxStory").hidden = true; } if (stnOpen) { stnOpen = null; $("sbxStn").hidden = true; } if (packOpen) { packOpen = false; $("sbxPack").hidden = true; } if (mapOpen) { mapOpen = false; $("sbxMapV").hidden = true; } if (t) tab = t; if (tab === "map") tab = "craft"; panelOpen = true; confirmNew = false; $("sbxPanel").hidden = false; stageEl.classList.add("panel"); keys.l = keys.r = keys.j = 0; tk.l = tk.r = tk.j = 0; aim.down = false; mine = null; renderPanel(); }
+  function openPanel(t) { barAuto("sbxBody", "sbxPanel", function () { return $("sbxPanel").classList.contains("craftwin"); }); barShow("sbxPanel"); if (!panelOpen) uiSnd("open"); if (storyOpen >= 0) { storyOpen = -1; $("sbxStory").hidden = true; } if (stnOpen) { stnOpen = null; $("sbxStn").hidden = true; } if (packOpen) { packOpen = false; $("sbxPack").hidden = true; } if (mapOpen) { mapOpen = false; $("sbxMapV").hidden = true; } if (t) tab = t; if (tab === "map") tab = "craft"; panelOpen = true; confirmNew = false; $("sbxPanel").hidden = false; stageEl.classList.add("panel"); keys.l = keys.r = keys.j = 0; tk.l = tk.r = tk.j = 0; aim.down = false; mine = null; renderPanel(); }
   function openPack() {
     setTimeout(function () { if (COACH) tickCoach(0.016); }, 0);   // TRY IT: the backpack step
     if (mapOpen) closeMap(); else if (panelOpen && !packOpen) closePanel();
