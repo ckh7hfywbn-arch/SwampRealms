@@ -3247,13 +3247,15 @@ html.sbx-txbig .sbx-stage>.sbx-pack,html.sbx-txbig .sbx-stage>.sbx-panel,html.sb
 .sbx-stage.home .sbx-ctl>[data-k="a"],.sbx-stage.home .sbx-pad .jump.atk{display:none}
 .sbx-mvp .sbx-mov{z-index:1;pointer-events:none;cursor:default}
 
-/* AUTO-HIDING BARS in crafting: scrolled down, the window's top bar and the search + category bar slide away; scroll up to bring them back */
-#sbxPanel>.sbx-phead,#sbxStnBox>.sbx-phead{transition:margin-top .24s ease,opacity .2s ease}
-#sbxPanel.barhide>.sbx-phead,#sbxStnBox.barhide>.sbx-phead{margin-top:calc(-1 * var(--phh,52px));opacity:0;pointer-events:none}
-#sbxPanel .sbx-cbar,#sbxStnBox .sbx-cbar{transition:transform .24s ease,opacity .2s ease}
-#sbxPanel.barhide .sbx-cbar,#sbxStnBox.barhide .sbx-cbar{transform:translateY(calc(-100% - 16px));opacity:0;pointer-events:none}
-#sbxStnBox .crg-side{transition:top .24s ease}
-#sbxStnBox.barhide .crg-side{top:-4px}
-/* ... and on a short screen the recipe card slims down too (name, cost and Craft stay; the blurb, rarity tag and note step aside) */
-@media (max-height:500px){ #sbxPanel.barhide .crg-side .crg-dh small,#sbxPanel.barhide .crg-side .rar-tag,#sbxPanel.barhide .crg-side .crg-note{display:none} #sbxPanel.barhide .crg-side .crg-big{width:40px;height:40px} #sbxPanel.barhide .crg-side .crg-big img{width:30px;height:30px} }
-@media (prefers-reduced-motion:reduce){#sbxPanel>.sbx-phead,#sbxStnBox>.sbx-phead,#sbxPanel .sbx-cbar,#sbxStnBox .sbx-cbar,#sbxStnBox .crg-side{transition:none}}
+/* AUTO-HIDING BARS in crafting (smooth version): the window's top bar floats over the top of the recipe list (the list starts below it),
+   so hiding it, the search + category bar and the recipe card is only a slide (transform), never a re-layout: scrolling stays smooth */
+#sbxStnBox{position:relative;overflow:hidden}
+#sbxStnBox>.sbx-phead,#sbxPanel.craftwin>.sbx-phead{position:absolute;top:0;left:0;right:0;z-index:6;background:#0b1a15;border-radius:inherit;border-bottom-left-radius:0;border-bottom-right-radius:0;transition:transform .22s ease,opacity .2s ease;will-change:transform}
+#sbxPanel.craftwin>.sbx-phead{background:#0a1a15}
+#sbxStnBox>.sbx-body,#sbxPanel.craftwin>.sbx-body{padding-top:calc(var(--phh,56px) + 12px)}
+#sbxStnBox .sbx-cbar,#sbxPanel.craftwin .sbx-cbar{transition:transform .22s ease,opacity .2s ease;will-change:transform}
+#sbxStnBox .crg-side{transition:transform .22s ease}   /* (sticky offsets count from below the padding, so the bar and card already sit under the floating top bar) */
+#sbxStnBox.barhide>.sbx-phead,#sbxPanel.craftwin.barhide>.sbx-phead{transform:translateY(-100%);opacity:0;pointer-events:none}
+#sbxStnBox.barhide .sbx-cbar,#sbxPanel.craftwin.barhide .sbx-cbar{transform:translateY(calc(-100% - var(--phh,56px) - 6px));opacity:0;pointer-events:none}
+#sbxStnBox.barhide .crg-side{transform:translateY(calc(0px - var(--phh,56px) - var(--cbh,58px)))}
+@media (prefers-reduced-motion:reduce){#sbxStnBox>.sbx-phead,#sbxPanel.craftwin>.sbx-phead,#sbxStnBox .sbx-cbar,#sbxPanel.craftwin .sbx-cbar,#sbxStnBox .crg-side{transition:none}}

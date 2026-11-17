@@ -19771,13 +19771,15 @@
   // room for the icons; scrolling back up (or reaching the top) brings them straight back. Never while you are typing a search.
   function barAuto(bodyId, boxId, on) {
     var bd = $(bodyId), box = $(boxId); if (!bd || !box) return; if (bd.__ab) return; bd.__ab = 1; var last = 0, acc = 0;
-    function set(v) { if (box.classList.contains("barhide") === v) return; if (v) { var hd = box.querySelector(".sbx-phead"); if (hd) box.style.setProperty("--phh", hd.offsetHeight + "px"); } box.classList.toggle("barhide", v); }
+    function set(v) { if (box.classList.contains("barhide") !== v) box.classList.toggle("barhide", v); }
+    var hd = box.querySelector(".sbx-phead"), meas = function () { if (hd && hd.offsetHeight) box.style.setProperty("--phh", hd.offsetHeight + "px"); }; meas();   // the floating top bar's height (the list starts below it)
+    try { new ResizeObserver(meas).observe(hd); } catch (er) { window.addEventListener("resize", meas); }
     box.__abset = set;
     bd.addEventListener("scroll", function () {
       var st = bd.scrollTop, dy = st - last; last = st; var ae = document.activeElement;
       if (!on() || st < 30 || (ae && ae.type === "search" && bd.contains(ae))) { acc = 0; set(false); return; }
       if (dy * acc < 0) acc = 0; acc += dy;
-      if (acc > 28) set(true); else if (acc < -16) set(false);
+      if (acc > 36) set(true); else if (acc < -22) set(false);
     }, { passive: true });
   }
   function barShow(boxId) { var b = $(boxId); if (b && b.__abset) b.__abset(false); }
@@ -21354,7 +21356,7 @@
     if (q) { try { q.fillStyle = "#ff0000"; q.fillRect(0, 0, 2, 2); ok = q.getImageData(0, 0, 1, 1).data[0] > 200; } catch (e) { ok = true; } }   // (a read that is refused is not a memory problem)
     cvFree(c); if (ok) { CVW.bad = 0; return; } if (++CVW.bad >= 2) { CVW.bad = 0; cvStepDown(); }
   }, 2000);
-  function resize() {
+  function resize() { PZDIRTY = true;
     var r = stageEl.getBoundingClientRect(); vw = Math.max(200, Math.round(r.width)); vh = Math.max(200, Math.round(r.height)); dpr = Math.min(dprCap, window.devicePixelRatio || 1);
     // TOUCH HUD SIZE: on a phone held sideways the screen is short (an iPhone in the browser leaves under 300px), so the buttons, bars and
     // hotbar shrink with the height (CSS zoom by --hz on each HUD layer). Desktop and tall screens stay at full size.
@@ -27346,7 +27348,7 @@
   function homeStall(g) { hDrawK(g, hsStall(), HSTALL.x, HSTALL.y + 1, 4, 40); }
   function homeGateArt(g) { hDrawK(g, hsSignpost(), HGATE.x - 1, HGATE.y + 1, 2, 30); hDrawK(g, hsLamppost(), HGATE.x + 2, HGATE.y + 1, 0, 34); }
   function loopErr(er) { LERR.n++; var m = String(er && er.message || er); if (m !== LERR.last || LERR.n % 120 === 1) { LERR.last = m; try { console.error("[Delve] frame error:", er); } catch (e) {} } try { faintQ = null; if (hp <= 0) { hp = 1; faintQ = "hit"; } } catch (e) {} }
-  var PZN = -1;
+  var PZN = -1, PZD = 0, PZDIRTY = false;
   // ATTACK BUTTON: while it is held, the game aims for you at the nearest creature in front of you (within about 7 blocks; in caves and on
   // islands, the nearest one around you). It only ever fights: it never digs, chops, places, picks up or opens anything (atkSwat in useTool
   // and caveTool). A sword swings and combos as usual and the bow shoots; anything else in your hand (a pick, a block, food...) is a paw
@@ -27418,7 +27420,8 @@ var ATK = { on: false, mine: false };
       try {
         if (window.__CAMOV) { cam.x = window.__CAMOV.x; cam.y = window.__CAMOV.y; }   // (test/trailer hook: a scripted camera)
         if (mapOpen) { if ((M.drag && M.drag.moved) || M.pinch || M.fling) { M.gl = 1; mapFlingStep(); mapGlide(); } else if (M.gl || M.dirty || now - (M.fT || 0) > 70) { M.gl = 0; M.fT = now; M.dirty = false; drawMapView(); } }   // PERF: the map is full screen, so the world behind it is not drawn; the map itself redraws right away while you drag or pinch and about 20 times a second otherwise
-        else { var rnow = now; if (paused) { if (PZN < 0) PZN = now; rnow = PZN; } else PZN = -1;   // MENUS OPEN: the world behind is a still picture (the game is paused), so the rain doesn't stutter along at 10 frames a second
+        else if (paused && PZN >= 0 && now - PZD < 1500 && !PZDIRTY) {}   // PERF: with a window open the world behind is a still picture: draw it once, not 10 times a second (scrolling a window stays smooth on phones)
+        else { var rnow = now; if (paused) { if (PZN < 0) PZN = now; rnow = PZN; PZD = now; PZDIRTY = false; } else PZN = -1;   // MENUS OPEN: the world behind is a still picture (the game is paused), so the rain doesn't stutter along at 10 frames a second
           if (HOME) homeRender(rnow); else if (OCS) ocDraw(rnow); else if (cave) renderCave(rnow); else render(rnow); }
         if ((cave || HOME || (OCS && !OCS.sea)) && !mapOpen && now - (MINI.lt || 0) > 150) { MINI.lt = now; try { drawMini(); } catch (er2) {} }   // MAP REWORK: the minimap follows you into caves, the homestead and the pier
         drawTrans(); if (hbDirty) drawBar();
