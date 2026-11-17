@@ -303,41 +303,72 @@
   }
 
   // ---------------- BOG WITCH: 48 x 80, anchor x 22, feet on the bottom ----------------
+  // a hunched old witch in profile: a crooked drooping hat, a long hooked nose and jutting chin, wild grey hair, a tattered shawl over
+  // a patched bell robe, a gnarled staff in the far hand and a glowing potion in the near one (raised high when she winds up to throw)
   function witchArt(K, st, n, mc) {
-    var S = Painter(48, 80), wind = st === "wind", sway = n ? 1 : 0;
+    var S = Painter(48, 80), wind = st === "wind", sw = n ? 1 : 0;
     var RB = mc ? ["#140406", "#2a0408", "#4a0810", "#6a0e18", "#8a1622", "#a81e2a", "#c8323e", "#e85a62"] : ["#120818", "#24122e", "#34204a", "#4a2a62", "#5e3878", "#6e4a8c", "#8a64a8", "#a888c4"];
-    var SKN = mc ? ["#2a2224", "#5a4a4c", "#7a6a6c", "#a89a9a", "#c4b8b8", "#d8cccc", "#ece4e4"] : ["#1a3a12", "#2e5a1e", "#3e7a2e", "#5a9a42", "#7fbf5a", "#a8dc7a", "#ccf0a4"];
-    var HAIR = mc ? ["#0a0204", "#1e0a0c", "#4a2a2e"] : ["#4a4a56", "#8a8a96", "#c8c8d2"], BAND = mc ? "#c8101e" : "#9a5ad8", POT = mc ? ["#6a0610", "#c8101e", "#ff7a7a"] : ["#5a2a9a", "#b06aff", "#ecd0ff"];
-    // the staff behind her
-    S.line(10 - sway, 34, 4 - sway, 78, "#5a3a20", 1, "#2a1a0e"); S.line(11 - sway, 34, 5 - sway, 78, "#8a6040", 1, "#2a1a0e"); S.put(10 - sway, 33, "#6a4a2a", 1); S.put(9 - sway, 32, "#8a6040", 1);
-    // the robe: one flowing bell, folds, a ragged hem
-    var hem = [];
-    S.poly([[15 + sway * 0.5, 29], [31 + sway * 0.5, 29], [34, 38], [35 + sway * 0.6, 56], [39 + sway, 78], [6 + sway, 78], [10 + sway * 0.6, 56], [12, 38]], 3, function (x, y, v) { var c = 16 + 7 + sway * 0.5, f = (x - (c - 4)) / 22, fold = Math.sin((x - c) * 0.9 + 1) > 0.65; var idx = f < 0.12 ? 6 : f < 0.4 ? 5 : f < 0.75 ? 4 : 3; if (fold) idx--; if (v > 0.9) idx--; return RB[Math.max(2, idx)]; }, RB[0]);
-    for (var hx = 8 + sway; hx < 37 + sway; hx += 4) { S.put(hx, 78, RB[0], 3.05); S.put(hx + 1, 79, RB[2], 3.05); S.put(hx + 2, 79, RB[2], 3.05); }   // ragged hem tips
-    [[13, 58, "#4a6a30"], [27, 66, "#2a5a5a"]].forEach(function (pc) { for (var q = 0; q < 4; q++) for (var r = 0; r < 4; r++) S.put(pc[0] + q + sway, pc[1] + r, q === 0 || r === 0 ? "#2a2a1a" : pc[2], 3.3); S.put(pc[0] + 1 + sway, pc[1] + 1, "#ffffff", 3.4); });   // patches with a stitch
-    // belt with vials
-    for (var bx = 15; bx < 32; bx++) S.put(bx + sway * 0.7, 46, "#3a2618", 3.5); S.put(22 + sway * 0.7, 46, "#d8a83a", 3.6); S.put(23 + sway * 0.7, 46, "#d8a83a", 3.6);
-    [[17, "#ff7aa8"], [26, "#5ae6be"], [29, "#7ad8ff"]].forEach(function (vq) { for (var q = 0; q < 3; q++) { S.put(vq[0] + sway * 0.7, 47 + q, vq[1], 3.6); S.put(vq[0] + 1 + sway * 0.7, 47 + q, vq[1], 3.6); } S.put(vq[0] + sway * 0.7, 47, "#ffffff", 3.7); });
-    // hair spilling out under the hat
-    for (var hy = 0; hy < 14; hy++) { S.put(14 - (hy > 8 ? 1 : 0), 22 + hy, HAIR[hy % 3 === 0 ? 2 : 1], 3.8); S.put(15, 22 + hy, HAIR[1], 3.8); S.put(16, 24 + hy, HAIR[hy % 2 ? 0 : 1], 3.8); }
-    // the hunched face: one head with a long hooked nose and a wart
-    S.dome(24, 25, 6.5, 6.5, 5, [SKN[0], SKN[1], SKN[1], SKN[2], SKN[3], SKN[4], SKN[5], SKN[6]]);
-    S.poly([[28, 22], [33, 25], [36, 29], [34, 30], [29, 28]], 5.2, function (x, y, v) { return v < 0.3 ? SKN[5] : v < 0.7 ? SKN[4] : SKN[3]; }, SKN[0]);   // nose
-    S.put(31, 25, SKN[2], 5.3); S.put(32, 26, "#4a6a30", 5.3);   // wart
-    var EYE = mc ? "#ff3a3a" : "#ffd84a"; S.put(26, 22, "#ffffff", 5.4); S.put(27, 22, EYE, 5.4); S.put(27, 21, SKN[0], 5.4); S.put(26, 21, SKN[0], 5.4); S.put(28, 21, SKN[0], 5.4);
-    for (var mx = 24; mx < 29; mx++) S.put(mx, 29, SKN[0], 5.4); S.put(26, 30, "#f6eedb", 5.45);   // a crooked grin, one tooth
-    // the hat: a wide brim and a crooked cone, a band with a gold buckle
-    if (mc) { [[14, 1], [32, -1]].forEach(function (hq) { for (var q = 0; q < 9; q++) { var w2 = Math.round((1 - q / 9) * 1.8); for (var r = -w2; r <= w2; r++) S.put(hq[0] + r + q * 0.5 * hq[1] * -1, 14 - q, r < 0 ? "#e8dcc8" : "#b8a890", 5.9, "#2a1a14"); } }); }
-    S.poly([[17, 16], [29, 16], [26, 6], [24, 1], [21, -1], [22, 4]], 6, function (x, y, v) { return x < 21 ? RB[3] : x < 25 ? RB[2] : RB[1]; }, RB[0]);
-    S.poly([[8, 16], [38, 16], [37, 19], [9, 19]], 6.2, function (x, y, v) { return v < 0.4 ? RB[3] : RB[1]; }, RB[0]);
-    for (var bq = 18; bq < 29; bq++) { S.put(bq, 14, BAND, 6.3); S.put(bq, 15, BAND, 6.3); } S.put(22, 14, "#ffd84a", 6.4); S.put(23, 14, "#ffd84a", 6.4); S.put(22, 15, "#ffd84a", 6.4); S.put(23, 15, "#ffd84a", 6.4); S.put(22, 14, "#a87a1a", 6.45);
-    S.put(21, 3, RB[4], 6.1); S.put(22, 6, RB[3], 6.1);   // a crease
-    // the arm and the potion: held at the side, or raised high to throw
-    var ax = wind ? 32 : 30, ay = wind ? 20 : 44;
-    S.capsule(wind ? [[27, 33], [31, 27], [33, 22]] : [[27, 33], [30, 38], [31, 42]], 3.6, 2.6, 7, RB, 3);   // a baggy sleeve
-    for (var q2 = 0; q2 < 2; q2++) for (var r2 = 0; r2 < 2; r2++) S.put(ax + q2, ay + r2 + 2, SKN[4], 7.2);   // hand
-    S.put(ax + 1, ay - 2, "#8a6040", 7.3); S.put(ax + 1, ay - 3, "#8a6040", 7.3);   // cork
-    S.dome(ax + 1.5, ay + 1, 2.8, 2.8, 7.4, ["#120818", POT[0], POT[0], POT[1], POT[1], POT[2], POT[2], "#ffffff"]);
+    var SH = mc ? ["#0c0204", "#1e0408", "#34060c", "#4a0a12", "#5e1018"] : ["#0c0612", "#1a0e24", "#2a1838", "#3a2450", "#4a3062"];   // shawl / hat (darker)
+    var SK = mc ? ["#2a2224", "#5a4a4c", "#7a6a6c", "#a89a9a", "#c4b8b8", "#d8cccc", "#ece4e4"] : ["#14300e", "#2e5a1e", "#3e7a2e", "#5a9a42", "#7fbf5a", "#a8dc7a", "#ccf0a4"];
+    var HR = mc ? ["#050102", "#1e0a0c", "#3a1a1e", "#5a3238"] : ["#3a3a46", "#6a6a78", "#9a9aa8", "#d0d0dc"];
+    var BAND = mc ? ["#6a0610", "#c8101e"] : ["#5a2a9a", "#9a5ad8"], POT = mc ? ["#3a0206", "#8a0a14", "#c8101e", "#ff5a5a", "#ffc0c0"] : ["#2a1050", "#5a2a9a", "#9a5ad8", "#c890ff", "#f0dcff"];
+    function shadeX(x, l, r, pal, lo) { var f = (x - l) / Math.max(1, r - l); return pal[f < 0.18 ? (lo || 0) + 5 : f < 0.45 ? (lo || 0) + 4 : f < 0.75 ? (lo || 0) + 3 : (lo || 0) + 2]; }
+    // ---- the staff, behind her: a gnarled stick with a twisted crook and a dangling charm ----
+    var stx = 8 - sw * 0.5;
+    for (var y = 30; y < 79; y++) { var xx = stx - (y - 30) * 0.06 + (y % 9 < 2 ? 0.6 : 0); S.put(xx, y, "#6a4428", 1, "#24140a"); S.put(xx + 1, y, "#9a6a40", 1, "#24140a"); if (y % 11 === 4) S.put(xx + 2, y, "#6a4428", 1, "#24140a"); }
+    [[8, 29], [7, 28], [7, 27], [8, 26], [9, 26], [10, 27], [10, 28], [9, 29]].forEach(function (q) { S.put(q[0] - sw * 0.5, q[1], "#8a5a34", 1, "#24140a"); });   // the crook
+    S.line(9 - sw * 0.5, 29, 9 - sw * 0.5, 33, "#b8a890", 1.1); S.put(9 - sw * 0.5, 34, mc ? "#e8323a" : "#5ae6be", 1.2); S.put(9 - sw * 0.5, 35, mc ? "#8a0a14" : "#2a8a6a", 1.2);   // a little bone charm
+    // ---- wild hair at the back, spilling down over the shoulders ----
+    S.poly([[13, 18], [22, 18], [22, 29], [20, 35], [17, 40 + sw], [14, 39 + sw], [12, 35], [10, 30], [11, 24]], 2, function (x, y, v) { var k = ((x + Math.round(Math.sin(y * 0.55 + x) * 1.2) + sw) % 3 + 3) % 3; return k === 0 ? HR[1] : k === 1 ? HR[2] : (x < 16 ? HR[3] : HR[2]); }, HR[0]);   // a mass of wild grey hair in wavy strands
+    [[10, 27, -1], [9, 33, -1], [12, 38, -1], [15, 41, 0], [19, 37, 1]].forEach(function (f) { S.put(f[0] + sw * 0.5, f[1], HR[2], 2.1, HR[0]); S.put(f[0] + f[2] + sw * 0.5, f[1] + 1, HR[1], 2.1, HR[0]); });   // frizz
+    // ---- the robe: a hunched bell, the back humped, folds that fan out to a ragged hem ----
+    var hem = 78;
+    var zig = []; for (var zx = 39 + sw; zx >= 5 + sw; zx -= 2.6) zig.push([zx, hem + ((Math.round((zx - sw) / 2.6)) % 2 ? -2 : 0.6)]);   // a ragged zigzag hem
+    S.poly([[16, 32], [30, 32], [33, 40], [35, 56]].concat(zig).concat([[8, 56], [10, 42], [12, 36]]), 3, function (x, y, v) {
+      var l = 10 - (y - 36) * 0.12 + sw * v, r = 33 + (y - 36) * 0.15 + sw * v, c = shadeX(x, l, r, RB, 0), cx = (l + r) / 2;
+      for (var f = -2; f <= 2; f++) { var fx = cx + f * (3 + v * 3.2); if (Math.abs(x - fx) < 0.6 && v > 0.08) c = RB[f < 0 ? 3 : 2]; if (Math.abs(x - fx - 1) < 0.6 && v > 0.08 && f < 1) c = RB[6]; }   // folds follow the bell
+      return c; }, RB[0]);
+    [[12, 60, "#4a6a30", "#6a8a48"], [27, 66, "#2a5a6a", "#3a7a8a"]].forEach(function (pc) { for (var a = 0; a < 5; a++) for (var b = 0; b < 4; b++) S.put(pc[0] + a + sw * 0.6, pc[1] + b, b === 0 ? pc[3] : pc[2], 3.3); [[0, -1], [2, -1], [4, -1], [-1, 1], [5, 2]].forEach(function (st2) { S.put(pc[0] + st2[0] + sw * 0.6, pc[1] + st2[1] + (st2[1] < 0 ? 0 : 0), "#e8dcc8", 3.35); }); });   // patches with stitches
+    // pointed shoe peeking from the hem, toe curled up
+    [[29, 79], [30, 79], [31, 79], [32, 79], [33, 79], [34, 78], [35, 77], [35, 76], [30, 78], [31, 78], [32, 78]].forEach(function (q) { S.put(q[0] + sw, q[1], "#1e1418", 3.5, "#0a0608"); }); S.put(31 + sw, 78, "#4a3a3e", 3.6);
+    // belt, a pouch and three little vials
+    for (var bx = 11; bx < 35; bx++) { S.put(bx + sw * 0.4, 47, "#3a2618", 3.6, "#1a0e08"); S.put(bx + sw * 0.4, 48, "#2a1a10", 3.6, "#1a0e08"); }
+    S.put(25 + sw * 0.4, 47, "#f2c14e", 3.7); S.put(26 + sw * 0.4, 47, "#f2c14e", 3.7); S.put(25 + sw * 0.4, 48, "#a87a1a", 3.7);
+    [[14, "#ff7aa8"], [17, "#5ae6be"], [29, "#7ad8ff"]].forEach(function (vq) { var x0 = vq[0] + sw * 0.4; S.put(x0, 49, "#b8a890", 3.7); for (var a = 0; a < 3; a++) { S.put(x0 - 0.5, 50 + a, vq[1], 3.7, "#1a0e08"); S.put(x0 + 0.5, 50 + a, vq[1], 3.7, "#1a0e08"); } S.put(x0 - 0.5, 50, "#ffffff", 3.75); });
+    // ---- tattered shawl over the hunched shoulders ----
+    S.poly([[13, 31], [31, 31], [34, 37], [33, 42], [30, 40], [27, 44], [24, 41], [20, 45], [17, 41], [13, 44], [10, 39]], 4, function (x, y, v) { return v < 0.2 ? SH[4] : shadeX(x, 10, 34, [0, 0, SH[1], SH[2], SH[3], SH[4]], -0); }, SH[0]);
+    S.put(30, 33, SH[4], 4.1); S.put(31, 34, SH[4], 4.1);
+    // ---- far hand on the staff ----
+    S.capsule([[14, 36], [11, 41], [9, 43]], 2.6, 2, 4.5, RB, 2); S.put(8, 43, SK[3], 4.6); S.put(9, 43, SK[4], 4.6); S.put(9, 44, SK[3], 4.6); S.put(10, 44, SK[2], 4.6);
+    // ---- the head in profile: forehead, a long hooked nose with a wart, a jutting chin ----
+    S.poly([[20, 19], [29, 19], [31, 21], [32, 23], [36, 26], [38, 28], [37, 30], [35, 29], [33, 28], [33, 30], [32, 31], [34, 33], [33, 35], [29, 35], [25, 34], [21, 31], [19, 26]], 5, function (x, y, v) {
+      var lit = (x - 19) / 19 * 0.45 + Math.sin(Math.min(1, v * 1.25) * Math.PI) * 0.55 - (y < 22 ? 0.25 : 0); if (((x + y) & 1) && Math.abs(lit - 0.5) < 0.03) lit -= 0.05; return SK[lit > 0.72 ? 5 : lit > 0.52 ? 4 : lit > 0.32 ? 3 : 2]; }, SK[0]);   // lit across the cheek, the hat's shadow on the brow, dark under the chin
+    S.put(35, 27, SK[6], 5.1); S.put(34, 26, SK[5], 5.1); S.put(33, 25, SK[5], 5.1);   // light down the nose ridge
+    S.put(34, 28, SK[1], 5.1); S.put(33, 27, SK[2], 5.1);   // nostril shadow
+    S.put(32, 24, mc ? "#5a4a4c" : "#4a6a2a", 5.2); S.put(33, 24, mc ? "#7a6a6c" : "#6a8a3a", 5.2);   // the wart
+    S.put(27, 29, SK[2], 5.1); S.put(26, 30, SK[2], 5.1); S.put(28, 32, SK[2], 5.1);   // cheek wrinkles
+    for (var mx = 29; mx < 33; mx++) S.put(mx, 31, SK[0], 5.2); S.put(32, 32, "#f6eedb", 5.3); S.put(30, 32, SK[1], 5.2);   // crooked mouth, one snaggletooth
+    var EY = mc ? ["#ff3a3a", "#ffc0a0"] : wind ? ["#ff8a2a", "#ffe08a"] : ["#ffd84a", "#fff6c0"];
+    S.put(27, 23, "#f6f0e0", 5.4); S.put(28, 23, EY[0], 5.4); S.put(29, 23, EY[0], 5.4); S.put(28, 24, EY[0], 5.4); S.put(29, 24, "#1a0a0a", 5.4); S.put(28, 23, EY[1], 5.45); S.put(27, 24, SK[1], 5.4); S.put(30, 24, SK[1], 5.4);
+    for (var bq = 26; bq < 32; bq++) S.put(bq, 21 + (bq > 29 ? 1 : 0), HR[2], 5.5, HR[0]); S.put(27, 22, HR[1], 5.5);   // a bushy scowling brow
+    // ---- the hat: a wide wavy brim, a tall cone that bends and droops at the tip, a band with a gold buckle ----
+    if (mc) [[14, -1], [33, 1]].forEach(function (hq) { for (var q = 0; q < 10; q++) { var w2 = (1 - q / 10) * 1.8; for (var r = -Math.round(w2); r <= Math.round(w2); r++) S.put(hq[0] + r + q * 0.45 * hq[1], 16 - q, r < 0 ? "#f0e6d4" : "#b8a890", 5.8, "#2a1a14"); } });   // horns through the hat
+    S.poly([[15, 17], [32, 17], [28, 10], [25, 4], [21, 5], [19, 10]], 6, function (x, y, v) { return x < 20 ? SH[4] : x < 23 ? SH[3] : x < 27 ? SH[2] : SH[1]; }, SH[0]);
+    S.capsule([[23, 6], [21, 2], [17, 1], [14, 3], [13, 6]], 2.4, 1, 6.05, [SH[0], SH[1], SH[1], SH[2], SH[3], SH[4], SH[4], SH[4]], 2);   // the cone bends over and droops
+    S.put(13, 8, mc ? "#ff5a5a" : "#f2c14e", 6.2, "#3a2a0a"); S.put(13, 7, "#8a8a96", 6.2);   // a little bead hanging off the tip
+    S.put(24, 8, SH[4], 6.1); S.put(25, 9, SH[4], 6.1); S.put(22, 11, SH[0], 6.1); S.put(23, 12, SH[1], 6.1);   // crumples
+    for (var bx2 = 17; bx2 < 31; bx2++) { S.put(bx2, 14, BAND[1], 6.3); S.put(bx2, 15, BAND[0], 6.3); }
+    [[22, 13], [23, 13], [24, 13], [25, 13], [22, 16], [23, 16], [24, 16], [25, 16], [22, 14], [25, 14], [22, 15], [25, 15]].forEach(function (q) { S.put(q[0], q[1], "#f2c14e", 6.4, "#6a4a0a"); }); S.put(23, 14, BAND[1], 6.45); S.put(24, 15, BAND[0], 6.45);   // buckle
+    S.poly([[7, 17], [40, 16], [41, 18], [37, 20], [24, 21], [10, 20], [6, 19]], 6.2, function (x, y, v) { return v < 0.35 ? SH[4] : v < 0.7 ? SH[3] : SH[1]; }, SH[0]);   // brim
+    // ---- the near arm in a bell sleeve, a knobbly green hand and the glowing potion ----
+    var arm = wind ? [[27, 36], [33, 31], [35, 24]] : [[27, 36], [32, 41], [34, 46]], hand = wind ? [35, 22] : [35, 47];
+    S.capsule(arm, 3.4, 3, 7, RB, 3);
+    var cf = arm[2]; S.dome(cf[0], cf[1] + (wind ? -1 : 1), 3.6, 2.6, 7.1, RB);   // the cuff
+    S.put(hand[0], hand[1], SK[4], 7.3); S.put(hand[0] + 1, hand[1], SK[3], 7.3); S.put(hand[0] - 1, hand[1] + (wind ? -1 : 1), SK[3], 7.3); S.put(hand[0] + 2, hand[1] + (wind ? -1 : 1), SK[2], 7.3);
+    var px = hand[0] + 1, py = wind ? hand[1] - 5 : hand[1] + 4;
+    S.dome(px, py, 3.2, 3.2, 7.4, [POT[0], POT[1], POT[1], POT[2], POT[2], POT[3], POT[3], POT[4]], 0.1, null, POT[0]);
+    S.put(px, py - 4, "#c8c0b0", 7.5); S.put(px, py - 5, "#8a6040", 7.5); S.put(px + 1, py - 5, "#6a4428", 7.5); S.put(px - 1, py - 1, "#ffffff", 7.6);   // the neck, a cork, a glint
+    if (wind) { S.put(px - 3, py - 6, POT[4], 7.7); S.put(px + 3, py - 4, POT[3], 7.7); S.put(px + 4, py - 7, POT[4], 7.7); }   // fizzing sparks
     S.ink(7, RB[0]); S.flush(K);
   }
 
