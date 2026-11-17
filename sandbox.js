@@ -5199,6 +5199,12 @@
   }
   function drawWolf(g, e, d, flash, h, pd) {
     var t = e.tt, wind = e.st === "wind", lunge = e.st === "lunge", run = Math.abs(e.mv) > 2.5, walk = Math.abs(e.mv) > 0.3, pw = wind ? clamp(1 - e.t / WOLF.wind, 0, 1) : 0;
+    if (pixOn() && !e.def) {   // PIXEL WOLF (hand-drawn frames, delve-pixmobs.js): walk cycle, crouched wind-up, the lunge
+      var wst = wind ? "wind" : lunge ? "lunge" : walk || run ? "walk" : "idle", wspr = pixFrame(e.mc ? "wolfmc" : "wolf", wst === "idle" ? "walk" : wst, wst === "walk" ? Math.floor(t * (run ? 12 : 7)) % 4 : 0, flash);
+      if (wspr) { var wu = 30 / 32; g.save(); g.translate(!e.def && h > 0 ? Math.sin(t * 90) * 1.6 * h : 0, 0); g.scale(e.dir * (1 + 0.5 * pd), 1 - 0.75 * pd); if (lunge) g.rotate(e.vy < 0 ? -0.12 : 0.08);
+        eGlow(g, 0, -12, wind ? 30 : 24, wind || lunge || e.mc ? "#ff4a3a" : d.glow, wind ? 0.25 + 0.4 * pw : e.mc ? 0.22 : 0.16);
+        g.imageSmoothingEnabled = false; g.drawImage(wspr, -31 * wu, -40 * wu + 1, 64 * wu, 40 * wu); g.restore(); return; }
+    }
     var F = function (c) { return flash ? "#ffffff" : c; };
     var MC = !!e.mc;   // THORNBACK HOUND (Malcruor): ash-black fur, bare ribs, bloodthorn spines down the back, ember eyes and an ember breath
     var fur = F(MC ? "#5e4848" : "#93a3b3"), dk = F(MC ? "#382628" : "#566779"), dk2 = F(MC ? "#24161a" : "#3e4c5c"), lt = F(MC ? "#8a6e6a" : "#e6eef4"), frost = F(MC ? "#a8141e" : "#c9ecff"), ln = F(MC ? "#140608" : "#232b35"), inner = F(MC ? "#ff4a4a" : "#c98b98");
@@ -6094,7 +6100,8 @@
     }
     c.putImageData(im, 0, 0);
   }
-  function drawEnemies(g, now) { var mc = inMC(); enemies.forEach(function (e) { if (e.bm && !e.boss) drawBMEnemy(g, e, now); else if (mc && e.mc && e.k !== "treant" && e.k !== "mcheart" && !e.boss && !MCN[e.k]) mcCorruptDraw(g, e, now, function (c) { drawEnemy(c, e, now); }); else if (pixOn() && !e.boss && (e.k !== "bug" || e.mc) && enOnScr(e)) pixDraw(g, e, now, (PXSPAN[e.k] || 4.4) * (e.sz || 1), function (c) { drawEnemy(c, e, now); }); else drawEnemy(g, e, now); }); drawEliteFx(g, now); }
+  function drawEnemies(g, now) { var mc = inMC(); enemies.forEach(function (e) { if (e.bm && !e.boss) drawBMEnemy(g, e, now); else if (mc && e.mc && e.k !== "treant" && e.k !== "mcheart" && !e.boss && !MCN[e.k]) mcCorruptDraw(g, e, now, function (c) { drawEnemy(c, e, now); }); else if (pixOn() && !e.boss && !PXHAND[e.k] && (e.k !== "bug" || e.mc) && enOnScr(e)) pixDraw(g, e, now, (PXSPAN[e.k] || 4.4) * (e.sz || 1), function (c) { drawEnemy(c, e, now); }); else drawEnemy(g, e, now); }); drawEliteFx(g, now); }
+  var PXHAND = { wolf: 1 };   // creatures with hand-drawn pixel frames (delve-pixmobs.js) skip the stopgap renderer
   var PXSPAN = { brute: 5.4, witch: 5.4, wyrm: 6, rottree: 6, treant: 6, gator: 5.2, buccaneer: 5 };
   function enOnScr(e) { var sx = ox + e.x * ts, sy = oy + e.y * ts; return sx > -ts * 3 && sx < vw + ts * 3 && sy > -ts * 3 && sy < vh + ts * 3; }
 
