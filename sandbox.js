@@ -5955,7 +5955,8 @@
     g.save(); g.translate(sx, sy + ts * 0.04); g.scale(ts / 30 * (e.sz || 1), ts / 30 * (e.sz || 1));
     g.globalAlpha = 1 - pd * pd * 0.9;
     if (!FLIER[e.k] && !e.wet) { g.fillStyle = "rgba(0,0,0,.33)"; g.beginPath(); g.ellipse(0, 0, (SHADOW[e.k] || 17) * (e.small ? 0.6 : 1), 3.2, 0, 0, 7); g.fill(); }
-    if (e.k === "bat") drawBat(g, e, d, flash, h, pd);
+    if (pixHand(g, e, d, flash, h, pd)) {}   // hand-drawn pixel frames (delve-pixmobs.js) for the creatures in PIXH
+    else if (e.k === "bat") drawBat(g, e, d, flash, h, pd);
     else if (e.k === "wolf") drawWolf(g, e, d, flash, h, pd);
     else if (e.k === "gator") drawGator(g, e, d, flash, h, pd);
     else if (e.k === "slime") drawSlime(g, e, d, flash, h, pd);
@@ -6064,6 +6065,26 @@
     g.restore();
   }
   var PXF = {};
+  // PIXH: hand-drawn pixel creatures drawn straight from their frames. a(e) = frame set, f(e) = [state, frame], ax / H = the frame's anchor
+  // and height, dy = lift above the feet (flyers), flip = faces its way, glow(e, d) = [x, y, r, colour, alpha], after(g, e) = extra bits (tongue, "!")
+  var PIXH = {
+    wasp: { ax: 24, H: 32, dy: 3, flip: 1, a: function (e) { return e.mc ? "waspmc" : "wasp"; }, f: function (e) { var hot = e.st === "wind" || e.st === "dash"; return [hot ? "hot" : "fly", Math.sin(e.fl || e.tt * 40) > 0 ? 0 : 1]; },
+      glow: function (e, d) { var hot = e.st === "wind" || e.st === "dash"; return [0, -9, hot ? 28 : 20, hot || e.mc ? "#ff3b2a" : d.glow, hot ? 0.55 : 0.25]; } },
+    bat: { ax: 32, H: 32, dy: 6, flip: 0, a: function () { return "bat"; }, f: function (e) { var up = e.st === "dive" ? 0.25 : Math.sin(e.fl), hot = e.st === "wind" || e.st === "dive"; return [hot ? "hot" : "fly", up > 0.33 ? 0 : up < -0.33 ? 2 : 1]; },
+      glow: function (e, d) { var hot = e.st === "wind" || e.st === "dive"; return [0, -9, hot ? 30 : 22, hot ? "#ff5a7a" : d.glow, hot ? 0.55 : 0.28]; } },
+    imp: { ax: 22, H: 48, dy: 0, flip: 1, a: function (e) { return e.mc ? "impmc" : "imp"; }, f: function (e) { return e.st === "wind" ? ["wind", 0] : !e.on ? ["air", Math.sin(e.tt * 14) > 0 ? 1 : 0] : Math.abs(e.mv || 0) > 0.1 ? ["walk", Math.sin(e.tt * 12) > 0 ? 1 : 0] : ["idle", 0]; },
+      glow: function (e, d) { var pw = e.st === "wind" ? clamp(1 - e.t / IMP.wind, 0, 1) : 0; return e.st === "wind" ? [10, -38, 16 + 10 * pw, e.mc ? "#ff2a3a" : "#ff8a2a", 0.4 + 0.5 * pw] : [0, -14, 22, e.mc ? "#ff3a2a" : d.glow, 0.26]; } },
+    frog: { ax: 24, H: 34, dy: 0, flip: 1, a: function (e) { return e.mc ? "frogmc" : "frog"; }, f: function (e) { return e.st === "wind" ? ["wind", 0] : e.st === "lash" ? ["lash", 0] : !e.on && !e.def ? ["air", 0] : ["idle", Math.sin(e.tt * 4) > 0 ? 1 : 0]; },
+      glow: function (e, d) { var w = e.st === "wind", pw = w ? clamp(1 - e.t / FROG.wind, 0, 1) : 0; return [0, -10, w ? 30 + 10 * pw : 24, w || e.st === "lash" ? "#ffb347" : e.mc ? "#ff3a2a" : d.glow, w ? 0.35 + 0.5 * pw : 0.2]; },
+      before: function (g, e, flash) { if (e.st === "lash" && e.ext > 0.02) { var L = FROG.reach * 30 * e.ext, fln = flash ? "#ffffff" : e.mc ? "#140606" : "#0c2a14"; g.strokeStyle = fln; g.lineWidth = 5.6; g.lineCap = "round"; g.beginPath(); g.moveTo(19, -10); g.lineTo(19 + L, -10); g.stroke(); g.strokeStyle = flash ? "#fff" : "#ff7e93"; g.lineWidth = 3.8; g.stroke(); g.beginPath(); g.arc(19 + L, -10, 4.2, 0, 7); aInk(g, flash ? "#fff" : "#ff8aa0", fln, 1); } },
+      after: function (g, e) { if (e.st === "wind" && !e.def) { var t = e.tt; g.fillStyle = "#ffcf7a"; g.strokeStyle = "rgba(0,0,0,.6)"; g.lineWidth = 3; g.font = "900 15px Nunito,sans-serif"; g.textAlign = "center"; g.strokeText("!", 0, -40 - Math.sin(t * 30) * 1.2); g.fillText("!", 0, -40 - Math.sin(t * 30) * 1.2); } } }
+  };
+  function pixHand(g, e, d, flash, h, pd) {
+    var P = PIXH[e.k]; if (!P || !pixOn() || e.def) return false; var fs = P.f(e), spr = pixFrame(P.a(e), fs[0], fs[1], flash); if (!spr) return false;
+    var t = e.tt || 0; g.save(); g.translate(h > 0 ? Math.sin(t * 90) * 1.6 * h : 0, P.dy); g.scale((P.flip ? e.dir : 1) * (1 + 0.5 * pd), 1 - 0.75 * pd);
+    var gl = P.glow(e, d); g.save(); g.translate(0, -P.dy); eGlow(g, gl[0], gl[1], gl[2], gl[3], gl[4]); if (P.before) P.before(g, e, flash); g.restore();
+    pixPut(g, spr, P.ax, P.H); g.restore(); if (P.after) { g.save(); g.scale(e.dir, 1); P.after(g, e); g.restore(); } return true;
+  }
   function pixPut(g, spr, ax, H) { var u = 30 / 32, sm = g.imageSmoothingEnabled; g.imageSmoothingEnabled = false; g.drawImage(spr, -ax * u, -H * u + 1, spr.width / Math.max(1, Math.round(spr.height / H)) * u, H * u); g.imageSmoothingEnabled = sm; }   // a hand frame, feet on the ground
   function pixFrame(kind, st, n, flash) {   // a hand-drawn pixel frame enlarged to the screen's pixels (crisp), or null
     if (typeof DelvePix === "undefined" || !DelvePix.has(kind)) return null; var src = DelvePix.frame(kind, st, n, flash); if (!src) return null;
@@ -6110,7 +6131,7 @@
     c.putImageData(im, 0, 0);
   }
   function drawEnemies(g, now) { var mc = inMC(); enemies.forEach(function (e) { if (e.bm && !e.boss) drawBMEnemy(g, e, now); else if (mc && e.mc && e.k !== "treant" && e.k !== "mcheart" && !e.boss && !MCN[e.k]) mcCorruptDraw(g, e, now, function (c) { drawEnemy(c, e, now); }); else if (pixOn() && !e.boss && !PXHAND[e.k] && (e.k !== "bug" || e.mc) && enOnScr(e)) pixDraw(g, e, now, (PXSPAN[e.k] || 4.4) * (e.sz || 1), function (c) { drawEnemy(c, e, now); }); else drawEnemy(g, e, now); }); drawEliteFx(g, now); }
-  var PXHAND = { wolf: 1, gator: 1, slime: 1, spider: 1, witch: 1 };   // creatures with hand-drawn pixel frames (delve-pixmobs.js) skip the stopgap renderer
+  var PXHAND = { wolf: 1, gator: 1, slime: 1, spider: 1, witch: 1, wasp: 1, bat: 1, imp: 1, frog: 1 };   // creatures with hand-drawn pixel frames (delve-pixmobs.js) skip the stopgap renderer
   var PXSPAN = { brute: 5.4, witch: 5.4, wyrm: 6, rottree: 6, treant: 6, gator: 5.2, buccaneer: 5 };
   function enOnScr(e) { var sx = ox + e.x * ts, sy = oy + e.y * ts; return sx > -ts * 3 && sx < vw + ts * 3 && sy > -ts * 3 && sy < vh + ts * 3; }
 

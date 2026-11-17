@@ -372,12 +372,133 @@
     S.ink(7, RB[0]); S.flush(K);
   }
 
+  // ---------------- HORNET: 48 x 32, anchor x 24 ----------------
+  function waspArt(K, st, n, mc) {
+    var S = Painter(48, 32), hot = st === "hot", up = n === 0, curl = hot ? 3 : 0;
+    var Y = mc ? (hot ? ["#3a2a20", "#6a5a48", "#a8987e", "#d8ccb4", "#f4ead8", "#fff6ea", "#ffffff"] : ["#3a2a20", "#6a5a48", "#a8987e", "#c8b8a0", "#e8dcc8", "#f4ead8", "#ffffff"]) : hot ? ["#4a1a04", "#8a3008", "#c8501a", "#ff7a2a", "#ff9a3a", "#ffc070", "#ffe0b0"] : ["#4a3004", "#8a5a08", "#c88a10", "#ffb020", "#ffc52a", "#ffe680", "#fff6c0"];
+    var BK = mc ? ["#140406", "#4a0610", "#7a0a16", "#a8141e", "#d02a32"] : ["#0a0602", "#1a1006", "#2a1a0a", "#3a2810", "#5a4020"];
+    var WG = mc ? ["#3a3036", "#6a6068", "#8a8088", "#b0a8b0"] : ["#5a6a7a", "#a8c0d4", "#cfe2f0", "#eef8ff"];
+    // far wing (behind)
+    function wing(z, far) { var tip = up ? [17, 1] : [12, 11], mid = up ? [22, 4] : [18, 10];
+      S.poly([[28, 13], [mid[0] + 4, mid[1] - 3], [tip[0], tip[1]], [tip[0] - 2, tip[1] + 2], [mid[0] - 2, mid[1] + 3], [26, 15]], z, function (x, y, v) { var c = WG[far ? 1 : (v < 0.4 ? 3 : 2)]; if ((x + y) % 4 === 0) c = WG[far ? 0 : 1]; return c; }, WG[0]); }
+    wing(1, true);
+    // legs dangling
+    [[26, 0], [29, 1], [32, 2]].forEach(function (L) { var sx = L[0], k = L[1]; S.line(sx, 22, sx + 1, 25, BK[3], 2, BK[0]); S.line(sx + 1, 25, sx - 1 + k * 0.4, 27, BK[2], 2, BK[0]); S.put(sx - 1 + k * 0.4, 28, Y[3], 2.1, BK[0]); });
+    // abdomen: a teardrop with banded stripes that wrap round it, tapering into the stinger
+    var acx = 14, acy = 20 + curl * 0.3;
+    S.dome(acx, acy, 10, 6.2, 3, [BK[0], Y[0], Y[1], Y[2], Y[3], Y[4], Y[5], Y[6]], 0.05, null, BK[0]);
+    for (var y = acy - 7; y <= acy + 7; y++) for (var x = acx - 10; x <= acx + 10; x++) { var dx = (x + 0.5 - acx) / 10, dy = (y + 0.5 - acy) / 6.2; if (dx * dx + dy * dy > 1) continue; var bx = x + 0.5 - (acx - 10) + dy * dy * 2.4; if (Math.floor(bx / 3.3) % 2 === 1 && x > acx - 9 && x < acx + 6) S.put(x, y, BK[dy < -0.4 ? 3 : dy < 0.3 ? 2 : 1], 3.1); }   // bands curve round the body
+    for (var q = 0; q < 6; q++) S.put(acx - 10 - q, acy + 0.5 + q * (curl ? 0.5 : 0.1), q > 3 ? (mc && hot ? "#ff6a2a" : BK[0]) : BK[2], 3.2, BK[0]);   // stinger
+    S.put(acx - 5, acy - 4, Y[6], 3.3); S.put(acx - 4, acy - 4, Y[6], 3.3); S.put(acx - 6, acy - 3, Y[5], 3.3);   // shine
+    S.put(23, acy - 1, BK[1], 3.5); S.put(23, acy, BK[1], 3.5); S.put(24, acy - 1, BK[1], 3.5);   // waist
+    // thorax and head
+    S.dome(28, 18, 5.4, 5, 4, [BK[0], BK[1], BK[1], BK[2], BK[3], BK[4], BK[4], Y[4]]);
+    S.put(27, 15, Y[4], 4.2); S.put(28, 15, Y[4], 4.2); S.put(29, 16, Y[3], 4.2);   // shoulder mark
+    S.dome(36, 17, 4.6, 4.4, 5, [BK[0], BK[1], BK[2], BK[2], BK[3], BK[4], BK[4], Y[5]]);
+    var EY = hot || mc ? ["#5a0a0a", "#d0202a", "#ff6a5a", "#ffd0c0"] : ["#1a0a04", "#4a1a0a", "#8a2a10", "#e0a080"];
+    S.dome(37.6, 16.4, 2.6, 3, 5.5, [EY[0], EY[0], EY[1], EY[1], EY[2], EY[2], EY[3], EY[3]], 0.1, null, EY[0]); S.put(37, 15, "#ffffff", 5.6);
+    S.put(40, 20, Y[3], 5.6); S.put(41, 21, Y[2], 5.6); S.put(39, 21, Y[4], 5.6);   // mandibles
+    S.line(36, 13, 38, 9, BK[2], 5, BK[0]); S.line(38, 9, 41, 7, BK[2], 5, BK[0]); S.put(42, 7, BK[1], 5);   // antenna
+    wing(6, false);
+    S.ink(6, BK[0]); S.flush(K);
+  }
+
+  // ---------------- FIRE IMP: 44 x 48, anchor x 22, feet on the bottom ----------------
+  function impArt(K, st, n, mc) {
+    var S = Painter(44, 48), wind = st === "wind", air = st === "air", step = st === "walk" ? (n ? 1 : -1) : 0, flap = air ? n : 0;
+    var R = mc ? ["#0e0406", "#1a1214", "#261c1e", "#382c2e", "#4a3c3e", "#5e5052", "#7a6a6a", "#9a8a8a"] : ["#3a0a06", "#6a140c", "#8e1e12", "#b82e1a", "#e0472a", "#ff6a3a", "#ff8a52", "#ffb48a"];
+    var BL = mc ? ["#2a1c1c", "#3a2c2c", "#4a3a3a", "#5a4a48"] : ["#c87a3a", "#e89a52", "#ffc07a", "#ffdca8"];
+    var HN = mc ? ["#2a1a14", "#7a6a58", "#c8b8a0", "#f4ead8"] : ["#1a0a08", "#24120e", "#4a322a", "#7a5a50"];
+    var WN = mc ? ["#0e0406", "#2a0a10", "#4a1018", "#6a1a22"] : ["#3a0a06", "#7a1a10", "#a82a18", "#d04a2a"];
+    // wings behind: a leathery bat wing with finger bones and a scalloped edge
+    var wy = air ? (flap ? -6 : 3) : 0;
+    S.poly([[17, 24], [10, 14 + wy], [2, 12 + wy * 1.3], [3, 18 + wy], [1, 24 + wy * 0.6], [5, 26 + wy * 0.4], [6, 31], [12, 30], [16, 32]], 1, function (x, y, v) { return v < 0.3 ? WN[3] : v < 0.7 ? WN[2] : WN[1]; }, WN[0]);
+    S.line(17, 24, 2, 12 + wy * 1.3, WN[0], 1.1); S.line(16, 26, 1, 24 + wy * 0.6, WN[0], 1.1); S.line(16, 28, 6, 31, WN[0], 1.1);   // finger bones
+    // the forked tail
+    S.capsule([[15, 40], [9, 42], [5, 39], [4, 35]], 1.6, 1, 1.5, R, 3); S.poly([[2, 33], [4, 30], [7, 33], [4, 35]], 1.6, function () { return R[4]; }, R[0]);
+    // legs and feet
+    [[18, -1], [25, 1]].forEach(function (L) { var o = L[1] * step; S.capsule([[L[0], 38], [L[0] + o, 43], [L[0] + o, 45]], 2.8, 2.2, L[1] > 0 ? 7 : 2, R, 3); for (var q = -1; q <= 3; q++) S.put(L[0] + o + q, 46, R[q === 3 ? 0 : 2], L[1] > 0 ? 7.1 : 2.1); S.put(L[0] + o + 3, 47, R[0], 7.2); });
+    // pot belly body
+    S.dome(21, 34, 8.5, 8.8, 4, R);
+    for (var by = 29; by <= 41; by++) { var w = Math.round(Math.sqrt(Math.max(0, 1 - Math.pow((by - 35) / 6.5, 2))) * 4.6); for (var bx = -w; bx <= w; bx++) S.put(25 + bx * 0.9, by, (by - 29) % 3 === 2 ? BL[0] : bx < -1 ? BL[3] : BL[2], 4.2); }   // the belly plates
+    if (mc) [[[15, 30], [17, 33], [16, 37]], [[26, 31], [24, 35]], [[19, 40], [22, 42]]].forEach(function (pts) { for (var i = 1; i < pts.length; i++) S.line(pts[i - 1][0], pts[i - 1][1], pts[i][0], pts[i][1], "#ff8a2a", 4.4); });   // magma cracks
+    // horns behind the head: curled back (bone-long on the Ash Fiend)
+    var hl = mc ? 11 : 7;
+    [[18, 11, -1], [26, 10, 0]].forEach(function (hq) { for (var i = 0; i < hl; i++) { var tt = i / hl, x = hq[0] - tt * (mc ? 6 : 5) + hq[2], y = hq[1] - i + tt * tt * (mc ? 3 : 4), r = 1.8 * (1 - tt) + 0.5; for (var a = -r; a <= r; a += 0.5) S.put(x + a, y, a < 0 ? HN[3] : HN[2], 4.6, HN[0]); if (!mc && i % 2) S.put(x, y, HN[1], 4.7); } });
+    // the head: a big round head with a pointed ear, angry eyes and a toothy grin
+    S.dome(24, 18, 9, 8, 5, R);
+    S.poly([[15, 16], [10, 12], [11, 19]], 5.1, function () { return R[4]; }, R[0]); S.put(12, 14, R[2], 5.2);   // ear
+    var EY = mc ? ["#ff3a2a", "#ffc0a0"] : ["#ffd84a", "#fff6c0"];
+    [[25, 16], [30, 16]].forEach(function (e) { S.put(e[0], e[1], EY[0], 5.5); S.put(e[0] + 1, e[1], EY[0], 5.5); S.put(e[0], e[1] + 1, EY[0], 5.5); S.put(e[0] + 1, e[1] + 1, EY[0], 5.5); S.put(e[0] + 2, e[1], "#ffffff", 5.5); S.put(e[0] + 1, e[1], "#1a0a04", 5.6); S.put(e[0] + 1, e[1] + 1, "#1a0a04", 5.6); S.put(e[0], e[1] - 1, R[0], 5.6); S.put(e[0] + 1, e[1] - 1, R[0], 5.6); S.put(e[0] + 2, e[1] - 1 + (e[0] > 26 ? 0 : 1), R[0], 5.6); });   // angry brows
+    for (var mx = 24; mx < 32; mx++) S.put(mx, 22 + (mx > 29 ? -1 : 0), R[0], 5.6); S.put(25, 23, "#ffffff", 5.7); S.put(29, 22, "#ffffff", 5.7); S.put(27, 23, R[1], 5.6);   // grin and fangs
+    // the near arm: at the side with a claw, or raised high holding a fireball
+    if (wind) { S.capsule([[25, 29], [30, 23], [32, 15]], 2.4, 2, 8, R, 4); S.put(32, 13, R[5], 8.1); S.put(33, 13, R[5], 8.1); S.put(31, 13, R[4], 8.1);
+      var FB = mc ? ["#5a0610", "#c8101e", "#ff4a4a", "#ffb0b0"] : ["#a83a08", "#ff7a1a", "#ffc04a", "#fff6c0"]; S.dome(33, 8, 4.4, 4.4, 8.5, [FB[0], FB[0], FB[1], FB[1], FB[2], FB[2], FB[3], "#ffffff"], 0.2, null, FB[0]); S.put(33, 2, FB[2], 8.6); S.put(36, 4, FB[1], 8.6); S.put(30, 3, FB[1], 8.6); }
+    else { S.capsule([[25, 29], [29, 33], [31, 36]], 2.4, 2, 8, R, 4); S.put(32, 37, R[3], 8.1); S.put(33, 36, R[2], 8.1); S.put(31, 38, R[2], 8.1); }
+    S.ink(7, R[0]); S.flush(K);
+  }
+
+  // ---------------- BAT: 64 x 32 (front-on), anchor x 32 ----------------
+  function batArt(K, st, n) {
+    var S = Painter(64, 32), hot = st === "hot", up = [1, 0, -1][n] || 0;
+    var WG = hot ? ["#12061a", "#3d2466", "#5a3890", "#7b4fc0", "#9a70e0"] : ["#12061a", "#24123e", "#3d2466", "#52348a", "#6a48a8"];
+    var FU = ["#0a0410", "#1a0c2a", "#2a1744", "#3a2258", "#4a2e6a", "#5a3a7a", "#6e4a8e", "#8a64a8"];
+    [-1, 1].forEach(function (s) {   // each wing: finger bones from the shoulder, a scalloped membrane between them
+      var tipY = 18 - up * 12, midY = 16 - up * 7, sx = 32 + s * 4, tx = 32 + s * 30;
+      var pts = [[sx, 15], [32 + s * 14, midY - 2], [tx, tipY], [32 + s * 27, tipY + 5], [32 + s * 22, midY + 6], [32 + s * 17, midY + 3], [32 + s * 12, midY + 7], [32 + s * 8, 21]];
+      S.poly(pts, 1, function (x, y, v) { return v < 0.25 ? WG[4] : v < 0.6 ? WG[3] : WG[2]; }, WG[0]);
+      S.line(sx, 15, 32 + s * 14, midY - 2, WG[1], 1.1); S.line(32 + s * 14, midY - 2, tx, tipY, WG[1], 1.1); S.line(32 + s * 14, midY - 2, 32 + s * 22, midY + 6, WG[1], 1.1); S.line(32 + s * 14, midY - 2, 32 + s * 12, midY + 7, WG[1], 1.1);
+      S.put(32 + s * 14, midY - 3, "#d8c0f0", 1.2);   // the thumb claw
+    });
+    S.poly([[28, 11], [27, 4], [30, 9]], 2, function () { return FU[4]; }, FU[0]); S.poly([[36, 11], [37, 4], [34, 9]], 2, function () { return FU[4]; }, FU[0]);   // ears
+    S.dome(32, 16, 5.5, 6.5, 3, FU);
+    var EY = hot ? ["#ff3a4a", "#ffc0c8"] : ["#ffd84a", "#fff6c0"];
+    [[29, 14], [34, 14]].forEach(function (e) { S.put(e[0], e[1], EY[0], 3.5); S.put(e[0] + 1, e[1], EY[1], 3.5); S.put(e[0], e[1] + 1, EY[0], 3.5); S.put(e[0] + 1, e[1] + 1, EY[0], 3.5); });
+    S.put(31, 19, "#ffffff", 3.6); S.put(33, 19, "#ffffff", 3.6); S.put(31, 20, "#e0e0e8", 3.6); S.put(33, 20, "#e0e0e8", 3.6);   // fangs
+    S.put(30, 23, FU[2], 3.2); S.put(34, 23, FU[2], 3.2);   // little feet
+    S.ink(null, FU[0]); S.flush(K);
+  }
+
+  // ---------------- SWAMP FROG: 52 x 34, anchor x 24 ----------------
+  function frogArt(K, st, n, mc) {
+    var S = Painter(52, 34), wind = st === "wind", lash = st === "lash", air = st === "air", br = st === "idle" && n ? 1 : 0, mo = lash ? 2 : wind ? 1 : 0;
+    var G = mc ? ["#140606", "#2e1a18", "#4a302c", "#5a3e36", "#6a4a42", "#8a6a5a", "#9a7a6a", "#b89a88"] : ["#0c2a14", "#1c5e34", "#1f7a3c", "#2f9a4a", "#3fc25f", "#5ad070", "#7ee08a", "#b4f4b0"];
+    var BEL = mc ? ["#8a6a5a", "#a8887a", "#c8a08a"] : ["#c8c088", "#e0dca0", "#f1efb4"], SPOT = mc ? "#ff3a2a" : "#2a8a47";
+    var by = 22 - br * 0.5 - (wind ? 1 : 0);
+    // far legs
+    if (air) S.capsule([[16, 26], [8, 30], [2, 31]], 2.6, 1.6, 1, G, 2); else S.capsule([[18, 27], [16, 31], [19, 33]], 2.8, 2, 1, G, 2);
+    // one silhouette: the body swelling into the head, the eye bumps on top
+    S.dome(22, by, 15 + (wind ? 1 : 0), 9.5 + (wind ? 1 : 0), 3, G);
+    S.dome(33, by - 3, 10, 8, 3.1, G);
+    [[30, by - 10], [37, by - 10]].forEach(function (e) { S.dome(e[0], e[1], 4, 3.6, 3.2, G); });
+    for (var x = 12; x < 44; x++) { var bot = by + 8 - Math.pow((x - 26) / 17, 2) * 6; for (var y = Math.floor(bot - 2); y <= bot; y++) if (S.get(x, y)) S.put(x, y, BEL[y > bot - 1 ? 1 : 2], 3.3); }   // the pale belly
+    [[14, by - 4], [19, by - 6], [24, by - 5], [11, by], [21, by - 1], [28, by - 9]].forEach(function (sp) { S.put(sp[0], sp[1], SPOT, 3.4); S.put(sp[0] + 1, sp[1], SPOT, 3.4); S.put(sp[0], sp[1] + 1, mc ? "#ffb04a" : G[1], 3.4); });   // spots / pustules
+    if (mc) [[13, by - 9, 4], [18, by - 10, 3], [9, by - 6, 3]].forEach(function (m) { var mx = m[0], my = m[1]; S.line(mx, my, mx, my - m[2] + 1, "#e8dcc8", 3.0); for (var a = -2; a <= 2; a++) S.put(mx + a, my - m[2], a === -2 || a === 2 ? "#7a0a10" : "#d02a2a", 3.05, "#3a0608"); S.put(mx - 1, my - m[2] - 1, "#d02a2a", 3.05, "#3a0608"); S.put(mx, my - m[2] - 1, "#ff6a5a", 3.05); S.put(mx + 1, my - m[2] - 1, "#d02a2a", 3.05); S.put(mx, my - m[2], "#ffffff", 3.06); });   // mushrooms growing from its back
+    // the haunch folded into its side
+    S.dome(16, by + 3, 7, 5.5, 4, G, -0.05);
+    // eyes in the bumps: golden with a sideways pupil and a lid line
+    var EY = mc ? ["#ff5a2a", "#ffb04a"] : ["#e0a020", "#ffd84a"];
+    [[30, by - 11], [37, by - 11]].forEach(function (e) { for (var a = -1; a <= 1; a++) for (var b = -1; b <= 1; b++) S.put(e[0] + a, e[1] + b, b < 0 ? EY[1] : EY[0], 3.5); S.put(e[0] - 1, e[1], "#0c1408", 3.6); S.put(e[0], e[1], "#0c1408", 3.6); S.put(e[0] + 1, e[1], "#0c1408", 3.6); S.put(e[0] - 1, e[1] - 1, "#ffffff", 3.6); if (wind || lash) { S.put(e[0] - 1, e[1] - 2, G[0], 3.7); S.put(e[0], e[1] - 2, G[0], 3.7); } });
+    // the mouth: a long smiling seam, or open
+    if (mo) { S.poly([[30, by + 1], [44, by - 1 - mo], [44, by + 2 + mo]], 3.8, function (x, y, v) { return v < 0.5 ? "#8a1a2a" : "#c84a5a"; }, G[0]); if (lash) for (var tq = 0; tq < 4; tq++) S.put(41 + tq * 0.5, by + 1, "#ff7e93", 3.9); }
+    else { for (var mx2 = 31; mx2 < 43; mx2++) S.put(mx2, by + Math.round(Math.pow((mx2 - 37) / 6, 2) * -1), G[0], 3.8); }
+    S.put(42, by - 6, G[0], 3.8);   // nostril
+    // the front foot planted under the chin, the near hind foot
+    S.capsule([[36, by + 5], [38, 30], [40, 32]], 2.2, 1.8, 6, G, 3); for (var f = 0; f < 4; f++) S.put(38 + f, 33, G[f === 3 ? 0 : 3], 6.1);
+    if (air) S.capsule([[14, by + 4], [8, 30], [3, 32]], 3, 1.8, 6, G, 3); else { S.capsule([[13, by + 5], [12, 30], [16, 32]], 3, 2, 6, G, 3); for (var f2 = 0; f2 < 5; f2++) S.put(13 + f2, 33, G[f2 === 4 ? 0 : 3], 6.1); }
+    S.ink(6, G[0]); S.flush(K);
+  }
+
   function art(W, H, fn) { var o = mk(W, H); fn(root.DelveFurn.kit(o.g, W, H)); return o.c; }
   function gator(st, n) { return art(72, 24, function (K) { gatorArt(K, st === "jaw" ? "wind" : "walk", st === "jaw" ? 0 : n, st === "jaw" ? n / 4 : 0); }); }
   function slimeOf(b) { return function (st, n) { return art(40, 32, function (K) { slimeArt(K, st, n, b); }); }; }
   function spiderOf(b) { return function (st, n) { return art(64, 32, function (K) { spiderArt(K, st, n, b); }); }; }
   function witchOf(mc) { return function (st, n) { return art(48, 80, function (K) { witchArt(K, st, n, mc); }); }; }
   var ART = { bug: bug, wolf: wolf, wolfmc: wolfmc, gator: gator, slime0: slimeOf(0), slime1: slimeOf(1), slime2: slimeOf(2), slimemc: slimeOf(3),
+    wasp: function (st, n) { return art(48, 32, function (K) { waspArt(K, st, n, false); }); }, waspmc: function (st, n) { return art(48, 32, function (K) { waspArt(K, st, n, true); }); },
+    imp: function (st, n) { return art(44, 48, function (K) { impArt(K, st, n, false); }); }, impmc: function (st, n) { return art(44, 48, function (K) { impArt(K, st, n, true); }); },
+    bat: function (st, n) { return art(64, 32, function (K) { batArt(K, st, n); }); },
+    frog: function (st, n) { return art(52, 34, function (K) { frogArt(K, st, n, false); }); }, frogmc: function (st, n) { return art(52, 34, function (K) { frogArt(K, st, n, true); }); },
     spider0: spiderOf(0), spider1: spiderOf(1), spider2: spiderOf(2), spidermc: spiderOf(3), witch: witchOf(false), witchmc: witchOf(true) };
   function frame(kind, st, n, flash) {
     if (!ART[kind] || typeof document === "undefined" || !root.DelveFurn) return null;
