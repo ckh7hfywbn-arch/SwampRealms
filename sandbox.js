@@ -12900,7 +12900,7 @@
         + '<div class="tt-hcols"><div><h3>Keyboard and mouse</h3><dl>'
         + '<dt>A D or ← →</dt><dd>Walk</dd><dt>Space or W</dt><dd>Jump, climb ladders</dd><dt>Hold mouse</dt><dd>Dig, chop, place, attack</dd>'
         + '<dt>Shift or C</dt><dd>Dodge roll</dd><dt>L</dt><dd>Switch hotbar loadout</dd><dt>N</dt><dd>Drop a map pin here</dd><dt>Z</dt><dd>Bore Drill on/off</dd><dt>V or right-click</dt><dd>Weapon special (when full)</dd><dt>X</dt><dd>Quick stack to nearby chests</dd><dt>F</dt><dd>Doors, chests, caves, beds</dd><dt>E</dt><dd>Journal: quests and crafting</dd><dt>B</dt><dd>Backpack</dd><dt>M</dt><dd>World map</dd><dt>1 to 9</dt><dd>Hotbar</dd><dt>G</dt><dd>Full screen</dd><dt>Esc</dt><dd>This menu</dd></dl></div>'
-        + '<div><h3>Touch</h3><dl><dt>Stick or arrows</dt><dd>Walk</dd>' + (UPJ ? '<dt>Up</dt><dd>Jump, climb ladders</dd><dt>Sword button</dt><dd>Attack the nearest creature</dd>' : '<dt>Jump button</dt><dd>Jump, climb ladders</dd>') + '<dt>Hold a block</dt><dd>Dig, chop, place, attack</dd><dt>Tap the hotbar</dt><dd>Switch tools</dd><dt>Book button</dt><dd>Journal: quests and crafting</dd><dt>Back arrow</dt><dd>This menu</dd></dl></div></div>'
+        + '<div><h3>Touch</h3><dl><dt>Stick or arrows</dt><dd>Walk</dd>' + (UPJ ? '<dt>Up</dt><dd>Jump, climb ladders</dd><dt>Sword button</dt><dd>Attack the nearest creature. Holding a pick it becomes Mine: digs the block in front (stick down digs under you). At sea it aims the cannons: drag, then let go</dd>' : '<dt>Jump button</dt><dd>Jump, climb ladders</dd>') + '<dt>Hold a block</dt><dd>Dig, chop, place, attack</dd><dt>Tap the hotbar</dt><dd>Switch tools</dd><dt>Book button</dt><dd>Journal: quests and crafting</dd><dt>Back arrow</dt><dd>This menu</dd></dl></div></div>'
         + '<button type="button" class="tt-tour" data-tt="tour">Show me around</button><p class="tt-hnote">Not sure what to do next? Old Croaker’s quests in the Journal always point the way, and a gold ring marks what to dig.</p>'
         + '<button type="button" class="tt-back" data-tt="back">' + '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>Back</button></div>';
       return;
@@ -13069,7 +13069,7 @@
     if (pauseView === "set") { B.innerHTML = '<div class="pz-rows">' + settingsRows() + '</div><div class="pz-foot">' + back + '<button type="button" class="pz-link" data-pz="allopts">More options</button></div>'; return; }
     if (pauseView === "keys") {
       B.innerHTML = '<div class="pz-keys"><div><h3>Keyboard and mouse</h3><dl><dt>A D or ← →</dt><dd>Walk</dd><dt>Space or W</dt><dd>Jump, climb ladders</dd><dt>Hold mouse</dt><dd>Dig, chop, place, attack</dd><dt>Shift or C</dt><dd>Dodge roll</dd><dt>L</dt><dd>Switch hotbar loadout</dd><dt>N</dt><dd>Drop a map pin here</dd><dt>Z</dt><dd>Bore Drill on/off</dd><dt>V or right-click</dt><dd>Weapon special (when full)</dd><dt>X</dt><dd>Quick stack to nearby chests</dd><dt>F</dt><dd>Doors, chests, caves, beds</dd><dt>E</dt><dd>Crafting</dd><dt>J</dt><dd>Journal</dd><dt>B</dt><dd>Backpack</dd><dt>M</dt><dd>World map</dd><dt>1 to 9</dt><dd>Hotbar</dd><dt>T</dt><dd>Emotes</dd><dt>H</dt><dd>Build mode</dd><dt>O</dt><dd>Decorate mode</dd><dt>R</dt><dd>Flip furniture or decor</dd><dt>G</dt><dd>Pick up furniture (decorating)</dd><dt>Esc or P</dt><dd>Pause</dd></dl></div>'
-        + '<div><h3>Touch</h3><dl><dt>Stick or arrows</dt><dd>Walk</dd>' + (UPJ ? '<dt>Up</dt><dd>Jump, climb ladders</dd><dt>Sword button</dt><dd>Attack the nearest creature</dd>' : '<dt>Jump button</dt><dd>Jump, climb ladders</dd>') + '<dt>Hold a block</dt><dd>Dig, chop, place, attack</dd><dt>Hold an item</dt><dd>See what it is</dd><dt>Tap the hotbar</dt><dd>Switch tools</dd><dt>Hammer button</dt><dd>Crafting</dd><dt>Book button</dt><dd>Journal</dd></dl></div></div><div class="pz-foot">' + back + "</div>";
+        + '<div><h3>Touch</h3><dl><dt>Stick or arrows</dt><dd>Walk</dd>' + (UPJ ? '<dt>Up</dt><dd>Jump, climb ladders</dd><dt>Sword button</dt><dd>Attack the nearest creature. Holding a pick it becomes Mine: digs the block in front (stick down digs under you). At sea it aims the cannons: drag, then let go</dd>' : '<dt>Jump button</dt><dd>Jump, climb ladders</dd>') + '<dt>Hold a block</dt><dd>Dig, chop, place, attack</dd><dt>Hold an item</dt><dd>See what it is</dd><dt>Tap the hotbar</dt><dd>Switch tools</dd><dt>Hammer button</dt><dd>Crafting</dd><dt>Book button</dt><dd>Journal</dd></dl></div></div><div class="pz-foot">' + back + "</div>";
       return;
     }
     B.innerHTML = '<button type="button" class="pz-resume" data-pz="resume"><span class="pz-ri">' + ttIcon("play") + "</span><b>Resume</b><kbd>Esc</kbd></button>"
@@ -13436,7 +13436,7 @@
       thud((hv ? 160 : fin ? 220 : 300) + S.wpn * 70, hv ? 0.1 : 0.05); for (var sk = 0; sk < (hv ? 9 : fin ? 6 : 3); sk++) parts.push({ x: p.x + p.face * (0.9 + sk * 0.3), y: p.y - 1.1 - (sk % 3) * 0.25, vx: p.face * (hv ? 5 : 3), vy: -0.4 - (sk % 3) * 0.5, life: 0.22, max: 0.3, c: hv ? "#ffe48a" : WEAPONS[S.wpn].c, s: hv ? 4 : 3 });
       return;
     }
-    if (atkOn() && sel !== "bow") { mine = null; var at = pawTarget(); pawSwing(dt, at || { x: p.x + (p.face || 1) }); return; }   // ATTACK BUTTON: a paw swat with whatever you hold (never digs or places)
+    if (atkOn() && sel !== "bow" && !ATK.mine) { mine = null; var at = pawTarget(); pawSwing(dt, at || { x: p.x + (p.face || 1) }); return; }   // ATTACK BUTTON: a paw swat with whatever you hold (never digs or places)
     var pt = pawTarget(); if (pt) { pawLock = true; pawSwing(dt, pt); return; }   // a creature under your aim: swat it, whatever you are holding
     var pzt = peaceAim(PAW.near + 0.3); if (pzt) { pawLock = true; PZT = pzt; pawSwing(dt, pzt); return; }   // pressing and holding on a peaceful creature: swat it
     if (pawLock) { if (aim.down) { mine = null; return; } pawLock = false; }   // still holding after a swat (the creature dodged): don't dig or build until you let go
@@ -18531,7 +18531,7 @@
     if (id === T.STONE && Math.random() < 0.12) give("pebble", 1, x, y - 0.55);
   }
   function caveTool(dt) {
-    var catk = atkOn(), cpress = aim.down && !contPrev && !catk; contPrev = aim.down;
+    var hDig = false, catk = atkOn() && !ATK.mine, cpress = aim.down && !contPrev && !catk; contPrev = aim.down;
     if (cpress && aim.tx >= 0 && motoAtCell(aim.tx, aim.ty) && motoNear()) { mine = null; openMoto(); return; }   // GARAGE: tap the bike
     if (cpress && aim.tx >= 0 && !(cavePawTarget())) {   // CONTAINERS: a tap on one searches it / opens the chest, whatever you are holding
       var ctc = contAtCell(aim.tx, aim.ty), cdx = aim.tx + 0.5 - cp.x, cdy = aim.ty + 0.5 - (cp.y - 0.4);
@@ -21019,7 +21019,7 @@
     D.addEventListener("contextmenu", function (e) { e.preventDefault(); });
   })();
   [].forEach.call(document.querySelectorAll("#sbxPad [data-k]"), function (b) {
-    var k = b.getAttribute("data-k"), on = function (e) { e.preventDefault(); k = b.getAttribute("data-k"); tk.a = tk.j = 0; tk[k] = 1; b.classList.add("on"); try { b.setPointerCapture(e.pointerId); } catch (x) {} $("sbxHint").classList.remove("on"); }, off = function () { tk[k] = 0; if (k === "a" || k === "j") tk.a = tk.j = 0; b.classList.remove("on"); };
+    var k = b.getAttribute("data-k"), on = function (e) { e.preventDefault(); k = b.getAttribute("data-k"); if ((k === "a" || k === "j") && OCS && OCS.sea && seaStick(b, e)) { b.classList.add("on"); try { b.setPointerCapture(e.pointerId); } catch (x) {} return; } tk.a = tk.j = 0; tk[k] = 1; b.classList.add("on"); try { b.setPointerCapture(e.pointerId); } catch (x) {} $("sbxHint").classList.remove("on"); }, off = function () { tk[k] = 0; if (k === "a" || k === "j") tk.a = tk.j = 0; b.classList.remove("on"); };
     b.addEventListener("pointerdown", on); b.addEventListener("pointerup", off); b.addEventListener("pointercancel", off); b.addEventListener("lostpointercapture", off); b.addEventListener("contextmenu", function (e) { e.preventDefault(); });
   });
   window.addEventListener("keydown", function (e) {
@@ -22086,7 +22086,7 @@
     var sc = OCS, pl = sc.pl, lp = !aim.down && aim.press && aim.ptx >= 0 && !sc.pd, press = (aim.down && !sc.pd) || lp; sc.pd = aim.down; aim.press = 0; if (sc.cool > 0) sc.cool -= dt; ocHaz(dt);
     if (lp) { aim.tx = aim.ptx; aim.ty = aim.pty; sc.cool = 0; }   // a click quicker than a frame still counts once
     if (sel === "rod") { ocRod(dt, press); return; } else if (sc.fish) sc.fish = null;
-    if (atkOn()) { sc.mineP = null; mine = null; if (sel === "weapon") ocSwing(dt); else ocPaw(); return; }   // ATTACK BUTTON: only ever fights (a sword swings, anything else swats)
+    if (atkOn() && !ATK.mine) { sc.mineP = null; mine = null; if (sel === "weapon") ocSwing(dt); else ocPaw(); return; }   // ATTACK BUTTON: only ever fights (a sword swings, anything else swats)
     if (!aim.down && !lp) { sc.mineP = null; mine = null; return; }
     var pcx = pl.x, pcy = pl.y - 0.45, wx = (aim.mx - ox) / ts, wy = (aim.my - oy) / ts;
     if (press && sel !== "weapon") {   // a tap on a sea creature or a chest
@@ -23525,7 +23525,7 @@
   }
   function ocSetSail() {
     if (!OCS || trans) return; var B = ocS().boat; if (!B.done) { openBoat(); return; }
-    stopInput(); trans = { t: 0, done: false, mid: function () { OCS.sea = seaNew(); OCS.diving = false; S.st.sails = (S.st.sails || 0) + 1; if (!(B.hp > 0)) B.hp = 100; cam.x = OCS.sea.x; cam.y = OCS.sea.y; ocHudO2(); hud(); var el = $("sbxBCard"); if (el) { el.style.setProperty("--bc", "#4fd0e8"); el.querySelector("b").textContent = "The Brinebog Sea"; el.querySelector("small").textContent = "Tap an island to sail there"; el.classList.remove("on"); void el.offsetWidth; el.classList.add("on"); } if (!S.st.sailtip) { S.st.sailtip = 1; toast(coarse ? "Tap an island and the Lily Belle sails to it. Steer with the stick. Tap a pirate ship to fire." : "Click an island to sail to it, or steer with A/D and W/S. Click a pirate ship (or press Space) to fire the cannons.", "#7af0ff"); } save(); } };
+    stopInput(); trans = { t: 0, done: false, mid: function () { OCS.sea = seaNew(); OCS.diving = false; S.st.sails = (S.st.sails || 0) + 1; if (!(B.hp > 0)) B.hp = 100; cam.x = OCS.sea.x; cam.y = OCS.sea.y; ocHudO2(); hud(); var el = $("sbxBCard"); if (el) { el.style.setProperty("--bc", "#4fd0e8"); el.querySelector("b").textContent = "The Brinebog Sea"; el.querySelector("small").textContent = "Tap an island to sail there"; el.classList.remove("on"); void el.offsetWidth; el.classList.add("on"); } if (!S.st.sailtip) { S.st.sailtip = 1; toast(coarse ? "Tap an island and the Lily Belle sails to it. Steer with the stick. Hold the crosshair button and drag to aim the cannons; let go to fire." : "Click an island to sail to it, or steer with A/D and W/S. Aim with the mouse and press Space (or click a pirate ship) to fire the cannons.", "#7af0ff"); } save(); } };
   }
   function seaSaveState() { var s = OCS && OCS.sea; if (!s) return; ocS().sea = { x: Math.round(s.x * 10) / 10, y: Math.round(s.y * 10) / 10, ang: Math.round(s.ang * 100) / 100 }; }
   function seaDock() {   // back to Croaker's Pier
@@ -23554,7 +23554,9 @@
   // landing ring show where it will come down; let go to fire. The balls fly in a real arc (with a shadow on the water), the cannons
   // flash and smoke, and a hit bursts in fire, smoke and splinters; a miss throws up a splash.
   function seaRange() { return [26, 30, 34][shipUp("can")]; }
-  function slingTarget() { var s = OCS.sea, L = s.sling; if (!L) return null; var w0 = seaFromScreen(L.sx, L.sy), w1 = seaFromScreen(L.cx, L.cy), dx = w0[0] - w1[0], dy = w0[1] - w1[1], d = Math.hypot(dx, dy); if (d < 0.8) return null;
+  function slingTarget() { var s = OCS.sea, L = s.sling; if (!L) return null; var w0 = seaFromScreen(L.sx, L.sy), w1 = seaFromScreen(L.cx, L.cy), dx = w0[0] - w1[0], dy = w0[1] - w1[1], d = Math.hypot(dx, dy);
+    if (L.fwd) { dx = -dx; dy = -dy; var px = Math.hypot(L.cx - L.sx, L.cy - L.sy); if (px < 10) return null; d = Math.hypot(dx, dy); var rg = seaRange(), ds = clamp(rg * Math.min(1, (px - 10) / Math.max(110, vh * 0.3)), 4, rg); return { x: s.x + dx / d * ds, y: s.y + dy / d * ds, d: ds, p: ds / rg }; }   // the Attack button as an aim stick: drag the way you want to shoot
+    if (d < 0.8) return null;
     var rng = seaRange(), dist = Math.min(rng, d * 2.4); return { x: s.x + dx / d * dist, y: s.y + dy / d * dist, d: dist, p: dist / rng }; }
   function seaFireAt(tx, ty) {   // fire at a spot on the water (the ball lands there)
     var s = OCS.sea, cl = shipUp("can"); if (s.cd > 0) { nag("The cannons are reloading..."); return; }
@@ -23586,13 +23588,21 @@
       var col = ok ? "255,236,160" : "255,140,120", mid = [(x0 + x1) / 2, (y0 + y1) / 2 - tg.d * k * 0.18];
       g.setLineDash([k * 0.35, k * 0.35]); g.lineWidth = Math.max(2, k * 0.14); g.strokeStyle = "rgba(" + col + ",.9)"; g.beginPath(); g.moveTo(x0, y0); g.quadraticCurveTo(mid[0], mid[1], x1, y1); g.stroke(); g.setLineDash([]);
       g.strokeStyle = "rgba(" + col + ",.95)"; g.lineWidth = Math.max(2, k * 0.12); g.beginPath(); g.ellipse(x1, y1, k * 1.6, k * 1, 0, 0, 7); g.stroke(); g.beginPath(); g.moveTo(x1 - k * 0.6, y1); g.lineTo(x1 + k * 0.6, y1); g.moveTo(x1, y1 - k * 0.4); g.lineTo(x1, y1 + k * 0.4); g.stroke();
+      if (!s.sling.fwd) {
       var pw = seaToScreen(0, 0); var cw = [s.sling.cx - pw[0], s.sling.cy - pw[1]];   // the pull band back to your finger
       g.strokeStyle = "rgba(255,255,255,.55)"; g.lineWidth = Math.max(2, k * 0.1); g.beginPath(); g.moveTo(x0, y0); g.lineTo(cw[0], cw[1]); g.stroke();
-      g.fillStyle = "rgba(255,255,255,.85)"; g.beginPath(); g.arc(cw[0], cw[1], k * 0.35, 0, 7); g.fill();
+      g.fillStyle = "rgba(255,255,255,.85)"; g.beginPath(); g.arc(cw[0], cw[1], k * 0.35, 0, 7); g.fill(); }
     }
   }
   document.addEventListener("pointermove", function (e) { if (OCS && OCS.sea && OCS.sea.sling) { var r = cv.getBoundingClientRect(); OCS.sea.sling.cx = e.clientX - r.left; OCS.sea.sling.cy = e.clientY - r.top; } }, { passive: true });
-  document.addEventListener("pointerup", function () { if (!(OCS && OCS.sea && OCS.sea.sling)) return; var tg = slingTarget(); OCS.sea.sling = null; aim.down = false; if (tg) seaFireAt(tg.x, tg.y); });
+  document.addEventListener("pointerup", function () { if (!(OCS && OCS.sea && OCS.sea.sling)) return; var L = OCS.sea.sling, tg = slingTarget(); OCS.sea.sling = null; aim.down = false; if (tg) seaFireAt(tg.x, tg.y); else if (L.fwd) seaFwdFire(); });
+  // AIM STICK: at sea the Attack button turns into a cannon stick. Press it and drag toward where you want the shot to land
+  // (a farther drag throws it farther); let go to fire. A quick tap with no drag fires straight off the bow.
+  function seaStick(b, e) { var s = OCS && OCS.sea; if (!s || panelOpen || trans || s.chart) return false; var r = cv.getBoundingClientRect(), br = b.getBoundingClientRect(), z = HUDZ || 1;
+    var bx = (br.left + br.width / 2) - r.left, by = (br.top + br.height / 2) - r.top; s.sling = { fwd: 1, sx: bx, sy: by, cx: e.clientX - r.left, cy: e.clientY - r.top };
+    if (!S.st.stiktip) { S.st.stiktip = 1; toast("Hold the cannon button and drag toward a ship, then let go to fire.", "#ffd27a"); } return true; }
+  function seaFwdFire() { var s = OCS.sea, a = s.ang || 0, d = seaRange() * 0.6; seaFireAt(s.x + Math.cos(a) * d, s.y + Math.sin(a) * d); }
+  function seaKeyFire() { var s = OCS.sea, w = seaFromScreen(aim.mx, aim.my), dx = w[0] - s.x, dy = w[1] - s.y, d = Math.hypot(dx, dy), rg = seaRange(); if (d < 1) return seaFwdFire(); var ds = Math.min(rg, d); seaFireAt(s.x + dx / d * ds, s.y + dy / d * ds); }
   function seaFire(sh, manual) {
     var s = OCS.sea, cl = shipUp("can"), rng = [26, 30, 34][cl]; if (s.cd > 0) { if (manual) nag("The cannons are reloading..."); return; }
     var d = Math.hypot(sh.x - s.x, sh.y - s.y); if (d > rng) { if (manual) nag("Out of range. Sail closer!"); return; }
@@ -23696,8 +23706,7 @@
       seaTrail(sh, dt, sh.big ? 2.8 : 2.2);
       if (dd < nd) { nd = dd; nearest = sh; }
     }
-    if ((keys.j || tk.j || tk.a) && nearest && s.cd <= 0) seaFire(nearest, false);
-    if (nearest && nd < 18 && s.cd <= 0 && s.auto !== false) seaFire(nearest, false);   // the deckhand frog fires the cannons when pirates come close
+    if (keys.j && s.cd <= 0 && !s.sling) seaKeyFire();   // CANNONS ARE AIMED BY YOU: Space fires at the mouse (no more auto-fire)
     for (i = s.balls.length - 1; i >= 0; i--) {
       var b = s.balls[i]; b.life -= dt; b.x += b.vx * dt; b.y += b.vy * dt; var hit = false;
       if (b.mine) s.ships.forEach(function (sh2) { if (!hit && !sh2.sink && (!b.land || b.life < 0.12) && Math.hypot(sh2.x - b.x, sh2.y - b.y) < (sh2.big ? 2.6 : 2) + (b.land ? 0.6 : 0)) { hit = true; sh2.hp -= b.dmg || 1; sh2.hurt = 0.3; seaBoom(b.x, b.y, "hit"); for (var q = 0; q < 8; q++) s.wake.push({ x: b.x, y: b.y, vx: (Math.random() - 0.5) * 5, vy: (Math.random() - 0.5) * 5, life: 0.6, fire: 1 }); thud(110, 0.1);
@@ -23863,14 +23872,15 @@
     var arrow = function (wx, wy, col, lbl) { var p2 = seaToScreen(wx, wy); if (p2[0] > 20 && p2[0] < vw - 20 && p2[1] > 70 && p2[1] < vh - 20) return; var a = Math.atan2(p2[1] - vh / 2, p2[0] - vw / 2), ex = clamp(vw / 2 + Math.cos(a) * vw, 26, vw - 26), ey = clamp(vh / 2 + Math.sin(a) * vh, 84, vh - 30); g.save(); g.translate(ex, ey); g.rotate(a); g.fillStyle = col; g.beginPath(); g.moveTo(12, 0); g.lineTo(-6, -8); g.lineTo(-6, 8); g.closePath(); g.fill(); g.restore(); if (lbl) { g.font = "800 11px Nunito, system-ui, sans-serif"; g.fillStyle = col; g.strokeStyle = "rgba(0,0,0,.6)"; g.lineWidth = 3; g.strokeText(lbl, ex - Math.cos(a) * 26, ey - Math.sin(a) * 18 + 4); g.fillText(lbl, ex - Math.cos(a) * 26, ey - Math.sin(a) * 18 + 4); } };
     arrow(I[0].x, I[0].y, "#ffd23f", "Pier"); if (s.tgt && s.tgt.isl) arrow(s.tgt.x, s.tgt.y, "#e8fbff", ""); s.ships.forEach(function (sh) { if (!sh.sink && seeShip(sh)) arrow(sh.x, sh.y, "#ff6a5a", ""); });
     // hull bar
-    var B = ocS().boat, hw = Math.min(180, vw * 0.36), hx = vw - hw - 22, hy = 132; g.fillStyle = "rgba(6,20,34,.75)"; mrr(g, hx - 8, hy - 18, hw + 16, 34, 10); g.fill();
+    var B = ocS().boat, hw = Math.min(180, vw * 0.36), hx = vw - hw - 22, hy = seaHudTop() + 20; g.fillStyle = "rgba(6,20,34,.75)"; mrr(g, hx - 8, hy - 18, hw + 16, 34, 10); g.fill();   // tucked under the mini-map and the bag / crafting / build buttons
     g.font = "800 11px Nunito, system-ui, sans-serif"; g.textAlign = "left"; g.fillStyle = "#e8fbff"; g.fillText("Lily Belle hull", hx, hy - 4); g.textAlign = "right"; g.fillText(Math.round(B.hp || 100) + "%", hx + hw, hy - 4); g.textAlign = "center";
     g.fillStyle = "rgba(255,255,255,.15)"; g.fillRect(hx, hy + 2, hw, 7); g.fillStyle = (B.hp || 100) > 40 ? "#4fd0e8" : "#ff6a5a"; g.fillRect(hx, hy + 2, hw * (B.hp || 100) / 100, 7);
     if (s.cd > 0) { g.fillStyle = "rgba(255,255,255,.6)"; g.fillRect(hx, hy + 11, hw * (1 - s.cd / (s.cdMax || 1.5)), 2); }
-    var hn = holdN(), hcx = hx + hw + 8, hcy = hy + 50, htx = "Ship's hold " + hn + "/" + HOLD_MAX; g.font = "800 11px Nunito, system-ui, sans-serif"; var hww = g.measureText(htx).width + 20;   // ISLAND RAIDS: the hold
+    var hn = holdN(), hcx = hx + hw + 8, hcy = hy + (s.wx ? 47 : 21), htx = "Ship's hold " + hn + "/" + HOLD_MAX; g.font = "800 11px Nunito, system-ui, sans-serif"; var hww = g.measureText(htx).width + 20;   // ISLAND RAIDS: the hold
     g.fillStyle = "rgba(6,20,34,.75)"; mrr(g, hcx - hww, hcy, hww, 24, 9); g.fill(); g.strokeStyle = "rgba(255,210,63,.5)"; g.lineWidth = 1; g.stroke(); g.fillStyle = "#ffd23f"; g.textAlign = "right"; g.fillText(htx, hcx - 10, hcy + 16); g.textAlign = "center"; sc.btns.push({ x: hcx - hww, y: hcy, w: hww, h: 24, fn: openHold });
     if (s.wx) { var WL = { storm: ["Storm", "the wind is pushing you", "#ffb0a0"], fog: ["Fog", shipUp("nest") ? "the lookout keeps watch" : "you can't see far", "#cfe0e8"], calm: ["Glassy calm", "no wind, no pirates", "#7af0ff"], rain: ["Rain", "", "#bfe0ff"], fair: ["Fair winds", "", "#e8fbff"] }[s.wx.k];
-      g.font = "800 11px Nunito, system-ui, sans-serif"; var wtx = WL[0] + (WL[1] ? " \u00b7 " + WL[1] : ""), ww = g.measureText(wtx).width + 20; g.fillStyle = "rgba(6,20,34,.75)"; mrr(g, hx + hw + 8 - ww, hy + 22, ww, 22, 9); g.fill(); g.fillStyle = WL[2]; g.textAlign = "right"; g.fillText(wtx, hx + hw - 2, hy + 37); g.textAlign = "center"; }
+      g.font = "800 11px Nunito, system-ui, sans-serif"; var wtx = WL[0] + (WL[1] ? " \u00b7 " + WL[1] : ""), ww = g.measureText(wtx).width + 20; g.fillStyle = "rgba(6,20,34,.75)"; mrr(g, hx + hw + 8 - ww, hy + 21, ww, 22, 9); g.fill(); g.fillStyle = WL[2]; g.textAlign = "right"; g.fillText(wtx, hx + hw - 2, hy + 36); g.textAlign = "center"; }
+    devChipBelow(hy + 21 + (s.wx ? 54 : 28));
     }
     g.font = "800 " + Math.max(12, Math.round(ts * 0.52)) + "px Nunito, system-ui, sans-serif"; g.lineWidth = 3.5; g.strokeStyle = "rgba(0,0,0,.75)";
     texts.forEach(function (tx) { var p3 = seaToScreen(tx.x, tx.y); g.globalAlpha = clamp(tx.life * 1.5, 0, 1); g.fillStyle = tx.c; g.strokeText(tx.s, p3[0], p3[1]); g.fillText(tx.s, p3[0], p3[1]); }); g.globalAlpha = 1;
@@ -23913,8 +23923,6 @@
       var hitB = Math.hypot(s.x - L.ring.x, s.y - L.ring.y) < 3.6; for (var q3 = 0; q3 < 30; q3++) s.wake.push({ x: L.ring.x + (Math.random() - 0.5) * 5, y: L.ring.y + (Math.random() - 0.5) * 5, vx: (Math.random() - 0.5) * 9, vy: (Math.random() - 0.5) * 9, life: 1, spl: 1 });
       waterSplash(L.ring.x, L.ring.y, 2.4, 1); shake = Math.max(shake, hitB ? 1 : 0.5); thud(45, 0.25); if (hitB) seaHurt(14); L.ring = null; } }
     L.up = L.st === "up" || L.st === "rise";
-    if ((keys.j || tk.j || tk.a) && L.up && s.cd <= 0) seaFire({ x: L.hx, y: L.hy, ang: 0, sp: 0 }, false);
-    if (L.up && s.cd <= 0 && s.auto !== false && Math.hypot(L.hx - s.x, L.hy - s.y) < 20) seaFire({ x: L.hx, y: L.hy, ang: 0, sp: 0 }, false);   // the deckhand frog fires too
   }
   function levHit(b) {
     var s = OCS.sea, L = s.lev; if (!L || L.dead || !L.up || Math.hypot(L.hx - b.x, L.hy - b.y) > 3.2) return false;
@@ -27229,9 +27237,31 @@
   // ATTACK BUTTON: while it is held, the game aims for you at the nearest creature in front of you (within about 7 blocks; in caves and on
   // islands, the nearest one around you). It only ever fights: it never digs, chops, places, picks up or opens anything (atkSwat in useTool
   // and caveTool). A sword swings and combos as usual and the bow shoots; anything else in your hand (a pick, a block, food...) is a paw
-  // swat. With nothing near it swings at the air in front of you. At sea it fires the cannons instead (see seaFire).
+  // swat. With nothing near it swings at the air in front of you. Holding a pick or shovel it is the Mine button (see mineTarget);
+  // at sea it is the cannon aim stick (see seaStick).
   function atkOn() { return ATK.on && aim.id === "atk"; }
-  var ATK = { on: false };
+  // SEA HUD: the hull / weather / hold cards sit just under the top-right HUD (mini-map + bag, crafting and build buttons), wherever that ends on this screen
+var SHT = { t: 0, y: 132 }, JBT = null;
+function seaHudTop() { var nw = performance.now(); if (nw - SHT.t < 400) return SHT.y; SHT.t = nw;
+  try { var cvr = cv.getBoundingClientRect(), v = document.querySelector(".sbx-vit"), sc2 = cvr.height ? vh / cvr.height : 1; if (v) { var r = v.getBoundingClientRect(); if (r.height) SHT.y = Math.round((r.bottom - cvr.top) * sc2); } } catch (er) {} return SHT.y; }
+function devChipBelow(yc) { var d = document.querySelector(".p8-devchip"); if (!d) return; var hz = HUDZ || 1; d.style.setProperty("top", Math.round((yc + 8) / hz) + "px", "important"); d.__sea = 1; }
+function devChipReset() { var d = document.querySelector(".p8-devchip"); if (d && d.__sea) { d.style.removeProperty("top"); d.__sea = 0; } }
+var ATK = { on: false, mine: false };
+  // MINE BUTTON: holding a pick (or shovel) turns the Attack button into a Mine button. Hold it to dig the block in front of you (head or
+  // feet height, whichever is there); push the stick down to dig under your feet, or up to dig above your head. It never swats.
+  function atkMineOk() { return (sel === "pick" || sel === "shovel") && !(OCS && OCS.sea) && !HOME; }
+  function mineTarget() {
+    var dn = tk.d || joy.y > 0.55, up = !dn && (tk.u || joy.y < -0.55);
+    function pickC(cells, ok) { for (var i = 0; i < cells.length; i++) if (ok(cells[i][0], cells[i][1])) return [cells[i][0] + 0.5, cells[i][1] + 0.5]; return null; }
+    var x0, fy, face, ok, top;
+    if (OCS) { var pl = OCS.pl || {}; x0 = pl.x; fy = pl.y; face = pl.face || 1; top = 1.1; ok = function (x, y) { return ocSolid(x, y); }; }
+    else if (cave) { x0 = cp.x; fy = cp.y; face = cp.face || 1; top = 1.1; var F = cave.F; ok = function (x, y) { return x >= 0 && y >= 0 && x < F.w && y < F.h && !!F.node[y * F.w + x]; }; }
+    else { x0 = p.x; fy = p.y; face = p.face || 1; top = PH + 0.1; ok = function (x, y) { var id = get(x, y), td = TILES[id]; return id !== T.AIR && id !== T.WATER && id !== T.LAVA && id !== T.BEDROCK && !!td; }; }
+    var cx = Math.floor(x0), fx = Math.floor(x0 + face * 0.85), lo = Math.floor(fy - 0.3), hi = Math.floor(fy - top + 0.2), ft = Math.floor(fy + 0.1);
+    if (dn) return pickC([[cx, ft], [fx, ft]], ok) || [cx + 0.5, ft + 0.5];
+    if (up) return pickC([[cx, Math.floor(fy - top - 0.1)], [fx, Math.floor(fy - top - 0.1)]], ok) || [cx + 0.5, fy - top - 0.4];
+    return pickC([[fx, lo], [fx, hi]], ok) || [fx + 0.5, lo + 0.5];   // (nothing in front: nothing to dig; push down to dig the floor)
+  }
   function atkTarget() {
     var best = null, bd = 1e9, px, py, face;
     if (OCS) { var pl = OCS.pl || {}; px = pl.x; py = pl.y - 0.45; face = pl.face || 1;
@@ -27246,7 +27276,7 @@
     var want = !!tk.a && !panelOpen && !menuOpen && !titleOpen && !trans && !deadUI && !HOME && !(OCS && OCS.sea);
     if (!want) { if (ATK.on) { ATK.on = false; if (aim.id === "atk") { aim.down = false; aim.id = null; mine = null; aim.tx = -1; } } return; }
     if (aim.id !== null && aim.id !== "atk") return;   // a finger on the world wins
-    var T2 = atkTarget(); aim.mx = ox + T2[0] * ts; aim.my = oy + T2[1] * ts;
+    ATK.mine = atkMineOk(); var T2 = ATK.mine ? mineTarget() : atkTarget(); aim.mx = ox + T2[0] * ts; aim.my = oy + T2[1] * ts;
     if (ATK.on && aim.id === "atk" && sel === "weapon") aim.down = !aim.down;   // a sword: a fresh tap every other frame, so holding the button chains the combo (the cooldown sets the pace)
     if (!ATK.on) { ATK.on = true;
       aim.id = "atk"; aim.down = true; aim.press = 1; aim.ptx = aim.tx; aim.pty = aim.ty; cool = 0; aim.t0 = performance.now(); aim.dx = Math.floor(T2[0]); aim.dy = Math.floor(T2[1]); aim.door = aim.chest = aim.stn = aim.hole = false; aim.lad = ""; $("sbxHint").classList.remove("on"); }
@@ -27269,7 +27299,7 @@
       try { tickVoices(dt); } catch (er) {}
       try { if (!titleOpen) overTick(dt); } catch (er) {}
       try { mapSeenTick(); } catch (er) {}
-      try { atkTick(); } catch (er) {}
+      try { atkTick(); if (!(OCS && OCS.sea)) devChipReset(); var jb = JBT || (JBT = document.querySelector("#sbxPad .jump")); if (jb) { var cn = !!(OCS && OCS.sea), mn = !cn && jb.classList.contains("atk") && atkMineOk(); if (jb.classList.contains("cann") !== cn) jb.classList.toggle("cann", cn); if (jb.classList.contains("mine") !== mn) { jb.classList.toggle("mine", mn); jb.setAttribute("aria-label", mn ? "Mine" : jb.classList.contains("atk") ? "Attack" : "Jump"); } } } catch (er) {}
       try { if (trans) tickTrans(dt); if ((MP.on || (!panelOpen && !menuOpen && !deadUI)) && !trans && !titleOpen) { var gdt = dt * timeScale(dt); graveTick(Math.min(dt, 0.1)); homeClock(gdt); tickWaterFx(gdt); if (HOME) homeUpdate(gdt); else if (OCS) ocTick(gdt); else if (cave) caveUpdate(gdt); else update(gdt); } else if (titleOpen && !cave && !OCS && !HOME && !trans) titleTick(dt, now); faintNow(); mpTick(dt); } catch (er) { loopErr(er); }
       try {
         if (window.__CAMOV) { cam.x = window.__CAMOV.x; cam.y = window.__CAMOV.y; }   // (test/trailer hook: a scripted camera)
@@ -27362,6 +27392,7 @@
   window.__sbx.pv = PV;
   window.__sbx.cg = { get st() { return CGS; }, press: cgPress, release: cgRelease, exp: cgExpOpen, craft: craft, mw: function () { return S.mw; } };
   window.__sbx.upj = function (v) { setUpJump(v); return UPJ; };   // (tests: switch Up to jump on or off)
+  window.__sbx.tk = tk;   // (tests: the touch keys)
   window.__sbx.nx = { NXP: NXP, wake: gdWake, portalNear: nxPortalNear, GD: GD, enter: enterNexus, open: openGuardian, act: gdAct, inNexus: inNexus, pic: zarukPic };
   window.__decoT = { st: function () { return { DAIM: !!DAIM, DHOV: DHOV ? DHOV.k : null, DLAST: DLAST, wx: (aim.mx - ox) / ts, wy: (aim.my - oy) / ts, hit: DECO && DECO.hit((aim.mx - ox) / ts, (aim.my - oy) / ts) ? 1 : 0, sel: sel, bare: bare }; }, m: function () { return DECO; }, init: function () { decoInit(S); }, save: function () { save(); },
     mode: function (on) { if (on !== undefined) decoMode(on); return DMODE; }, sel: function () { return DSEL; }, sit: function () { return SIT; }, act: function (a) { decoAct(a); }, use: function (c) { return decoUse(c); }, panel: function () { return decoPanel(); },
