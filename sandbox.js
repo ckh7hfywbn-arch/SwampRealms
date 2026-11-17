@@ -2538,7 +2538,7 @@
     return c.toDataURL();
   }
   function icon(id) {
-    var apm = /^ap_(helm|legs|boots)([1-9])$/.exec(id); if (apm) return ICO[id] || (ICO[id] = apIcon(apm[1], +apm[2]));   // ARMOR PIECES
+    var apm = /^(?:ap|sp)_(helm|legs|boots)([1-9])$/.exec(id); if (apm) return ICO[id] || (ICO[id] = apIcon(apm[1], +apm[2]));   // ARMOR PIECES
     if (ITEMS[id] && ITEMS[id].tool) return icon(ITEMS[id].tool);
     var key = id === "bow" ? "bow" + Math.max(1, S.bow) : id === "bucket" ? bucketKey() : id === "hoe" ? "hoe" + Math.max(1, S.hoe) : id === "rod" ? "rod" + Math.max(1, S.rod) : id === "pick" ? "pick" + S.tier : id === "weapon" ? "weapon" + S.wpn : id === "arm" ? "arm" + S.arm : id;   // "shovel" is its own key
     if (ICO[key]) return ICO[key];
@@ -19901,9 +19901,9 @@
   function pkEqHtml() {
     // ARMOR: all four pieces in a row (helmet, chestpiece, leggings, boots), then the charm slots and the backpack, then More gear
     var h = '<div class="pk-armrow">' + APSLOTS.map(function (q) { var k = q[0], t = k === "arm" ? S.arm : (S.ap || {})[k] | 0, ic = t ? icon(k === "arm" ? "arm" + t : "ap_" + k + t) : "";
-      return pkSlot('data-pkeq="' + k + '"' + (k === "arm" ? ' data-eqk="arm"' : ""), ic, q[1], q[1], PK.focus === k, k === "arm" ? "\ud83d\udee1" : k).replace("</small></button>", "</small>" + (k === "arm" ? pkStars("arm") : "") + (t && toolBroken(k) ? '<em class="pk-brk">broken</em>' : "") + "</button>"); }).join("") + "</div>";
+      return pkSlot('data-pkeq="' + k + '" data-eqk="' + k + '"', ic, q[1], q[1], PK.focus === k, k === "arm" ? "\ud83d\udee1" : k).replace("</small></button>", "</small>" + (k === "arm" ? pkStars("arm") : "") + (t && toolBroken(k) ? '<em class="pk-brk">broken</em>' : "") + "</button>"); }).join("") + "</div>";
     var n = charmBase(), r = "";
-    for (var i = 0; i < n; i++) { var ck = S.charms.on[i]; r += pkSlot('data-pkeq="charm"', ck ? icon("charm_" + ck) : "", "Charm", ck ? CHARMS[ck].n : "empty", PK.pop === "charm", "\u2726"); }
+    for (var i = 0; i < n; i++) { var ck = S.charms.on[i]; r += pkSlot('data-pkeq="charm"' + (ck ? ' data-eqk="charm:' + i + '"' : ""), ck ? icon("charm_" + ck) : "", "Charm", ck ? CHARMS[ck].n : "empty", PK.pop === "charm", "\u2726"); }
     r += pkSlot('data-pkeq="bag"', S.bag ? icon("bag" + S.bag) : "", "Backpack", S.bag ? BAGS[S.bag].n : "none", PK.focus === "bag", "\ud83c\udf92");
     h += '<div class="pk-eqrow" style="grid-template-columns:repeat(' + (n + 1) + ',minmax(0,1fr))">' + r + "</div>";
     // MORE GEAR: the expand button (with little icons of what is in there), then the extra slots
@@ -19911,9 +19911,9 @@
     var filled = ["back", "lamp", "mount"].filter(function (k) { return G[k]; }).length + Math.max(0, S.charms.on.length - n), open = 3 + trinkOpen();
     h += '<button type="button" class="pk-morebtn' + (PK.more ? " on" : "") + '" data-pkmore aria-expanded="' + !!PK.more + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l2.2 6.8L21 12l-6.8 2.2L12 21l-2.2-6.8L3 12l6.8-2.2z"/></svg><b>More gear</b><span class="mini">' + mini + '</span><small>' + filled + " / " + open + '</small><i class="chev">' + (PK.more ? "\u25b4" : "\u25be") + "</i></button>";
     if (PK.more) {
-      var cells = ["back", "lamp", "mount"].map(function (k) { var it = G[k]; return pkSlot('data-pkg="' + k + '"', it ? icon(it) : "", GEARS[k].n, it ? ITEMS[it].n : "empty", PK.gpick === k, k === "back" ? "jet" : k).replace('class="pk-slot', 'class="pk-slot gx' + (k === "mount" && it && !G.ride ? " off" : "")); }).join("");
-      cells += TRINK.map(function (t, ti) { var ok = bossN() >= t.need, ck = ok ? S.charms.on[n + TRINK.slice(0, ti).filter(function (q) { return bossN() >= q.need; }).length] : null;
-        return pkSlot('data-pkg="' + t.k + '"', ck ? icon("charm_" + ck) : "", t.n, ck ? CHARMS[ck].n : ok ? "empty" : "locked", PK.gpick === t.k, ok ? t.k : "lock").replace('class="pk-slot', 'class="pk-slot gx' + (ok ? "" : " locked")); }).join("");
+      var cells = ["back", "lamp", "mount"].map(function (k) { var it = G[k]; return pkSlot('data-pkg="' + k + '" data-eqk="g:' + k + '"', it ? icon(it) : "", GEARS[k].n, it ? ITEMS[it].n : "empty", PK.gpick === k, k === "back" ? "jet" : k).replace('class="pk-slot', 'class="pk-slot gx' + (k === "mount" && it && !G.ride ? " off" : "")); }).join("");
+      cells += TRINK.map(function (t, ti) { var ok = bossN() >= t.need, ci = n + TRINK.slice(0, ti).filter(function (q) { return bossN() >= q.need; }).length, ck = ok ? S.charms.on[ci] : null;
+        return pkSlot('data-pkg="' + t.k + '"' + (ck ? ' data-eqk="charm:' + ci + '"' : ""), ck ? icon("charm_" + ck) : "", t.n, ck ? CHARMS[ck].n : ok ? "empty" : "locked", PK.gpick === t.k, ok ? t.k : "lock").replace('class="pk-slot', 'class="pk-slot gx' + (ok ? "" : " locked")); }).join("");
       h += '<div class="pk-more">' + cells + "</div>" + pkGearPick();
     }
     return [h, ""];
@@ -20763,9 +20763,11 @@
     idragJust = true; setTimeout(function () { idragJust = false; }, 0);
     if (!drop) return;
     var el = document.elementFromPoint(e.clientX, e.clientY), t = el && el.closest && el.closest("[data-is],.sbx-slot[data-slot]"), et = el && el.closest && el.closest("[data-eqk]");
-    if (D.eq) { if (t || (el && el.closest && el.closest("#pkInv"))) unequipGear(D.eq); return; }   // GEAR SWAP: the piece you wear, dropped in your bag
-    if (et) { var sk = S.slots[D.from] && S.slots[D.from].k, want = et.getAttribute("data-eqk"); if (sk && new RegExp("^sp_" + want + "\\d$").test(sk)) equipSpare(sk); else nag(want === "pick" ? "Only a spare pickaxe goes there." : want === "wpn" ? "Only a spare weapon goes there." : "Only spare armor goes there."); return; }
-    if (!t && dragOut(el)) {   // DRAG TO DROP: let go over the world (outside the backpack and the hotbar) and the stack is dropped in front of you
+    if (D.eq) { if (t || (el && el.closest && (el.closest("#pkInv") || el.closest(".pk-stage")))) { var eid = eqItem(D.eq), to0 = t ? slotOfEl(t) : -1; eqOff(D.eq);
+        if (eid && to0 >= 0 && !S.slots[to0]) { for (var j0 = 0; j0 < S.slots.length; j0++) if (j0 !== to0 && S.slots[j0] && S.slots[j0].k === eid) { moveSlot(j0, to0); if (packOpen) renderPack(); break; } } }   // it lands in the slot you let go over
+      return; }   // GEAR DRAG: what you wear, dropped in your bag (or on your character's picture)
+    if (et) { var sk = S.slots[D.from] && S.slots[D.from].k, want = et.getAttribute("data-eqk"); if (eqFits(want, sk)) eqOn(want, sk); else if (!/^charm:/.test(want)) nag(want === "pick" ? "Only a spare pickaxe goes there." : want === "wpn" ? "Only a spare weapon goes there." : /^g:/.test(want) ? "Only a " + GEARS[want.slice(2)].e.toLowerCase() + " goes there." : "Only spare armor of that kind goes there."); return; }
+    if (!t && (dragOut(el) || dragEdge(e.clientX, e.clientY))) {   // DRAG TO DROP: let go over the world (outside the backpack and the hotbar) and the stack is dropped in front of you
       var dc = S.slots[D.from]; if (!dc) return;
       if (TOOLF[dc.k]) { dropTool(dc.k); return; }   // tools drop too (see DROPPING TOOLS)
       if (hp <= 0 || titleOpen) return;
@@ -20775,6 +20777,7 @@
     var to = slotOfEl(t); if (to < 0 || to === D.from || !S.slots[D.from]) return;
     invAsk = ""; invSel = to; moveSlot(D.from, to); snd("coin");
   }
+  function dragEdge(x, y) { var m = 16; return x < m || y < m || x > innerWidth - m || y > innerHeight - m; }   // DRAG TO DROP: the edge of the screen counts as outside too (a window can fill a phone)
   function dragOut(el) {   // the world itself, the HUD over it (health bar, joystick, buttons) or the dimmed backdrop around an open window
     if (!el || !el.closest) return false; if (el === cv || el === stageEl) return true;
     if (el.closest("#sbxBar,.sbx-pbox,#sbxStory,#sbxStn,#sbxMapV,#sbxCC,#sbxTitle,#sbxPause")) return false;
@@ -20786,7 +20789,7 @@
     el.addEventListener("dragstart", function (e) { e.preventDefault(); });   // HOTBAR DRAG: a native image drag would steal the pointer
     el.addEventListener("pointerdown", function (e) {
       if (e.button && e.pointerType === "mouse") return;
-      var eb = e.target.closest("[data-eqk]"); if (eb) { var ek = eb.getAttribute("data-eqk"), ef = SPK[ek].f; if (S[ef] | 0) idrag = { from: -1, eq: ek, x0: e.clientX, y0: e.clientY, id: e.pointerId, on: false, ghost: null, src: eb, th: e.pointerType === "mouse" ? 5 : 9 }; return; }   // GEAR SWAP: drag the piece you wear
+      var eb = e.target.closest("[data-eqk]"); if (eb) { var ek = eb.getAttribute("data-eqk"); if (eqHas(ek)) idrag = { from: -1, eq: ek, x0: e.clientX, y0: e.clientY, id: e.pointerId, on: false, ghost: null, src: eb, th: e.pointerType === "mouse" ? 5 : 9 }; return; }   // GEAR DRAG: drag anything you wear
       var b = e.target.closest("[data-is],.sbx-slot[data-slot]"); if (!b) return; var i = slotOfEl(b); if (!(i >= 0) || !S.slots[i]) return;
       idrag = { from: i, x0: e.clientX, y0: e.clientY, id: e.pointerId, on: false, ghost: null, src: b, th: e.pointerType === "mouse" ? 5 : 9 };
     });
@@ -20796,7 +20799,7 @@
     var D = idrag; if (!D || e.pointerId !== D.id) return;
     if (!D.on) {
       if (Math.abs(e.clientX - D.x0) + Math.abs(e.clientY - D.y0) < D.th) return;
-      var c = D.eq ? { k: SPK[D.eq].f === "tier" ? "pick" + S.tier : D.eq + S[SPK[D.eq].f], n: "" } : S.slots[D.from]; if (!c) { idrag = null; return; }
+      var c = D.eq ? { k: eqIcon(D.eq), n: "" } : S.slots[D.from]; if (!c || !c.k) { idrag = null; return; }
       D.on = true; D.src.classList.add("lift");
       var g = document.createElement("div"); g.className = "sbx-drag"; g.innerHTML = '<img alt="" src="' + icon(c.k) + '"><b>' + (c.n || "") + '</b><i>' + (D.eq ? "Take off" : "Drop") + '</i>'; document.body.appendChild(g); D.ghost = g;
     }
@@ -20806,11 +20809,11 @@
     [].forEach.call(document.querySelectorAll(".sbx-is.drop, .sbx-slot.drop"), function (b) { if (b !== t) b.classList.remove("drop"); });
     if (t && t !== D.src) t.classList.add("drop");
     var et2 = el && el.closest && el.closest("[data-eqk]"); [].forEach.call(document.querySelectorAll("[data-eqk].drop,[data-eqk].nodrop"), function (b) { if (b !== et2) { b.classList.remove("drop"); b.classList.remove("nodrop"); } });
-    if (et2 && !D.eq) { var sk2 = S.slots[D.from] && S.slots[D.from].k, ok2 = sk2 && sk2.indexOf("sp_" + et2.getAttribute("data-eqk")) === 0; et2.classList.toggle("drop", !!ok2); et2.classList.toggle("nodrop", !ok2); }   // GEAR SWAP: the slot lights up if the piece fits
-    var out = !t && !et2 && !D.eq && dragOut(el); if (D.ghost.classList.contains("toss") !== out) { D.ghost.classList.toggle("toss", out); }   // over the world: the ghost shows it will be dropped
+    if (et2 && !D.eq) { var sk2 = S.slots[D.from] && S.slots[D.from].k, ok2 = eqFits(et2.getAttribute("data-eqk"), sk2); et2.classList.toggle("drop", !!ok2); et2.classList.toggle("nodrop", !ok2); }   // GEAR SWAP: the slot lights up if the piece fits
+    D.lx = e.clientX; D.ly = e.clientY; var out = !t && !et2 && !D.eq && (dragOut(el) || dragEdge(e.clientX, e.clientY)); if (D.ghost.classList.contains("toss") !== out) { D.ghost.classList.toggle("toss", out); }   // over the world: the ghost shows it will be dropped
   }, { passive: false });
   window.addEventListener("pointerup", function (e) { if (idrag && e.pointerId === idrag.id) dragEnd(true, e); });
-  window.addEventListener("pointercancel", function (e) { if (idrag && e.pointerId === idrag.id) dragEnd(false, e); });
+  window.addEventListener("pointercancel", function (e) { if (idrag && e.pointerId === idrag.id) { var D = idrag, edge = D.on && !D.eq && D.lx != null && dragEdge(D.lx, D.ly); dragEnd(edge, edge ? { clientX: D.lx, clientY: D.ly } : e); } });   // a finger slid off the edge: drop
   // ---------- ITEM INFO POP-UP ----------
   // Hover an item in the backpack or the hotbar (desktop) and a small card pops up after a moment: the item's name, what kind of thing it is,
   // a short summary, what it is used to make and how many you carry. On a phone, press and hold the item instead (moving your finger
@@ -20997,9 +21000,14 @@
   document.addEventListener("pointermove", function (e) { if (e.pointerType === "mouse") document.documentElement.classList.toggle("pc-inv", pcInv()); }, { passive: true });
   [$("sbxPanel"), $("sbxPack"), $("sbxBar")].forEach(function (el) {
     el.addEventListener("pointerdown", function (e) {
-      if (e.pointerType !== "mouse" || !pcInv()) return; var b = e.target.closest("[data-is]"); if (!b) return;
+      if (e.pointerType !== "mouse" || !pcInv()) return;
+      var gq = CUR.k && e.target.closest("[data-eqk]"); if (gq && e.button === 0) {   // PC GEAR: holding an item on the cursor, click a gear slot to put it on
+        e.preventDefault(); e.stopImmediatePropagation(); var gk = gq.getAttribute("data-eqk"); if (!eqFits(gk, CUR.k)) { nag("That doesn't go there."); return; }
+        var ck2 = CUR.k; curBack(); eqOn(gk, ck2); CUR.eat = performance.now(); return; }
+      var b = e.target.closest("[data-is]"); if (!b) return;
       if (e.button !== 0 && e.button !== 2) return; if (e.shiftKey && !CUR.k) return;   // (Shift+click: the quick move below)
-      e.preventDefault(); e.stopImmediatePropagation(); CUR.x = e.clientX; CUR.y = e.clientY; curClick(+b.getAttribute("data-is"), e.button === 2);
+      e.preventDefault(); e.stopImmediatePropagation(); CUR.x = e.clientX; CUR.y = e.clientY; var had = !!CUR.k; curClick(+b.getAttribute("data-is"), e.button === 2);
+      CUR.dn = !had && CUR.k && e.button === 0 ? { x: e.clientX, y: e.clientY, i: +b.getAttribute("data-is") } : null;   // PC DRAG: a press that lifted a stack can be dragged and let go somewhere else
     }, true);
     el.addEventListener("click", function (e) { if (pcInv() && e.target.closest("[data-is]") && !e.shiftKey) { e.preventDefault(); e.stopImmediatePropagation(); } }, true);
     el.addEventListener("contextmenu", function (e) { if (pcInv() && e.target.closest("[data-is]")) { e.preventDefault(); e.stopImmediatePropagation(); } }, true);
@@ -21007,6 +21015,14 @@
     el.addEventListener("pointerleave", function () { CUR.hov = -1; });
   });
   document.addEventListener("pointermove", function (e) { if (e.pointerType !== "mouse") return; CUR.x = e.clientX; CUR.y = e.clientY; if (CUR.k) curMove(); }, { passive: true });
+  document.addEventListener("pointerup", function (e) {   // PC DRAG: let go of a lifted stack over another slot (place it), a gear slot (wear it) or outside the window (drop it)
+    var D = CUR.dn; CUR.dn = null; if (e.pointerType !== "mouse" || !D || !CUR.k || !pcInv()) return; if (Math.abs(e.clientX - D.x) + Math.abs(e.clientY - D.y) < 10) return;
+    var el = document.elementFromPoint(e.clientX, e.clientY), sb = el && el.closest && el.closest("[data-is]"), gb = el && el.closest && el.closest("[data-eqk]");
+    if (sb && +sb.getAttribute("data-is") !== D.i) { curClick(+sb.getAttribute("data-is"), false); return; }
+    if (gb) { var gk = gb.getAttribute("data-eqk"); if (eqFits(gk, CUR.k)) { var ck3 = CUR.k; curBack(); eqOn(gk, ck3); } else { nag("That doesn't go there."); curBack(); } invAfter(); return; }
+    if (dragOut(el) || dragEdge(e.clientX, e.clientY)) { var k = CUR.k, n = CUR.n; CUR.k = null; CUR.n = 0; if (TOOLF[k]) { if (!dropTool(k, true)) give(k, 1, undefined, undefined, true); } else if (gdScene()) sceneToss(k, n); else tossDrop(k, n); snd("coin"); hbDirty = true; curDraw(); invAfter(); return; }
+    if (sb && +sb.getAttribute("data-is") === D.i) { curClick(D.i, false); }   // back where it came from
+  }, true);
   document.addEventListener("pointerdown", function (e) {   // PC: holding a stack on the cursor, click outside the window (the world or the dimmed backdrop) to drop it: left drops it all, right drops one
     if (e.pointerType !== "mouse" || !CUR.k || !pcInv() || !dragOut(e.target)) return;
     e.preventDefault(); e.stopImmediatePropagation(); CUR.eat = performance.now(); if (hp <= 0 || titleOpen) return;
@@ -29206,7 +29222,43 @@ var ATK = { on: false, mine: false };
     give(id, 1, undefined, undefined, true); S[f] = 0; ICO = {}; armKey = ""; spriteKey = ""; mine = null; reslot(); hbDirty = true;
     toast("Your " + K.L[cur].n + " went in your bag.", "#cfe0e8"); thud(360, 0.04); save(); if (packOpen) renderPack();
   }
+  // SPARE ARMOR PIECES: a helmet, leggings or boots dragged off you goes in your bag as an item (keeping its wear), and goes back on the same way
+  ARMORS.forEach(function (A, t) { if (!t || !A) return; APK.forEach(function (k) { var id = "sp_" + k + t; ITEMS[id] = { n: apName(k, t), spare: k, d: "A spare " + apName(k, t) + ". Drag it onto your " + APC[k].n.toLowerCase() + " slot (or tap it) to wear it." }; ORDER.push(id); }); });
+  function apMax(k, t) { return Math.round((DUR.arm[t] || 0) * APC[k].dur); }
+  function unequipPiece(k) {
+    var t = (S.ap || {})[k] | 0; if (!t) return; var id = "sp_" + k + t; if (room(id) < 1) { nag("No room in your bag."); return; }
+    spwPush(id, durOf(k), apMax(k, t)); give(id, 1, undefined, undefined, true); S.ap[k] = 0; delete S.dur[k]; ICO = {}; spriteKey = ""; reslot(); hbDirty = true;
+    toast("Your " + apName(k, t) + " went in your bag.", "#cfe0e8"); thud(360, 0.04); save(); if (packOpen) renderPack();
+  }
+  function equipPiece(id) {
+    var m = id.match(/^sp_(helm|legs|boots)(\d)$/); if (!m || !(S.inv[id] > 0)) return; var k = m[1], t = +m[2]; if (!S.ap || typeof S.ap !== "object") S.ap = {}; var cur = S.ap[k] | 0;
+    if (cur === t) { nag("You're already wearing a " + apName(k, t) + "."); return; }
+    var nd = spwTake(id, apMax(k, t)); S.inv[id]--; if (S.inv[id] <= 0) delete S.inv[id];
+    if (cur > 0) { spwPush("sp_" + k + cur, durOf(k), apMax(k, cur)); give("sp_" + k + cur, 1, undefined, undefined, true); }
+    S.ap[k] = t; S.dur[k] = nd; ICO = {}; spriteKey = ""; reslot(); hbDirty = true; toast("Wearing the " + apName(k, t) + (cur > 0 ? ". Your " + apName(k, cur) + " went in your bag." : "."), "#f2c14e"); snd("open", "Rare"); save(); if (packOpen) renderPack();
+  }
+  // GEAR DRAG: everything you wear can be dragged off into your bag (or onto the items), and the matching item dragged back on.
+  // eqk = "arm" / "wpn" / "pick" / "bow" (spare tools), "helm" / "legs" / "boots" (armor pieces), "charm:<i>" (a worn charm), "g:back|lamp|mount" (More gear)
+  function eqHas(ek) {
+    if (SPK[ek]) return (S[SPK[ek].f] | 0) > 0; if (APC[ek]) return ((S.ap || {})[ek] | 0) > 0;
+    var c = /^charm:(\d+)$/.exec(ek); if (c) return !!S.charms.on[+c[1]]; var g = /^g:(\w+)$/.exec(ek); if (g) return !!gearS()[g[1]]; return false;
+  }
+  function eqIcon(ek) {
+    if (SPK[ek]) return SPK[ek].f === "tier" ? "pick" + S.tier : ek + S[SPK[ek].f]; if (APC[ek]) return "ap_" + ek + S.ap[ek];
+    var c = /^charm:(\d+)$/.exec(ek); if (c) return "charm_" + S.charms.on[+c[1]]; var g = /^g:(\w+)$/.exec(ek); if (g) return gearS()[g[1]]; return "";
+  }
+  function eqItem(ek) { if (SPK[ek]) return "sp_" + ek + (S[SPK[ek].f] | 0); if (APC[ek]) return "sp_" + ek + ((S.ap || {})[ek] | 0); var g = /^g:(\w+)$/.exec(ek); return g ? gearS()[g[1]] : ""; }
+  function eqOff(ek) {
+    if (SPK[ek]) return unequipGear(ek); if (APC[ek]) return unequipPiece(ek);
+    var c = /^charm:(\d+)$/.exec(ek); if (c) { var ck = S.charms.on[+c[1]]; if (ck) wearCharm(ck); if (packOpen) renderPack(); return; }
+    var g = /^g:(\w+)$/.exec(ek); if (g) { gearOff(g[1]); if (packOpen) renderPack(); }
+  }
+  function eqFits(ek, k) {   // can this bag item go in that slot?
+    if (!k) return false; if (SPK[ek] || APC[ek]) return new RegExp("^sp_" + ek + "\\d$").test(k); var g = /^g:(\w+)$/.exec(ek); return !!(g && GEARS[g[1]] && GEARS[g[1]].ok(k));
+  }
+  function eqOn(ek, k) { var g = /^g:(\w+)$/.exec(ek); if (g) { gearEquip(g[1], k); if (packOpen) renderPack(); return; } if (APC[ek]) return equipPiece(k); equipSpare(k); }
   function equipSpare(id) {
+    if (/^sp_(helm|legs|boots)\d$/.test(id)) return equipPiece(id);
     var m = id.match(/^sp_(wpn|arm|pick|bow)(\d)$/); if (!m || !(S.inv[id] > 0)) return; var kd = m[1], t = +m[2], K = SPK[kd], cur = S[K.f] | 0;
     if (cur === t) { nag("You're already using a " + K.L[t].n + "."); return; }
     var nd = K.d && DUR[K.d] ? spwTake(id, DUR[K.d][t]) : 0;
