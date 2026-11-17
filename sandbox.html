@@ -31,7 +31,7 @@
 <link rel="stylesheet" href="styles.css?v=cardstats1">
 <link rel="stylesheet" href="ui.css?v=cardback1">
 <link rel="preload" href="fonts/bagel-fat-one-latin.woff" as="font" type="font/woff" crossorigin>
-<link rel="stylesheet" href="sandbox.css?v=ui115-overstock">
+<link rel="stylesheet" href="sandbox.css?v=ui116-landscape">
 <style>
 /* loading screen: inline so it paints before the big game files arrive */
 .dl-load{position:fixed;inset:0;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:24px;overflow:hidden;color:#e6f5ec;font-family:Nunito,system-ui,sans-serif;background:radial-gradient(120% 80% at 50% 30%,#163a2b 0,#0b2019 45%,#050c09 100%);transition:opacity .55s ease,visibility .55s}
@@ -211,6 +211,14 @@ html.dl-on,html.dl-on body{overflow:hidden}
     <div class="pz-body" id="sbxPauseBody"></div>
    </div>
   </section>
+  <div class="sbx-rot" id="sbxRot" role="alertdialog" aria-modal="true" aria-labelledby="sbxRotH">
+   <div class="rot-card">
+    <div class="rot-ph" aria-hidden="true"><i class="rot-arc"></i><div class="rot-dev"><span class="rot-scr"><b class="rot-sky"></b><b class="rot-gnd"></b><b class="rot-frog"></b></span></div></div>
+    <h2 id="sbxRotH">Turn your phone sideways</h2>
+    <p>Delve plays in landscape, so you can see more of the swamp and both thumbs get their own side.</p>
+    <small id="sbxRotSub">Your game is paused. It'll be right here when you turn back.</small>
+   </div>
+  </div>
   <section class="sbx-dead" id="sbxDead" role="alertdialog" aria-modal="true" aria-labelledby="sbxDeadH" hidden>
    <div class="dd-card" id="sbxDeadBody"></div>
   </section>
@@ -254,7 +262,7 @@ html.dl-on,html.dl-on body{overflow:hidden}
 <script src="delve-furniture.js?v=furn8" onload="__dl('furn')"></script>
 <script src="delve-decor.js?v=decor4" onload="__dl('decor')"></script>
 <script src="delve-pixmobs.js?v=pix1" onload="__dl('pix')"></script>
-<script src="sandbox.js?v=delve460-zaruk" onload="__dl('game')"></script>
+<script src="sandbox.js?v=delve461-landscape" onload="__dl('game')"></script>
 <script src="gamefs.js?v=4-esc" onload="__dl('fs')"></script>
 <script>
   // Esc belongs to the game in full screen: it closes the window you have open (or opens the menu) instead of leaving full screen.

@@ -2829,7 +2829,7 @@
     });
     var y = top;   // (the tip card slides in from the side now, out of this lane)
     to.style.top = y + "px"; var toH = to.classList.contains("on") && to.textContent ? to.offsetHeight + 8 : 0;
-    if (bc) bc.style.top = Math.max(R.height * 0.26, y + toH) + "px";
+    if (bc) { var bt = Math.max(R.height * 0.26, y + toH); if (R.height <= 520 && R.width > R.height) bt = Math.max(y, Math.min(bt, R.height * 0.5 - (bc.offsetHeight || 60) - 10)); bc.style.top = bt + "px"; }   // short landscape phones: keep it clear of the tip box above the controls
     laneSig = "on";
   }
   var BSUB = ["Mud, mangroves and glowing spores", "Basalt, lava and Cinder Ore", "Frostrock and Frost Crystal", "Murkwater in bloom: petals on the wind", "Ember Bog's sunny side: palms, dunes and lagoons", "Frostfen thawed into an old, shadowy forest"];
@@ -27120,6 +27120,19 @@
   window.addEventListener("pagehide", function () { save(); var e = curEntry(); if (CLOUD.state === "on" && e && e.cdirty && !e.conflict && !CLOUD.busy) cloudPush(curId, true); });
   window.addEventListener("resize", resize);
   if (window.ResizeObserver) new ResizeObserver(resize).observe(stageEl);
+  // PHONES PLAY IN LANDSCAPE: while a phone is held upright the "Turn your phone sideways" screen (#sbxRot, shown by a CSS media query) covers
+  // everything, and the game pauses so nothing can hurt you meanwhile. In full screen on Android the browser can also lock the screen sideways.
+  var ROTQ = matchMedia ? matchMedia("(orientation:portrait) and (pointer:coarse) and (max-width:600px)") : { matches: false };
+  function rotLock() { try { if ((document.fullscreenElement || document.webkitFullscreenElement) && coarse && Math.min(screen.width, screen.height) <= 600 && screen.orientation && screen.orientation.lock) { var pr = screen.orientation.lock("landscape"); if (pr && pr.catch) pr.catch(function () {}); } } catch (e) {} }
+  function rotChk() {
+    var up = !!ROTQ.matches;
+    if (up && !titleOpen && !pauseOpen && !trans) { try { openPause(); } catch (e) {} }
+    if (up) { keys.l = keys.r = keys.j = keys.d = keys.u = 0; tk.l = tk.r = tk.j = 0; aim.down = false; mine = null; }
+    var sb = $("sbxRotSub"); if (sb) sb.textContent = titleOpen ? "Then pick up where you left off." : "Your game is paused. It'll be right here when you turn back.";
+  }
+  if (ROTQ.addEventListener) ROTQ.addEventListener("change", rotChk); else if (ROTQ.addListener) ROTQ.addListener(rotChk);
+  document.addEventListener("fullscreenchange", rotLock); document.addEventListener("webkitfullscreenchange", rotLock);
+  (function () { var rb = $("sbxRot"); if (rb) rb.addEventListener("click", function () { rb.classList.remove("show"); }); })();   // (the dev preview closes with a tap)
 
   buildAtlas(); load(); layInit(); resize(); applyLayout(); stageEl.style.setProperty("--cs", (UIS = clamp(UIS, 0.6, 1.8))); mkSprite(); drawBar();
   $("sbxHint").textContent = S.qi === 0 ? (coarse ? (JOYALL ? "Drag the stick to walk." : "Use the arrows to walk.") + " Hold your finger on tree leaves to gather Sticks." : "A / D walk, Space jumps. Hold the mouse on tree leaves to gather Sticks.") : coarse ? (JOYALL ? "Drag the stick to walk." : "Use the arrows to walk.") + " Press and hold to dig; the target box sits just above your finger." : "A / D walk, Space jumps. Hold the mouse on a block to dig. E opens Crafting, J your Journal, B your Backpack.";
@@ -28791,6 +28804,7 @@
       ["Creature voices: wolf growl, snarl, pant, yelp", function () { if (panelOpen) closePanel(); ["w", "a", "b", "h"].forEach(function (ev, j) { setTimeout(function () { vxPlay("wolf", ev, 0, 0, 0, 0, true); }, j * 1600); }); }],
       ["Key conflict pop-up (Bind / Cancel)", function () { if (panelOpen) closePanel(); KEYMAP.pend = { id: "build", k: "e", oid: "craft" }; keyPopShow(); }],
       ["Loading screen: new world", function () { loadScreen("world", function () {}, { sub: "Preview", min: 3000 }); }],
+      ["Turn-your-phone screen (preview, tap to close)", function () { if (panelOpen) closePanel(); var rb = $("sbxRot"); if (rb) rb.classList.add("show"); }],
       ["Loading screen: into Malcruor", function () { loadScreen("malc", function () {}, { min: 3500 }); }],
       ["Loading screen: home to the SwampRealms", function () { loadScreen("home", function () {}, { min: 3000 }); }],
       ["Loading screen: into the SwampRealms", function () { loadScreen("realm", function () {}, { min: 3000 }); }],

@@ -3131,3 +3131,26 @@ html.inv-hold .sbx-is:hover{outline:2px solid #f2c14e;outline-offset:-2px}
 .sbx-pops{max-width:min(250px,60vw)}
 .sbx-bcard b{font-size:clamp(1.25rem,3.6vw,2rem)!important}
 .pk2-ovst .pk2-lbl b{color:#7ff5d0}.pk2-ovst .pk2-ov{border-color:#4ee6b466;box-shadow:0 0 10px -6px #4ee6b4}
+/* ---- phones play in landscape: a "turn your phone" screen over everything while a phone is held upright ---- */
+.sbx-rot{position:fixed;inset:0;z-index:2147483000;display:none;place-items:center;padding:24px;background:radial-gradient(120% 80% at 50% 30%,#123a2c 0%,#071611 55%,#030907 100%);color:#f6eedb;font-family:Nunito,system-ui,sans-serif;text-align:center;touch-action:none;overflow:hidden}
+.sbx-rot::before,.sbx-rot::after{content:"";position:absolute;inset:-20%;pointer-events:none;background-image:radial-gradient(2px 2px at 20% 30%,#b8ffe0cc,transparent 60%),radial-gradient(2px 2px at 70% 20%,#fff2b0cc,transparent 60%),radial-gradient(1.6px 1.6px at 40% 70%,#9ffff0cc,transparent 60%),radial-gradient(2px 2px at 85% 60%,#b8ffe0aa,transparent 60%),radial-gradient(1.4px 1.4px at 12% 82%,#fff2b0aa,transparent 60%),radial-gradient(1.8px 1.8px at 58% 88%,#9ffff0aa,transparent 60%);animation:rotFly 9s linear infinite}
+.sbx-rot::after{animation-duration:14s;animation-direction:reverse;opacity:.6;transform:scale(1.3)}
+@keyframes rotFly{from{transform:translateY(0)}to{transform:translateY(-12%)}}
+@media (orientation:portrait) and (pointer:coarse) and (max-width:600px){.sbx-rot{display:grid}}
+.sbx-rot.show{display:grid}
+.rot-card{position:relative;z-index:1;display:grid;justify-items:center;gap:10px;max-width:330px;padding:26px 22px 22px;border-radius:18px;background:linear-gradient(#0b1a15f8,#050e0bfc);border:1px solid #f2c14e8c;box-shadow:0 20px 60px -12px #000,0 0 40px -6px #f2c14e40}
+.rot-card h2{margin:6px 0 0;text-transform:none;letter-spacing:.01em;font-family:"DelveBagel","Bagel Fat One",Nunito,sans-serif;font-weight:400;font-size:1.65rem;line-height:1.1;color:#ffe9a8;text-shadow:0 3px 0 #0008,0 0 22px #f2c14e55}
+.rot-card p{margin:0;font-size:.95rem;font-weight:700;line-height:1.4;color:#d8eadf}
+.rot-card small{margin-top:4px;padding:6px 12px;border-radius:999px;background:#10231c;border:1px solid #4ee6b455;color:#9ff0cf;font-size:.78rem;font-weight:800}
+.rot-ph{position:relative;width:132px;height:132px;display:grid;place-items:center}
+.rot-arc{position:absolute;inset:4px;border-radius:50%;border:3px dashed #4ee6b466;border-left-color:transparent;border-bottom-color:transparent;animation:rotArc 2.6s ease-in-out infinite}
+.rot-arc::after{content:"";position:absolute;right:6px;top:10px;border:8px solid transparent;border-top-color:#4ee6b4aa;transform:rotate(45deg)}
+.rot-dev{width:52px;height:92px;border-radius:12px;padding:6px 5px;background:linear-gradient(#2a3a33,#121a16);border:3px solid #f2c14e;box-shadow:0 8px 20px -6px #000,0 0 18px #f2c14e44;animation:rotTurn 2.6s cubic-bezier(.6,0,.2,1) infinite}
+.rot-scr{position:relative;display:block;width:100%;height:100%;border-radius:6px;overflow:hidden;background:#0e2a22}
+.rot-sky{position:absolute;inset:0 0 38% 0;background:linear-gradient(#1f6a52,#2a8a66)}
+.rot-gnd{position:absolute;left:0;right:0;bottom:0;height:38%;background:linear-gradient(#5a3a1e,#3a2410);border-top:3px solid #4ee68a}
+.rot-frog{position:absolute;left:50%;bottom:38%;width:12px;height:10px;margin-left:-6px;border-radius:6px 6px 3px 3px;background:#4ee66a;box-shadow:inset 0 -3px 0 #2a9a44,-3px -4px 0 -1px #4ee66a,3px -4px 0 -1px #4ee66a;animation:rotHop 2.6s ease-in-out infinite}
+@keyframes rotTurn{0%,18%{transform:rotate(0)}45%,80%{transform:rotate(-90deg)}100%{transform:rotate(0)}}
+@keyframes rotArc{0%,18%{transform:rotate(30deg);opacity:.35}45%,80%{transform:rotate(-60deg);opacity:1}100%{transform:rotate(30deg);opacity:.35}}
+@keyframes rotHop{0%,50%,70%,100%{transform:translateY(0)}60%{transform:translateY(-8px)}}
+@media(prefers-reduced-motion:reduce){.sbx-rot::before,.sbx-rot::after,.rot-arc,.rot-dev,.rot-frog{animation:none}.rot-dev{transform:rotate(-90deg)}}
