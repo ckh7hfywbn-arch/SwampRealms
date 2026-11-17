@@ -13357,8 +13357,8 @@
   }
   function useTool(dt) {
     canBusy = false;
-    if (DMODE && decoTry()) { mine = null; return; }   // DECORATE MODE: taps place, select and never dig or fight
-    var hDig = sel === "weapon" && wpnDig();   // TOOLS DIG: a weapon aimed at a block (no foe close by) cuts it like paws, and leaves, plants and wood go fast
+    if (DMODE && !atkOn() && decoTry()) { mine = null; return; }   // DECORATE MODE: taps place, select and never dig or fight
+    var hDig = sel === "weapon" && !atkOn() && wpnDig();   // TOOLS DIG: a weapon aimed at a block (no foe close by) cuts it like paws, and leaves, plants and wood go fast
     if (sel === "weapon" && !hDig) {   // swing: faces your aim, one swing per cooldown. Nothing takes damage until Stage 3 adds enemies.
       mine = null; if (!S.wpn) return;
       var wi = wpnInput(dt); if (!wi) return;
@@ -13369,6 +13369,7 @@
       thud((hv ? 160 : fin ? 220 : 300) + S.wpn * 70, hv ? 0.1 : 0.05); for (var sk = 0; sk < (hv ? 9 : fin ? 6 : 3); sk++) parts.push({ x: p.x + p.face * (0.9 + sk * 0.3), y: p.y - 1.1 - (sk % 3) * 0.25, vx: p.face * (hv ? 5 : 3), vy: -0.4 - (sk % 3) * 0.5, life: 0.22, max: 0.3, c: hv ? "#ffe48a" : WEAPONS[S.wpn].c, s: hv ? 4 : 3 });
       return;
     }
+    if (atkOn() && sel !== "bow") { mine = null; var at = pawTarget(); pawSwing(dt, at || { x: p.x + (p.face || 1) }); return; }   // ATTACK BUTTON: a paw swat with whatever you hold (never digs or places)
     var pt = pawTarget(); if (pt) { pawLock = true; pawSwing(dt, pt); return; }   // a creature under your aim: swat it, whatever you are holding
     var pzt = peaceAim(PAW.near + 0.3); if (pzt) { pawLock = true; PZT = pzt; pawSwing(dt, pzt); return; }   // pressing and holding on a peaceful creature: swat it
     if (pawLock) { if (aim.down) { mine = null; return; } pawLock = false; }   // still holding after a swat (the creature dodged): don't dig or build until you let go
@@ -18463,13 +18464,14 @@
     if (id === T.STONE && Math.random() < 0.12) give("pebble", 1, x, y - 0.55);
   }
   function caveTool(dt) {
-    var cpress = aim.down && !contPrev; contPrev = aim.down;
+    var catk = atkOn(), cpress = aim.down && !contPrev && !catk; contPrev = aim.down;
     if (cpress && aim.tx >= 0 && motoAtCell(aim.tx, aim.ty) && motoNear()) { mine = null; openMoto(); return; }   // GARAGE: tap the bike
     if (cpress && aim.tx >= 0 && !(cavePawTarget())) {   // CONTAINERS: a tap on one searches it / opens the chest, whatever you are holding
       var ctc = contAtCell(aim.tx, aim.ty), cdx = aim.tx + 0.5 - cp.x, cdy = aim.ty + 0.5 - (cp.y - 0.4);
       if (ctc && cdx * cdx + cdy * cdy <= CAVE_REACH * CAVE_REACH) { mine = null; if (!inGarage() && !contFull(ctc)) { nag("This " + ctc.n.toLowerCase().replace(/^cave /, "") + " is empty. It restocks in a few days."); return; } openCont(ctc); return; }   // an emptied one doesn't pop open again
     }
     var F = cave.F; if (sel === "weapon") { mine = null; caveSwing(dt); return; }
+    if (catk && sel !== "bow") { mine = null; var cat = cavePawTarget(); cavePaw(dt, cat || { x: cp.x + (cp.face || 1), y: cp.y + 0.2, r: 0.3 }); return; }   // ATTACK BUTTON: a paw swat, never mining
     var cpt = cavePawTarget(); if (cpt) { pawLock = true; cavePaw(dt, cpt); return; }
     if (pawLock) { if (aim.down) { mine = null; return; } pawLock = false; }
     if (sel === "bow") { useBow(dt); return; }
@@ -22013,6 +22015,7 @@
     var sc = OCS, pl = sc.pl, lp = !aim.down && aim.press && aim.ptx >= 0 && !sc.pd, press = (aim.down && !sc.pd) || lp; sc.pd = aim.down; aim.press = 0; if (sc.cool > 0) sc.cool -= dt; ocHaz(dt);
     if (lp) { aim.tx = aim.ptx; aim.ty = aim.pty; sc.cool = 0; }   // a click quicker than a frame still counts once
     if (sel === "rod") { ocRod(dt, press); return; } else if (sc.fish) sc.fish = null;
+    if (atkOn()) { sc.mineP = null; mine = null; if (sel === "weapon") ocSwing(dt); else ocPaw(); return; }   // ATTACK BUTTON: only ever fights (a sword swings, anything else swats)
     if (!aim.down && !lp) { sc.mineP = null; mine = null; return; }
     var pcx = pl.x, pcy = pl.y - 0.45, wx = (aim.mx - ox) / ts, wy = (aim.my - oy) / ts;
     if (press && sel !== "weapon") {   // a tap on a sea creature or a chest
@@ -22053,6 +22056,12 @@
     if (id === OT.BARREL) { ocLoot({ tier: Math.min(1, SO.zoneOf(depth)), kind: "barrel" }).slice(0, 2).forEach(function (q) { give2(q[0], q[1]); }); if (Math.random() < 0.25) give2("kelpwrap", 1); return; }
     (d.drops || []).forEach(function (q) { if (Math.random() < q[3]) give2(q[0], q[1] + Math.floor(Math.random() * (q[2] - q[1] + 1))); });
     if (id === OT.ROCK || id === OT.DEEP) { S.st.cmined = (S.st.cmined || 0) + 1; }
+  }
+  function ocPaw() {   // a paw swat underwater (the Attack button with anything but a sword): bare-paw damage to whatever is just in front
+    var sc = OCS, pl = sc.pl; if (sc.cool > 0) return; sc.cool = PAW.cd; S.st.swings++; S.st.swats = (S.st.swats || 0) + 1; thud(240, 0.04);
+    var cx = pl.x, cy = pl.y - 0.45, ax = (aim.mx - ox) / ts - cx, ay = (aim.my - oy) / ts - cy, al = Math.sqrt(ax * ax + ay * ay) || 1; ax /= al; ay /= al; if (Math.abs(ax) > 0.15) pl.face = ax < 0 ? -1 : 1;
+    for (var s2 = 0; s2 < 3; s2++) { var an = Math.atan2(ay, ax) + (s2 - 1) * 0.35; parts.push({ x: cx + Math.cos(an) * 0.8, y: cy + Math.sin(an) * 0.8, vx: Math.cos(an) * 2, vy: Math.sin(an) * 2, g: 0, life: 0.16, max: 0.2, c: PAW.c, s: 2.5 }); }
+    sc.mobs.forEach(function (m) { if (m.dead) return; var dx = m.x - cx, dy = m.y - cy, d = Math.sqrt(dx * dx + dy * dy) || 0.01; if (d > 1.6 + m.r || (dx * ax + dy * ay) / d < 0.15) return; ocHitMob(m, pawDmg(), dx / d, dy / d); });
   }
   function ocSwing(dt) {
     var sc = OCS, pl = sc.pl; if (!aim.down || !S.wpn) return;
@@ -27146,10 +27155,12 @@
   function homeGateArt(g) { hDrawK(g, hsSignpost(), HGATE.x - 1, HGATE.y + 1, 2, 30); hDrawK(g, hsLamppost(), HGATE.x + 2, HGATE.y + 1, 0, 34); }
   function loopErr(er) { LERR.n++; var m = String(er && er.message || er); if (m !== LERR.last || LERR.n % 120 === 1) { LERR.last = m; try { console.error("[Delve] frame error:", er); } catch (e) {} } try { faintQ = null; if (hp <= 0) { hp = 1; faintQ = "hit"; } } catch (e) {} }
   var PZN = -1;
-  // ATTACK BUTTON: while it is held, the game aims for you, as if a finger were held on the nearest creature in front of you (within about 7
-  // blocks; in caves and on islands, the nearest one around you), so every weapon, the bow and bare-paw swats work exactly as when you
-  // press on a creature. With nothing near, it swings just in front of you. At sea the button fires the cannons instead (see seaFire).
-  var ATK = { on: false, prev: null };   // prev: what you held before the button switched to your weapon
+  // ATTACK BUTTON: while it is held, the game aims for you at the nearest creature in front of you (within about 7 blocks; in caves and on
+  // islands, the nearest one around you). It only ever fights: it never digs, chops, places, picks up or opens anything (atkSwat in useTool
+  // and caveTool). A sword swings and combos as usual and the bow shoots; anything else in your hand (a pick, a block, food...) is a paw
+  // swat. With nothing near it swings at the air in front of you. At sea it fires the cannons instead (see seaFire).
+  function atkOn() { return ATK.on && aim.id === "atk"; }
+  var ATK = { on: false };
   function atkTarget() {
     var best = null, bd = 1e9, px, py, face;
     if (OCS) { var pl = OCS.pl || {}; px = pl.x; py = pl.y - 0.45; face = pl.face || 1;
@@ -27162,10 +27173,11 @@
   }
   function atkTick() {
     var want = !!tk.a && !panelOpen && !menuOpen && !titleOpen && !trans && !deadUI && !HOME && !(OCS && OCS.sea);
-    if (!want) { if (ATK.on) { ATK.on = false; if (aim.id === "atk") { aim.down = false; aim.id = null; mine = null; aim.tx = -1; } if (ATK.prev !== null && sel === "weapon") { sel = ATK.prev; hbDirty = true; } ATK.prev = null; } return; }
+    if (!want) { if (ATK.on) { ATK.on = false; if (aim.id === "atk") { aim.down = false; aim.id = null; mine = null; aim.tx = -1; } } return; }
     if (aim.id !== null && aim.id !== "atk") return;   // a finger on the world wins
     var T2 = atkTarget(); aim.mx = ox + T2[0] * ts; aim.my = oy + T2[1] * ts;
-    if (!ATK.on) { ATK.on = true; ATK.prev = null; if (S.wpn && sel !== "weapon" && sel !== "bow") { ATK.prev = sel; sel = "weapon"; hbDirty = true; }   // the button always fights with your weapon (or your bow, if you are holding it)
+    if (ATK.on && aim.id === "atk" && sel === "weapon") aim.down = !aim.down;   // a sword: a fresh tap every other frame, so holding the button chains the combo (the cooldown sets the pace)
+    if (!ATK.on) { ATK.on = true;
       aim.id = "atk"; aim.down = true; aim.press = 1; aim.ptx = aim.tx; aim.pty = aim.ty; cool = 0; aim.t0 = performance.now(); aim.dx = Math.floor(T2[0]); aim.dy = Math.floor(T2[1]); aim.door = aim.chest = aim.stn = aim.hole = false; aim.lad = ""; $("sbxHint").classList.remove("on"); }
   }
   function loop(now) {
