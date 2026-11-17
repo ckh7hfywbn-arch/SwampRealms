@@ -3188,3 +3188,5 @@ html.sbx-txbig .sbx-stage>.sbx-pack,html.sbx-txbig .sbx-stage>.sbx-panel,html.sb
 .sbx-title .a2h-ic::after{content:counter(a2h);position:absolute;top:-6px;left:-6px;display:grid;place-items:center;width:17px;height:17px;border-radius:50%;background:#f2c14e;color:#1a1405;font:900 .66rem/1 Nunito,system-ui,sans-serif}
 .sbx-title .a2h-note{margin:0 0 14px;padding:9px 12px;border-radius:12px;background:rgba(242,193,78,.08);border:1px solid rgba(242,193,78,.25);font-weight:600;font-size:.82rem;line-height:1.4;color:#d4ecdf}
 .sbx-title .a2h-note b{color:#ffe9a8}
+.sbx-title .tt-a2h{max-height:88vh;overflow:auto;overscroll-behavior:contain}
+.sbx-title .tt-a2h .tt-hcols.one{grid-template-columns:1fr}

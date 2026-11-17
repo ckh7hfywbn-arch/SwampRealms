@@ -12802,12 +12802,12 @@
   window.addEventListener("appinstalled", function () { A2H.ev = null; if (titleOpen) renderTitle(); toast("Delve is on your Home Screen. Open it from the frog icon for full screen.", "#4ee6b4"); });
   function a2hHtml() {
     var st = function (ic, t) { return '<li><span class="a2h-ic">' + ttIcon(ic) + "</span><span>" + t + "</span></li>"; };
-    var ios = '<div class="a2h-col"><h3>iPhone and iPad</h3><ol>' + st("share", "Tap the <b>Share</b> button in your browser's toolbar.") + st("addsq", "Scroll down and tap <b>Add to Home Screen</b>, then <b>Add</b>.") + st("home", "Open Delve from the new <b>frog icon</b>.") + "</ol></div>";
+    var ios = '<div class="a2h-col"><h3>iPhone and iPad</h3><ol>' + st("share", "Tap <b>Share</b>. Safari: the toolbar button. Opera: the menu, then <b>Share</b>.") + st("addsq", "Scroll down and tap <b>Add to Home Screen</b>, then <b>Add</b>.") + st("home", "Open Delve from the new <b>frog icon</b>.") + "</ol></div>";
     var and = '<div class="a2h-col"><h3>Android</h3><ol>' + st("dots", "Tap the browser's <b>menu</b> (the three dots).") + st("addsq", "Tap <b>Add to Home screen</b> or <b>Install app</b>.") + st("home", "Open Delve from the new <b>frog icon</b>.") + "</ol></div>";
     return '<div class="tt-how tt-a2h" role="group" aria-label="Add to Home Screen">'
-      + '<div class="a2h-top"><img alt="" src="delve-icon-180.png"><div><h2>Add Delve to your Home Screen</h2><p>It opens full screen and sideways, with no browser bars, like a real app. Your worlds stay the same.</p></div></div>'
-      + '<div class="tt-hcols">' + (A2H.droid ? and + ios : ios + and) + "</div>"
-      + '<p class="a2h-note"><b>Not working?</b> Private or incognito tabs can\'t add to the Home Screen, so open Delve in a normal tab first. On iPhone, Safari works best. If an old Delve icon opens with the browser bars, delete it and add it again.</p>'
+      + '<div class="a2h-top"><img alt="" src="delve-icon-180.png"><div><h2>Add Delve to your Home Screen</h2><p>It opens full screen and sideways, with no browser bars, like a real app.' + (A2H.ios ? ' <b>On iPhone the icon keeps its own saves:</b> ' + (CLOUD.state === "on" ? "you're signed in, so your cloud worlds come with you." : "sign in first (top right) so your worlds come with you.") : "") + '</p></div></div>'
+      + '<div class="tt-hcols' + (A2H.ios || A2H.droid ? " one" : "") + '">' + (A2H.droid ? and : A2H.ios ? ios : ios + and) + "</div>"
+      + '<p class="a2h-note"><b>Not working?</b> A browser\'s own heart, bookmark or "Home" button only saves Delve on the browser\'s start page, not on your phone. Use <b>Share</b>, then <b>Add to Home Screen</b>. Private or incognito tabs can\'t add to the Home Screen. On iPhone, if your browser\'s Share sheet has no "Add to Home Screen", open Delve in Safari just once to add it. After that the icon works on its own.</p>'
       + '<button type="button" class="tt-back" data-tt="back">' + '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>Back</button></div>';
   }
   function a2hGo() {
