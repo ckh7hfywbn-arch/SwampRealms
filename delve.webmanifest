@@ -1,6 +1,6 @@
 {
-  "name": "SwampRealms: Sogmere",
-  "short_name": "Sogmere",
+  "name": "SwampRealms: Adventure",
+  "short_name": "Adventure",
   "description": "A 2D dig-and-build sandbox in the swamp.",
   "start_url": "/sandbox",
   "scope": "/",

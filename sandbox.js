@@ -1,4 +1,4 @@
-// ===== SwampRealms: Sogmere (Stage 1: single-player dig-and-build sandbox) =====
+// ===== SwampRealms: Adventure (Stage 1: single-player dig-and-build sandbox) =====
 // Load AFTER cards.js, weapons.js, avatar.js, store.js, account.js, menu.js and sandbox-world.js (see sandbox.html).
 // Everything lives inside this function so it can never clash with globals in cards.js / store.js.
 //
@@ -247,7 +247,7 @@
   if (T.X_farmland !== undefined) TILES[T.X_farmland].drop = "mud"; if (T.X_farmwet !== undefined) TILES[T.X_farmwet].drop = "mud";
   DECOR.forEach(function (r) { r.deco = 1; });
   // ==================================================================================================
-  // QUESTS: the story of Sogmere. One main quest line in six chapters (S.qi = index into MAIN), told by Old Croaker,
+  // QUESTS: the story of Adventure. One main quest line in six chapters (S.qi = index into MAIN), told by Old Croaker,
   // plus side quests (S.ms[id] = done) that open up chapter by chapter. Every quest counts from lifetime stats,
   // so doing things early still counts. Rewards are items. TO ADD A QUEST: one line in MAIN (with ch) or SIDE.
   //   tg = tile ids the guide ring points at on the surface, deep = how far below the surface still counts, rw = reward.
@@ -1068,7 +1068,7 @@
     var o = null; try { o = JSON.parse(localStorage.getItem(IDXKEY)); } catch (e) {}
     if (!o || !Array.isArray(o.list)) {
       o = { v: 1, last: "", n: 0, list: [] };
-      try {   // one-time move of the old single save into the first slot (whoever opens Sogmere first on this device keeps it)
+      try {   // one-time move of the old single save into the first slot (whoever opens Adventure first on this device keeps it)
         var old = localStorage.getItem(KEY);
         if (old && !localStorage.getItem("swamp-delve-legacy-claimed")) { localStorage.setItem("swamp-delve-legacy-claimed", WUSER); var id = newId(); localStorage.setItem(wkey(id), old); o.n = 1; o.list.push({ id: id, name: "My Swamp", made: Date.now(), played: Date.now() }); o.last = id; }
       } catch (e) {}
@@ -2698,7 +2698,7 @@
   }
   var snd = function (n, a) { try { if (typeof SFX !== "undefined" && SFX[n]) SFX[n](a); } catch (e) {} };
   var FXB = null;
-  // CALMER MIX (Nov 2026): every Sogmere sound effect goes through one bus that sits about 30% lower than before and through a gentle limiter,
+  // CALMER MIX (Nov 2026): every Adventure sound effect goes through one bus that sits about 30% lower than before and through a gentle limiter,
   // so when footsteps, digging, creatures and chimes pile up they blend instead of spiking. The Sound effects slider still scales it all.
   var FX_TRIM = 0.7;
   function fxOut() { if (!FXB) { FXB = ac.createGain(); try { var cp = ac.createDynamicsCompressor(); cp.threshold.value = -20; cp.knee.value = 14; cp.ratio.value = 4; cp.attack.value = 0.004; cp.release.value = 0.25; FXB.connect(cp); cp.connect(ac.destination); } catch (e) { FXB.connect(ac.destination); } } FXB.gain.value = OPT.fx * FX_TRIM; return FXB; }   // Effects volume (Options)
@@ -3076,7 +3076,7 @@
     if (S.inv[item] <= 0) { delete S.inv[item]; if (sel === item) sel = "pick", bare = true; }
     hbDirty = true; if (panelOpen) renderPanel();
   }
-  // ---------- ENEMIES: Bramble Bug and Swamp Frog (the first two Swamp Realms Adventure enemies, rebuilt for Sogmere) ----------
+  // ---------- ENEMIES: Bramble Bug and Swamp Frog (the first two Swamp Realms Adventure enemies, rebuilt for Adventure) ----------
   // Sizes are in tiles. dmg is health taken from you. They come out at night and underground (weapon or not; see spawnEnemy), and drop the same Fragments the Adventure uses.
   var ENEMY = {
     bug: { n: "Bramble Bug", hp: 12, w: 1.1, h: 0.8, dmg: 9, glow: "#ff6b82", chip: "#9a52a8", frag: "bugfrag", chance: 0.6, max: 2 },
@@ -3365,7 +3365,7 @@
     popup("Enemy defeated", (sp ? (e.small ? "Little " : "") + sp.n : eName(e)) + (drop ? " \u2022 +1 " + ITEMS[frag].n : ""), sp ? sp.glow : d.glow, "\u2694");
     if (e.k === "witch" && Math.random() < 0.3) { var pks = Object.keys(POTIONS), pk = pks[Math.floor(Math.random() * pks.length)]; give(pk, 1, e.x - 0.5, e.y - e.h - 1.3, true); }   // something from her bag
     var MEAT = { frog: 0.35, wolf: 0.6, gator: 0.7 }; if (MEAT[e.k] && ITEMS.rawmeat && !e.mc && Math.random() < MEAT[e.k]) give("rawmeat", 1, e.x - 0.5, e.y - e.h - 1.3, true);
-    if (drop) {   // loot: a Sogmere item, and (for bugs and frogs) the same Fragment is added to your Adventure bag
+    if (drop) {   // loot: a Adventure item, and (for bugs and frogs) the same Fragment is added to your Adventure bag
       give(frag, 1, e.x - 0.5, e.y - e.h - 0.9, true);
       try { if (typeof Fragments !== "undefined" && !e.mc && (e.k === "bug" || e.k === "frog")) Fragments.add(ITEMS[d.frag].frag, 1); } catch (er) {}
     }
@@ -3869,7 +3869,7 @@
       var c = document.createElement("canvas"); c.width = cv.width; c.height = cv.height; var g = c.getContext("2d");
       var f = PFILT[PHOTO.f][1] || (cv.classList.contains("grade") ? "saturate(1.1) contrast(1.04)" : ""); if (f && "filter" in g) g.filter = f; g.drawImage(cv, 0, 0); g.filter = "none"; photoFrame(c, g, PHOTO.fr || 0);
       var s = Math.max(1, c.width / 900), fs = Math.round(15 * s); g.font = "800 " + fs + "px Nunito, system-ui, sans-serif"; g.textAlign = "right"; g.textBaseline = "bottom";
-      g.fillStyle = "rgba(0,0,0,.45)"; g.fillText("SwampRealms: Sogmere", c.width - 14 * s + 1.5 * s, c.height - 12 * s + 1.5 * s); g.fillStyle = "rgba(255,246,220,.92)"; g.fillText("SwampRealms: Sogmere", c.width - 14 * s, c.height - 12 * s);
+      g.fillStyle = "rgba(0,0,0,.45)"; g.fillText("SwampRealms: Adventure", c.width - 14 * s + 1.5 * s, c.height - 12 * s + 1.5 * s); g.fillStyle = "rgba(255,246,220,.92)"; g.fillText("SwampRealms: Adventure", c.width - 14 * s, c.height - 12 * s);
       c.toBlob(function (bl) { if (!bl) return; if (share && photoShare(bl)) return; var u = URL.createObjectURL(bl), a = document.createElement("a"); a.href = u; a.download = "delve-photo-" + Date.now() + ".png"; document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(u); a.remove(); }, 1500); }, "image/png");
       S.st.photos = (S.st.photos || 0) + 1;
     } catch (e) { toast("Couldn't save the photo on this device.", "#f2c14e"); return; }
@@ -8142,7 +8142,7 @@
   }
   // ---- a guest enters the host's world ----
   function mpEnterGuest(m) {
-    if (m.wv !== SW.WORLDVER) { MP.why = "That world is from a different version of Sogmere. Both players should refresh the page."; try { MP.ws.close(); } catch (e) {} return; }
+    if (m.wv !== SW.WORLDVER) { MP.why = "That world is from a different version of Adventure. Both players should refresh the page."; try { MP.ws.close(); } catch (e) {} return; }
     var hostS = null; try { hostS = clean(JSON.parse(m.world)); } catch (e) {}
     if (!hostS) { MP.why = "Could not read the host's world."; try { MP.ws.close(); } catch (e) {} return; }
     if (S.dcarry) decoCarryCancel(true); if (S.dcarryD) decoDCancel(true); SIT = null;   // DECORATING: what you were moving goes in your bag first
@@ -8324,7 +8324,7 @@
     } else if (MP.ws || MP.status) {
       h += '<p class="mp-wait">' + esc(MP.status || "Connecting…") + '</p><div class="sbx-row"><button type="button" class="btn ghost" data-mp="leave">Cancel</button></div>';
     } else {
-      if (MP.err) h += '<p class="mp-err">' + esc(MP.err) + "</p>" + (MP.errLink && /^https:\/\/[a-z0-9.-]+\/sandbox\.html$/.test(MP.errLink) ? '<a class="btn" href="' + MP.errLink + '">Open the host\u2019s Sogmere</a>' : "");
+      if (MP.err) h += '<p class="mp-err">' + esc(MP.err) + "</p>" + (MP.errLink && /^https:\/\/[a-z0-9.-]+\/sandbox\.html$/.test(MP.errLink) ? '<a class="btn" href="' + MP.errLink + '">Open the host\u2019s Adventure</a>' : "");
       h += "<h3>Host this world</h3>";
       if (WUSER === "guest") h += '<p class="sbx-note">Sign in (top right) to open your world to friends. You can still join other worlds below.</p>';
       else h += '<p class="sbx-note">Up to 3 friends can join <b>' + esc(curEntry() ? curEntry().name : "this world") + '</b> with a room code. You run the world: creatures, bosses, crops and weather.</p><div class="mp-opts"><label><input type="checkbox" id="mpPub"> List it publicly</label><label><input type="checkbox" id="mpPvp"> Allow PvP</label></div><div class="sbx-row"><button type="button" class="btn" data-mp="host">Open my world</button></div>';
@@ -11246,7 +11246,7 @@
     (document.fullscreenElement || document.webkitFullscreenElement || (stageEl && stageEl.classList.contains("fs") ? stageEl : null) || document.body).appendChild(el); LS.el = el;   // (iPhones have no real fullscreen: the game's own full screen sits on top of everything, so the screen goes inside it)
     var bar = el.querySelector(".dl-bar"), pc = el.querySelector(".dl-st b"), tip = el.querySelector(".dl-tip"), cells = [];
     for (i = 0; i < N; i++) { var c = document.createElement("i"); bar.appendChild(c); cells.push(c); }
-    var cv = el.querySelector(".ls-logo"); if (cv) { try { DelveLogo.draw(cv, { b: Math.max(5, Math.min(9, Math.floor((Math.min(innerWidth, 700) - 48) / 54))) }); } catch (e) {} }
+    var cv = el.querySelector(".ls-logo"); if (cv) { try { DelveLogo.draw(cv, { b: Math.max(5, Math.min(9, Math.floor((Math.min(innerWidth, 700) - 48) / 68))) }); } catch (e) {} }
     var ti = Math.floor(Math.random() * k.tips.length); function nextTip() { tip.textContent = "Tip: " + k.tips[ti++ % k.tips.length]; } nextTip(); var tipT = setInterval(nextTip, 3200);
     var aim = 0.35, shown = 0, built = false, t0 = performance.now(), minT = o.min || (kind === "dawn" ? 900 : kind === "world" ? 1000 : 1300);
     function paint() {
@@ -12937,21 +12937,21 @@
     addsq: '<rect x="4" y="4" width="16" height="16" rx="3.5"/><path d="M12 8.5v7M8.5 12h7"/>',
     dots: '<circle cx="12" cy="5.5" r="1.3" fill="currentColor"/><circle cx="12" cy="12" r="1.3" fill="currentColor"/><circle cx="12" cy="18.5" r="1.3" fill="currentColor"/>'
   };
-  // ADD TO HOME SCREEN: the main menu offers it on phones and tablets (and on computers whose browser can install Sogmere). Where the browser
+  // ADD TO HOME SCREEN: the main menu offers it on phones and tablets (and on computers whose browser can install Adventure). Where the browser
   // can install it in one tap (Android Chrome, Edge, desktop Chrome) the button does that; otherwise (iPhone, iPad) it shows the steps.
   var A2H = { ev: null, ios: /iPhone|iPad|iPod/.test(navigator.userAgent || "") || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1), droid: /Android/.test(navigator.userAgent || "") };
   function a2hApp() { try { return !!(navigator.standalone || matchMedia("(display-mode: fullscreen)").matches || matchMedia("(display-mode: standalone)").matches); } catch (e) { return false; } }
   function a2hShow() { return !a2hApp() && (!!A2H.ev || coarse || A2H.ios); }
   window.addEventListener("beforeinstallprompt", function (e) { e.preventDefault(); A2H.ev = e; if (titleOpen && !TC.how && !TC.home) renderTitle(); });
-  window.addEventListener("appinstalled", function () { A2H.ev = null; if (titleOpen) renderTitle(); toast("Sogmere is on your Home Screen. Open it from the frog icon for full screen.", "#4ee6b4"); });
+  window.addEventListener("appinstalled", function () { A2H.ev = null; if (titleOpen) renderTitle(); toast("Adventure is on your Home Screen. Open it from the frog icon for full screen.", "#4ee6b4"); });
   function a2hHtml() {
     var st = function (ic, t) { return '<li><span class="a2h-ic">' + ttIcon(ic) + "</span><span>" + t + "</span></li>"; };
-    var ios = '<div class="a2h-col"><h3>iPhone and iPad</h3><ol>' + st("share", "Tap <b>Share</b>. Safari: the toolbar button. Opera: the menu, then <b>Share</b>.") + st("addsq", "Scroll down and tap <b>Add to Home Screen</b>, then <b>Add</b>.") + st("home", "Open Sogmere from the new <b>frog icon</b>.") + "</ol></div>";
-    var and = '<div class="a2h-col"><h3>Android</h3><ol>' + st("dots", "Tap the browser's <b>menu</b> (the three dots).") + st("addsq", "Tap <b>Add to Home screen</b> or <b>Install app</b>.") + st("home", "Open Sogmere from the new <b>frog icon</b>.") + "</ol></div>";
+    var ios = '<div class="a2h-col"><h3>iPhone and iPad</h3><ol>' + st("share", "Tap <b>Share</b>. Safari: the toolbar button. Opera: the menu, then <b>Share</b>.") + st("addsq", "Scroll down and tap <b>Add to Home Screen</b>, then <b>Add</b>.") + st("home", "Open Adventure from the new <b>frog icon</b>.") + "</ol></div>";
+    var and = '<div class="a2h-col"><h3>Android</h3><ol>' + st("dots", "Tap the browser's <b>menu</b> (the three dots).") + st("addsq", "Tap <b>Add to Home screen</b> or <b>Install app</b>.") + st("home", "Open Adventure from the new <b>frog icon</b>.") + "</ol></div>";
     return '<div class="tt-how tt-a2h" role="group" aria-label="Add to Home Screen">'
-      + '<div class="a2h-top"><img alt="" src="delve-icon-180.png"><div><h2>Add Sogmere to your Home Screen</h2><p>It opens full screen and sideways, with no browser bars, like a real app.' + (A2H.ios ? ' <b>On iPhone the icon keeps its own saves:</b> ' + (CLOUD.state === "on" ? "you're signed in, so your cloud worlds come with you." : "sign in first (top right) so your worlds come with you.") : "") + '</p></div></div>'
+      + '<div class="a2h-top"><img alt="" src="delve-icon-180.png"><div><h2>Add Adventure to your Home Screen</h2><p>It opens full screen and sideways, with no browser bars, like a real app.' + (A2H.ios ? ' <b>On iPhone the icon keeps its own saves:</b> ' + (CLOUD.state === "on" ? "you're signed in, so your cloud worlds come with you." : "sign in first (top right) so your worlds come with you.") : "") + '</p></div></div>'
       + '<div class="tt-hcols' + (A2H.ios || A2H.droid ? " one" : "") + '">' + (A2H.droid ? and : A2H.ios ? ios : ios + and) + "</div>"
-      + '<p class="a2h-note"><b>Not working?</b> A browser\'s own heart, bookmark or "Home" button only saves Sogmere on the browser\'s start page, not on your phone. Use <b>Share</b>, then <b>Add to Home Screen</b>. Private or incognito tabs can\'t add to the Home Screen. On iPhone, if your browser\'s Share sheet has no "Add to Home Screen", open Sogmere in Safari just once to add it. After that the icon works on its own.</p>'
+      + '<p class="a2h-note"><b>Not working?</b> A browser\'s own heart, bookmark or "Home" button only saves Adventure on the browser\'s start page, not on your phone. Use <b>Share</b>, then <b>Add to Home Screen</b>. Private or incognito tabs can\'t add to the Home Screen. On iPhone, if your browser\'s Share sheet has no "Add to Home Screen", open Adventure in Safari just once to add it. After that the icon works on its own.</p>'
       + '<button type="button" class="tt-back" data-tt="back">' + '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>Back</button></div>';
   }
   function a2hGo() {
@@ -13082,7 +13082,7 @@
       + r("Ambience", "Birds, wind, cave drips, the sea: each place's own sounds.", optVol("amb", OPT.amb, "Ambience volume"))
       + r("Creature sounds", "Growls, oinks, quacks and croaks from the creatures around you, now and then.", optSeg("cvox", OPT.cvox == null ? 0.5 : OPT.cvox, [[0, "Off"], [0.5, "Quiet"], [1, "Normal"]], "Creature sounds")); }
   function setGfx() { var r = optRow;
-    return r("Full screen", "Fills the whole screen. Sogmere does this on its own when you start playing.", optSeg("fs", fsWant(), [[1, "On"], [0, "Off"]], "Full screen"))
+    return r("Full screen", "Fills the whole screen. Adventure does this on its own when you start playing.", optSeg("fs", fsWant(), [[1, "On"], [0, "Off"]], "Full screen"))
       + r("Screen shake", "Explosions, bosses and big hits.", optSeg("shake", OPT.shake, [[0, "Off"], [0.5, "Low"], [1, "Full"]], "Screen shake"))
       + r("Camera look-ahead", "The view leads the way you are moving.", optSeg("look", OPT.look ? 1 : 0, [[1, "On"], [0, "Off"]], "Camera look-ahead"))
       + r("Enchantment glow", "A soft glow and sparkles around you when your gear is enchanted.", optSeg("eglow", OPT.eglow === false ? 0 : 1, [[1, "On"], [0, "Off"]], "Enchantment glow"))
@@ -14784,7 +14784,7 @@
       for (yy = 0; yy < h; yy++) for (xx = 0; xx < w; xx++) { gi = (P.y0 + yy) * W + P.x0 + xx; tiles.s(gi, keepT[yy * w + xx]); walls.s(gi, keepW[yy * w + xx]); }
       CELL.wob = cw0; CELL.edge = ce0; CELL.sw = cs0;
     }
-    try { bakeDepth(c, P); } catch (e) { try { console.warn("[Sogmere] building depth:", e); } catch (e2) {} }
+    try { bakeDepth(c, P); } catch (e) { try { console.warn("[Adventure] building depth:", e); } catch (e2) {} }
     P.gl = glows.splice(g0).map(function (q) { return [P.x0 + q[0] / ts, P.y0 + q[1] / ts, q[2], q[3], q[4]]; });   // its lamps, as world positions
     P.cv = cv; P.cts = ts; return cv;
   }
@@ -18500,7 +18500,7 @@
   }
 
   // ---------- CAVES (top-down, like the Stardew Valley mines) ----------
-  // On the surface Sogmere is side-on. Tap a Cave Hole (or press F next to it) and you climb down into a cave seen from ABOVE:
+  // On the surface Adventure is side-on. Tap a Cave Hole (or press F next to it) and you climb down into a cave seen from ABOVE:
   // walk up, down, left and right, break rocks and ore with your pick, place torches, and find the ladder down to the next floor.
   // While you are underground the surface is frozen (p, tiles and enemies are not touched), so leaving puts you back beside the hole.
   // Floors come from SbxCave.gen(runSeed, floor, biome). A new run seed is picked every time you enter, and floors stay in memory until you leave.
@@ -20392,7 +20392,7 @@
   }
   // ---------- DEVELOPER MODE: a cheat menu for trying things out quickly ----------
   // Unlock it once per device: Options tab > Developer mode > type the dev code (or open sandbox.html?dev=CODE). Only a hash of the code
-  // is kept here. Once unlocked, a "Dev" tab appears in the panel (press ` to jump to it). Everything in it only touches this Sogmere save:
+  // is kept here. Once unlocked, a "Dev" tab appears in the panel (press ` to jump to it). Everything in it only touches this Adventure save:
   // nothing reaches the Armory, Crystals or anyone else's world. Lock it again from the Dev tab.
   //   toggles (remembered on this device): god mode, fly, ghost (fly through blocks), fast dig, peaceful, FPS counter
   //   actions: heal, best gear, give any item, time of day, events (Blood Moon, star, rainbow), spawn creatures and bosses, teleports, map, quests
@@ -20550,7 +20550,7 @@
     h += card("Teleport", '<div class="dev-btns">' + b("tp:camp", "Camp") + b("tp:croak", "Old Croaker", 1) + b("tp:realm", "The SwampRealms") + BIOMES.map(function (B, i) { return b("tp:" + i, esc(B.n), 1); }).join("") + b("tp:west", "West edge", 1) + b("tp:east", "East edge", 1) + "</div>");
     h += card("World and quests", '<div class="dev-btns">' + b("map", "Reveal map", 1) + b("quest:one", "Finish this quest") + b("quest:ch", "Finish this chapter", 1) + b("zaruk", "Meet Zaruk again", 1) + "</div>"
       + '<p class="sbx-note">Story: chapter ' + (curCh() + 1) + ", quest " + (S.qi + 1) + " of " + MAIN.length + ". Day " + ((S.days | 0) + 1) + ", next Blood Moon on day " + ((S.bmNext | 0) + 1) + ".</p>");
-    h += card("Developer mode", row("Unlocked on this device", "Only changes this Sogmere save.", b("lock", "Lock", 1)));
+    h += card("Developer mode", row("Unlocked on this device", "Only changes this Adventure save.", b("lock", "Lock", 1)));
     return h;
   }
   function renderPanel() {
@@ -21725,7 +21725,7 @@
     if (HOME) { HOME.fk = null; HOME.gd = 1; HOME.vig = null; }   // in the homestead: everything it painted is painted again, so a picture that failed to draw comes back
     if (SLB) { cvFree(SLB.c); SLB = null; } if (SHL) { cvFree(SHL.c); SHL = null; } if (typeof WeakMap !== "undefined") SILH = new WeakMap();
     sprite = null; spriteKey = "";
-    if (!CVW.low) { CVW.low = true; lowq = true; dprCap = 1; try { localStorage.setItem("swamp-delve-q", "1"); } catch (e) {} toast("Your device ran low on graphics memory, so Sogmere switched to lighter graphics. You can change it in Options > Graphics.", "#f2c14e"); }
+    if (!CVW.low) { CVW.low = true; lowq = true; dprCap = 1; try { localStorage.setItem("swamp-delve-q", "1"); } catch (e) {} toast("Your device ran low on graphics memory, so Adventure switched to lighter graphics. You can change it in Options > Graphics.", "#f2c14e"); }
     resize();
   }
   ["contextlost", "contextrestored"].forEach(function (ev) { try { cv.addEventListener(ev, function () { try { chkClear(); natClear(); canFree(); TLC.clear(); } catch (e) {} }); } catch (e) {} });   // the graphics card was reset: every saved picture is painted again
@@ -27094,10 +27094,10 @@
   }
   var HROW = [0, 1, 1, 2, 6, 5, 4, 7, 0, 0, 0, 4, 1, 0, 0, 6, 0, 1, 1];   // which atlas row each homestead tile sits on
   // =====================================================================================================================================
-  // ---------- HOMESTEAD LOOK: built from Sogmere's own blocks ----------
-  // Every surface and object here is a real Sogmere block's art (the tile atlas and the block materials), seen from a gentle 3/4 tilt the way
+  // ---------- HOMESTEAD LOOK: built from Adventure's own blocks ----------
+  // Every surface and object here is a real Adventure block's art (the tile atlas and the block materials), seen from a gentle 3/4 tilt the way
   // caves and buildings are: Mossy Mud grass sits a step higher than the Mud fields and shows its mossy side along the south edge, Garden Soil
-  // and Watered Soil are the farm blocks, the path is Mossy Cobblestone, water is Sogmere's teal water over mud, trees are Swamp Log trunks
+  // and Watered Soil are the farm blocks, the path is Mossy Cobblestone, water is Adventure's teal water over mud, trees are Swamp Log trunks
   // under Leaves blocks, rocks are the cave boulders, and the cottage is Log Wall, Mossy Shingles, Stone Brick and a Swamp Door.
   // The ground is painted once (HG, 16 px per tile) and repainted only when it changes.
   var HG = null, HSPR = {}, HTID = {};
@@ -27259,7 +27259,7 @@
       if (c === 2) hgTilled(g, i, j, X, Y, id === HT.SOIL && homeWet(i, j), id === HT.SOIL && !!o.f[i + "," + j]);
       else if (c === 3) hgCobble(g, i, j, X, Y);
       else hgSoilTile(g, c === 4 ? 0 : c, i, j, X, Y, c === 4);
-      if (c === 4) {   // Sogmere's teal water, deeper away from the bank, soft rounded banks and a bright line along the near shore
+      if (c === 4) {   // Adventure's teal water, deeper away from the bank, soft rounded banks and a bright line along the near shore
         var dd = 0; for (var q = 1; q <= 3; q++) { if (C(i, j - q) === 4 && C(i - q, j) === 4 && C(i + q, j) === 4 && C(i, j + q) === 4) dd = q; else break; }
         var wN = C(i, j - 1) !== 4, wS = C(i, j + 1) !== 4, wW = C(i - 1, j) !== 4, wE = C(i + 1, j) !== 4, rr = 4;
         g.fillStyle = "rgba(" + (52 - dd * 6) + "," + (170 - dd * 14) + "," + (178 - dd * 8) + "," + (0.7 + dd * 0.07) + ")";
@@ -27304,7 +27304,7 @@
     }
     g.restore(); if (!R) HOME.gd = 0; HOME.gdr = null;
   }
-  // ---- objects: real Sogmere blocks, arranged ----
+  // ---- objects: real Adventure blocks, arranged ----
   function snowRoof(g, y0, y1, w) {   // winter: snow lies on a roof (only on what is already drawn there), thickest along the top
     if (HSEA !== 3) return; g.save(); g.globalCompositeOperation = "source-atop"; var gr = g.createLinearGradient(0, y0, 0, y1); gr.addColorStop(0, "rgba(248,252,255,.95)"); gr.addColorStop(0.55, "rgba(236,244,250,.78)"); gr.addColorStop(1, "rgba(236,244,250,.25)");
     g.fillStyle = gr; g.fillRect(0, y0, w, y1 - y0); g.fillStyle = "rgba(150,180,205,.35)"; for (var x = 0; x < w; x += 7) g.fillRect(x, y1 - 2 - (x % 3), 3, 2); g.restore();
@@ -27360,7 +27360,7 @@
     var out = hpCan(q.t.width, q.t.height); out.g.drawImage(q.t, 0, 0); out.g.drawImage(seasonCrown(q.c, v), 0, 0);
     return (HSPR[key] = { c: out.c, bx: q.bx, by: q.by });
   }
-  function hsTree(v) {   // a Sogmere tree: a Swamp Log trunk under a clump of Leaves blocks (the same blocks as the surface trees), dressed for the season
+  function hsTree(v) {   // a Adventure tree: a Swamp Log trunk under a clump of Leaves blocks (the same blocks as the surface trees), dressed for the season
     var key = "tree" + v; if (HSPR[key]) return HSPR[key]; var S2 = hpCan(48, 80), g0 = S2.g, LC = hpCan(48, 80), g = LC.g;
     var L = v === 0 ? [[16, 0], [8, 10], [24, 10], [0, 22], [16, 20], [32, 22], [8, 34], [24, 34], [16, 40]] : v === 1 ? [[16, 6], [4, 16], [20, 14], [32, 18], [8, 30], [24, 30], [16, 40]] : [[12, 4], [24, 6], [4, 18], [18, 18], [32, 20], [10, 32], [26, 32], [18, 42]];
     hAt(g0, T.LOG, 16, 64); hAt(g0, T.LOG, 16, 50);
@@ -27821,7 +27821,7 @@
     var fx = ox + (HCRATE.x + 0.85) * ts, fy = oy + HCRATE.y * ts; g.fillStyle = "#5a3a1e"; g.fillRect(fx, fy - ts * 0.5, s, ts * 0.6); g.fillStyle = full ? "#e8503a" : "#c8b890"; g.fillRect(fx + s, fy - (full ? ts * 0.5 : ts * 0.1), s * 5, s * 3); }
   function homeStall(g) { hDrawK(g, hsStall(), HSTALL.x, HSTALL.y + 1, 4, 40); }
   function homeGateArt(g) { hDrawK(g, hsSignpost(), HGATE.x - 1, HGATE.y + 1, 2, 30); hDrawK(g, hsLamppost(), HGATE.x + 2, HGATE.y + 1, 0, 34); }
-  function loopErr(er) { LERR.n++; var m = String(er && er.message || er); if (m !== LERR.last || LERR.n % 120 === 1) { LERR.last = m; try { console.error("[Sogmere] frame error:", er); } catch (e) {} } try { faintQ = null; if (hp <= 0) { hp = 1; faintQ = "hit"; } } catch (e) {} }
+  function loopErr(er) { LERR.n++; var m = String(er && er.message || er); if (m !== LERR.last || LERR.n % 120 === 1) { LERR.last = m; try { console.error("[Adventure] frame error:", er); } catch (e) {} } try { faintQ = null; if (hp <= 0) { hp = 1; faintQ = "hit"; } } catch (e) {} }
   var PZN = -1, PZD = 0, PZDIRTY = false, MENUSAFE = false, MSAFEK = 0, MSCROLL = 0;
   document.addEventListener("scroll", function () { MSCROLL = performance.now(); }, { capture: true, passive: true });
   // ATTACK BUTTON: while it is held, the game aims for you at the nearest creature in front of you (within about 7 blocks; in caves and on
@@ -27928,7 +27928,7 @@ var ATK = { on: false, mine: false };
     if (up) { keys.l = keys.r = keys.j = keys.d = keys.u = 0; tk.l = tk.r = tk.j = 0; aim.down = false; mine = null; }
     var sb = $("sbxRotSub"); if (sb) sb.textContent = titleOpen ? "Then pick up where you left off." : "Your game is paused. It'll be right here when you turn back.";
   }
-  // iPhones can't make a web page full screen, but a Home Screen icon opens Sogmere with no browser bars at all: say so once, on the title screen
+  // iPhones can't make a web page full screen, but a Home Screen icon opens Adventure with no browser bars at all: say so once, on the title screen
   (function () {
     var el = $("sbxIosFs"); if (!el) return;
     var ios = /iPhone|iPod/.test(navigator.userAgent || "") || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1 && Math.min(screen.width, screen.height) <= 600);
@@ -28030,7 +28030,7 @@ var ATK = { on: false, mine: false };
   // PHASE 6b: PLAYER EXPRESSION (roadmap #75-#80). The look lives in S.look (colour, trail, title, name tag) and the molting path in S.molt.
   // =====================================================================================================================
   function look() { if (!S.look || typeof S.look !== "object") S.look = {}; return S.look; }
-  // ---------- #75 THE WARDROBE: body colour, Armory cosmetics you own, trail, title and name tag, all from inside Sogmere ----------
+  // ---------- #75 THE WARDROBE: body colour, Armory cosmetics you own, trail, title and name tag, all from inside Adventure ----------
   var BODYC = [["", "Natural"], ["#2fb89a", "Teal"], ["#4a8ae8", "Pond blue"], ["#8a5ad8", "Violet"], ["#ff7ab0", "Bubblegum"], ["#f2c14e", "Golden"], ["#e8503a", "Ember red"], ["#ff9a3a", "Tangerine"], ["#7a8a3a", "Olive"], ["#c8d8e0", "Frost white"], ["#3a3a48", "Night black"], ["#a86a3a", "Mud brown"]];
   var WARD = { tab: "look" };
   function wardOpen(t) {
@@ -28216,7 +28216,7 @@ var ATK = { on: false, mine: false };
     else if (fi === 5) { var pb = 18 * s; g.strokeStyle = "#fff"; g.lineWidth = pb; g.setLineDash([pb, pb * 0.6]); g.strokeRect(pb / 2, pb / 2, w - pb, h - pb); g.setLineDash([]); g.fillStyle = "rgba(255,255,255,.9)"; g.font = "900 " + Math.round(40 * s) + "px 'Bagel Fat One',Nunito,sans-serif"; g.textAlign = "left"; g.textBaseline = "top"; g.fillText("Greetings from the swamp!", 40 * s, 36 * s); }
   }
   function photoShare(bl) {
-    try { var f = new File([bl], "delve-photo.png", { type: "image/png" }); if (navigator.canShare && navigator.canShare({ files: [f] })) { navigator.share({ files: [f], title: "SwampRealms: Sogmere", text: "Look what I found in the swamp! swamprealms.com" }).catch(function () {}); S.st.shares = (S.st.shares || 0) + 1; return true; } } catch (e) {}
+    try { var f = new File([bl], "delve-photo.png", { type: "image/png" }); if (navigator.canShare && navigator.canShare({ files: [f] })) { navigator.share({ files: [f], title: "SwampRealms: Adventure", text: "Look what I found in the swamp! swamprealms.com" }).catch(function () {}); S.st.shares = (S.st.shares || 0) + 1; return true; } } catch (e) {}
     return false;
   }
   // =====================================================================================================================
@@ -28949,14 +28949,14 @@ var ATK = { on: false, mine: false };
   function mePicImg() { var src = typeof mePic === "function" ? mePic() : ""; if (!MEIMG || MEKEY !== src) { MEIMG = new Image(); MEIMG.src = src; MEKEY = src; } return MEIMG; }
   function dreamEnd() { if (!DRM || DRM.end) return; DRM.end = 1; var n = DRM.n + (DRM.n === DRM.sh.length ? 2 : 0); if (n) give("dreamshard", n, undefined, undefined, true); S.st.dshards = (S.st.dshards || 0) + n; snd("open", n >= 8 ? "Legendary" : "Rare"); checkGoals(); save(); setTimeout(function () { if (storyOpen === 278) closeStory(); DRM = null; }, 2600); }
   // ---------- #90 CROAK CARDS: battles with your REAL SwampRealms card collection (one shared save with the Cards pages, see cards.js SwampCards) ----------
-  // Every card has a power and an element (Swamp beats Ember, Ember beats Frost, Frost beats Swamp: +3). The Sogmere Edition pack holds the game's
-  // creatures, bosses and swamp folk; they also drop from creatures you defeat. Winning pays Swamp Coins (the site's money) and Sogmere packs.
+  // Every card has a power and an element (Swamp beats Ember, Ember beats Frost, Frost beats Swamp: +3). The Adventure Edition pack holds the game's
+  // creatures, bosses and swamp folk; they also drop from creatures you defeat. Winning pays Swamp Coins (the site's money) and Adventure packs.
   var CEL = [["Swamp", "#5ad04a", "☘"], ["Ember", "#ff7a2a", "♨"], ["Frost", "#7ad8ff", "❄"]];
   function SCB() { return window.SwampCards || null; }
   function cardById(id) { var B = SCB(); if (!B) return null; var L = B.cards(); for (var i = 0; i < L.length; i++) if (L[i].id === id) return L[i]; return null; }
   function cardSt(c) { var B = SCB(); return B ? B.stats(c) : { pw: 3, el: 0 }; }
   function cardsOwn() { var B = SCB(); return B ? B.owned() : {}; }
-  function cardName(c) { return c.name.replace(/:\s*Sogmere Edition$/, "").replace(/:\s*Abstract Edition$/, " (Abstract)"); }
+  function cardName(c) { return c.name.replace(/:\s*Adventure Edition$/, "").replace(/:\s*Abstract Edition$/, " (Abstract)"); }
   function cardGive(id, x, y) {
     var B = SCB(), c = cardById(id); if (!B || !c) return; var n = B.add(id, 1); S.st.cards = (S.st.cards || 0) + 1; var st = cardSt(c);
     if (n === 1) popup("New card!", cardName(c) + " · " + c.rarity + " · " + CEL[st.el][0] + " " + st.pw + ". It's in your Collection on the site too.", c.color, "♠"); else toast("Card: " + cardName(c) + " (×" + n + ")", c.color);
@@ -28974,9 +28974,9 @@ var ATK = { on: false, mine: false };
     { id: "rook", n: "Rook", deck: ["dlv-witch", "dlv-spider", "dlv-wolf", "dlv-rook", "dlv-wyrm", "dlv-gator", "dlv-queen"], rw: 60, ok: function () { return curCh() >= 1 && (S.days | 0) >= 4; } }
   ];
   var DUEL = null, CTAB = "play", CFIL = "all", CREV = null;
-  function cardsStarter() {   // your first visit: a starter deck of Sogmere cards, so you can play straight away (only if you have fewer than 5 cards)
+  function cardsStarter() {   // your first visit: a starter deck of Adventure cards, so you can play straight away (only if you have fewer than 5 cards)
     var B = SCB(), o = p8(); if (!B || o.cstart) return; o.cstart = 1; var have = Object.keys(B.owned()).filter(function (k) { return B.owned()[k] > 0 && cardById(k); }).length;
-    if (have < 5) { ["dlv-frog", "dlv-bug", "dlv-slime", "dlv-bat", "dlv-wasp", "dlv-wolf"].forEach(function (id) { B.add(id, 1); }); toast("Croaker gave you a starter deck of six Sogmere cards!", "#ffe08a"); } save();
+    if (have < 5) { ["dlv-frog", "dlv-bug", "dlv-slime", "dlv-bat", "dlv-wasp", "dlv-wolf"].forEach(function (id) { B.add(id, 1); }); toast("Croaker gave you a starter deck of six Adventure cards!", "#ffe08a"); } save();
   }
   function myCards() { var O = cardsOwn(); return (SCB() ? SCB().cards() : []).filter(function (c) { return O[c.id] > 0; }); }
   function cardsOpen(tab) {
@@ -28987,15 +28987,15 @@ var ATK = { on: false, mine: false };
     h += '<div class="p8-bank"><span>◉ <b>' + B.coins() + "</b> Swamp Coins</span><span>♠ <b>" + mine.length + "</b> of " + all.length + " cards</span></div>";
     if (CTAB === "play") {
       h += '<p class="st-tip">Best of three. You both play a card each round; higher power wins. An element advantage adds 3: <b style="color:#5ad04a">☘ Swamp</b> beats <b style="color:#ff7a2a">♨ Ember</b> beats <b style="color:#7ad8ff">❄ Frost</b> beats Swamp. Your hand comes from your whole collection, the same cards as on the site.</p>';
-      h += '<div class="p4-jobs">' + FOES.map(function (F) { var ok = F.ok(), bt = (p8().cw || {})[F.id] || 0, fresh = (p8().cwd || {})[F.id] !== (S.days | 0); return '<div class="p4-job' + (ok ? "" : " done") + '"><i class="p4-jic">♠</i><span><b>' + esc(F.n) + "</b><small>" + (ok ? F.rw + " Swamp Coins a win" + (fresh ? " · first win today: a Sogmere pack" : "") + (bt ? " · beaten " + bt + "×" : "") : "Not met yet") + '</small></span><button type="button" class="btn"' + (ok && mine.length >= 3 ? "" : " disabled") + ' data-p8="cd:duel:' + F.id + '">Play</button></div>'; }).join("") + "</div>";
+      h += '<div class="p4-jobs">' + FOES.map(function (F) { var ok = F.ok(), bt = (p8().cw || {})[F.id] || 0, fresh = (p8().cwd || {})[F.id] !== (S.days | 0); return '<div class="p4-job' + (ok ? "" : " done") + '"><i class="p4-jic">♠</i><span><b>' + esc(F.n) + "</b><small>" + (ok ? F.rw + " Swamp Coins a win" + (fresh ? " · first win today: a Adventure pack" : "") + (bt ? " · beaten " + bt + "×" : "") : "Not met yet") + '</small></span><button type="button" class="btn"' + (ok && mine.length >= 3 ? "" : " disabled") + ' data-p8="cd:duel:' + F.id + '">Play</button></div>'; }).join("") + "</div>";
     } else if (CTAB === "coll") {
-      h += '<div class="p5-ch">' + [["all", "All"], ["delve", "Sogmere"], ["adventures", "Adventures"], ["abstract", "Abstract"]].map(function (f) { return '<button type="button" class="' + (CFIL === f[0] ? "on" : "") + '" data-p8="cd:fil:' + f[0] + '">' + f[1] + "</button>"; }).join("") + "</div>";
+      h += '<div class="p5-ch">' + [["all", "All"], ["delve", "Adventure"], ["adventures", "Adventures"], ["abstract", "Abstract"]].map(function (f) { return '<button type="button" class="' + (CFIL === f[0] ? "on" : "") + '" data-p8="cd:fil:' + f[0] + '">' + f[1] + "</button>"; }).join("") + "</div>";
       h += '<div class="p8-cards">' + all.filter(function (c) { return CFIL === "all" || c.pack === CFIL; }).sort(function (a, b) { return (O[b.id] > 0) - (O[a.id] > 0); }).map(function (c) { return O[c.id] > 0 ? cardHtml(c, "", O[c.id] > 1 ? "x" + Math.min(9, O[c.id]) : "") : '<button type="button" class="p8-card off" disabled style="--c:' + c.color + '"><b>???</b><small>' + c.rarity + "</small></button>"; }).join("") + "</div>";
       h += '<p class="st-tip">Trade duplicates for Swamp Coins on the <a href="catalog.html" target="_blank" rel="noopener">Cards page</a>.</p>';
     } else {
       if (CREV) h += '<div class="p8-rev" style="--c:' + CREV.card.color + '"><div class="p8-flip">' + cardHtml(CREV.card, "", "big") + '</div><p><b>' + esc(cardName(CREV.card)) + "</b> · " + CREV.card.rarity + (CREV.dupe ? " · duplicate" : " · new!") + "</p></div>";
       h += '<div class="p4-jobs">' + B.packs().map(function (P) { var n = B.stock(P.id); return '<div class="p4-job"><i class="p4-jic">❖</i><span><b>' + esc(P.name) + "</b><small>" + n + " ready to open" + (P.price ? " · " + P.price + " coins in the Shop" : "") + '</small></span><button type="button" class="btn"' + (n ? "" : " disabled") + ' data-p8="cd:open:' + P.id + '">Open</button></div>'; }).join("") + "</div>";
-      h += '<p class="st-tip">Packs are shared with the site: the free daily packs, ones you buy in the <a href="shop.html" target="_blank" rel="noopener">Shop</a>, and Sogmere packs you win here.</p>';
+      h += '<p class="st-tip">Packs are shared with the site: the free daily packs, ones you buy in the <a href="shop.html" target="_blank" rel="noopener">Shop</a>, and Adventure packs you win here.</p>';
     }
     h += '<div class="st-row"><button type="button" class="btn" data-story-close>Done</button></div>'; p4Box(h, "#ffe08a");
   }
@@ -29014,7 +29014,7 @@ var ATK = { on: false, mine: false };
     var over = D.me >= 2 || D.them >= 2 || (D.r >= 3 && D.me !== D.them) || D.r >= 5 || !D.hand.length;
     if (over) { var won = D.me > D.them, msg = "";
       if (won && !D.paid) { D.paid = 1; var B = SCB(); B.coins(D.F.rw); var cw = p8().cw || (p8().cw = {}), cwd = p8().cwd || (p8().cwd = {}); cw[D.F.id] = (cw[D.F.id] || 0) + 1; S.st.cardwins = (S.st.cardwins || 0) + 1; msg = "+" + D.F.rw + " Swamp Coins";
-        if (cwd[D.F.id] !== (S.days | 0)) { cwd[D.F.id] = S.days | 0; B.givePack("delve", 1); msg += " · +1 Sogmere pack"; }
+        if (cwd[D.F.id] !== (S.days | 0)) { cwd[D.F.id] = S.days | 0; B.givePack("delve", 1); msg += " · +1 Adventure pack"; }
         var prize = D.F.deck.filter(function (k) { return !(cardsOwn()[k] > 0); })[0]; if (prize && Math.random() < 0.4) { setTimeout(function () { cardGive(prize); }, 600); msg += " · and " + esc(D.F.n) + " hands you a card!"; }
         snd("open", "Epic"); checkGoals(); save(); D.msg = msg; }
       h += '<h2 class="st-hi">' + (won ? "You won the match!" : D.me === D.them ? "A tied match." : esc(D.F.n) + " won the match.") + "</h2>" + (D.msg ? '<p class="st-tip keep">' + D.msg + "</p>" : "");
@@ -29033,7 +29033,7 @@ var ATK = { on: false, mine: false };
     else if (q[1] === "tab") cardsOpen(q[2]); else if (q[1] === "fil") { CFIL = q[2]; cardsOpen("coll"); } else if (q[1] === "open") cardPackOpen(q[2]);
   }
   SIDE.push({ id: "p8_cards", cat: "Collector", ch: 0, n: "Card Shark", d: "Win 5 games of Croak Cards against the swamp folk.", need: 5, v: function () { return S.st.cardwins || 0; }, rw: { goldcoin: 3, silvercoin: 40 }, show: function () { return (S.st.cards || 0) > 0 || !!(S.p8 && S.p8.cstart); } });
-  function cardArt(g, id, w, h) {   // the Sogmere Edition card art (rendered once into images/delve-*.jpg): a scene for the element, the creature big in front
+  function cardArt(g, id, w, h) {   // the Adventure Edition card art (rendered once into images/delve-*.jpg): a scene for the element, the creature big in front
     var c = cardById("dlv-" + id), st = c ? cardSt(c) : { el: 0 }, el = st.el, t = 1.3, i;
     var sky = [["#0a2a2a", "#1e5a4a", "#6ab88a"], ["#2a0a0a", "#7a2a14", "#ff9a3a"], ["#0a1a3a", "#2a5a9a", "#bfe6ff"]][el], gr = g.createLinearGradient(0, 0, 0, h); gr.addColorStop(0, sky[0]); gr.addColorStop(0.62, sky[1]); gr.addColorStop(1, sky[2]); g.fillStyle = gr; g.fillRect(0, 0, w, h);
     var rnd = (function (a) { return function () { a = (a * 16807) % 2147483647; return a / 2147483647; }; })(id.length * 999 + id.charCodeAt(0) * 7);

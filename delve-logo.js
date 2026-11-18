@@ -1,14 +1,14 @@
-// ===== SwampRealms: Sogmere wordmark =====
-// "SOGMERE" set in Bagel Fat One (the site's own display font, the one in the SwampRealms logo and the World Map title), dressed up as
+// ===== SwampRealms: Adventure wordmark =====
+// "ADVENTURE" set in Bagel Fat One (the site's own display font, the one in the SwampRealms logo and the World Map title), dressed up as
 // something dug out of the swamp: a dirt-textured face with a bevel, a deep dark extrusion, pixel grass growing on every top edge with
 // moss drips, and glowing ore veins. "SwampRealms" sits above it in gold, like the site logo.
 // The font is self-hosted (fonts/bagel-fat-one-latin.woff, SIL Open Font License, see fonts/BagelFatOne-OFL.txt) so the logo never
 // depends on Google Fonts loading. Until it has loaded, draw() uses the fallback and DelveLogo.onReady() callbacks redraw.
-//   DelveLogo.draw(canvas, { b: 12, sub: true, t: performance.now() })   b = scale unit in CSS px (the logo is about 54b wide)
+//   DelveLogo.draw(canvas, { b: 12, sub: true, t: performance.now() })   b = scale unit in CSS px (the logo is about 68b wide)
 //   DelveLogo.onReady(fn)   fn runs once the font is ready (right away if it already is)
 var DelveLogo = (function () {
   var FAM = '"DelveBagel","Bagel Fat One",Nunito,system-ui,sans-serif', ready = false, waiters = [], cache = {};
-  var WORD = "SOGMERE", SUB = "SwampRealms", PAD = 2;
+  var WORD = "ADVENTURE", SUB = "SwampRealms", PAD = 2;
   try {
     var src = (document.currentScript && document.currentScript.src) || "", base = src ? src.replace(/[^\/]*$/, "") : "";
     var ff = new FontFace("DelveBagel", "url(" + base + "fonts/bagel-fat-one-latin.woff) format(\"woff\")");

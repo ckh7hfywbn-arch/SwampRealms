@@ -6,8 +6,8 @@ const enc = new TextEncoder();
 const SESSION_DAYS = 30;
 const ITER = 100000;          // Cloudflare Workers allows at most 100,000 PBKDF2 iterations
 const MAX_SAVE = 200000;      // largest cloud save, in characters of JSON
-const MAX_DELVE = 900000;     // largest Sogmere world save, in characters (a heavily built world is ~100-300k)
-const MAX_DELVE_WORLDS = 12;  // Sogmere worlds kept in the cloud per account
+const MAX_DELVE = 900000;     // largest Adventure world save, in characters (a heavily built world is ~100-300k)
+const MAX_DELVE_WORLDS = 12;  // Adventure worlds kept in the cloud per account
 const COOKIE = "sv_session";
 const LOGIN_WINDOW = 15 * 60 * 1000;
 // Wrong-password limits, all per 15 minutes:
@@ -192,7 +192,7 @@ async function api(req, env, url) {
     return json({ rev: b.baseRev + 1, updated: now });
   }
 
-  // ---- Sogmere multiplayer rooms (see DelveRoom below). The host must be signed in; anyone can join with the code. ----
+  // ---- Adventure multiplayer rooms (see DelveRoom below). The host must be signed in; anyone can join with the code. ----
   //   POST /api/mp/host        {name, pub, pvp} -> {code}   (one open room per account; hosting again replaces it)
   //   GET  /api/mp/list        public rooms seen in the last 2 minutes
   //   GET  /api/mp/room/<code> one room's details, so the game can explain a bad code before connecting
@@ -220,7 +220,7 @@ async function api(req, env, url) {
     const m = path.match(/^\/api\/mp\/(room|ws)\/([A-Z0-9]{6})$/);
     if (!m || method !== "GET") return json({ error: "Not found" }, 404);
     const room = await db.prepare("SELECT code, host_id, host_name, name, pub, pvp, players, updated, site FROM mp_rooms WHERE code = ?").bind(m[2]).first();
-    if (room && room.site && room.site !== url.host) return json({ error: room.host_name + " is hosting on a different address of the site. Open Sogmere at " + room.site + " and join from there.", site: room.site }, 409);
+    if (room && room.site && room.site !== url.host) return json({ error: room.host_name + " is hosting on a different address of the site. Open Adventure at " + room.site + " and join from there.", site: room.site }, 409);
     if (m[1] === "room" && room && room.updated < now - 10 * 60000) return json({ error: "That world was closed. Ask your friend for a new code." }, 404);
     if (m[1] === "room") return room ? json({ code: room.code, name: room.name, host: room.host_name, players: room.players, pvp: !!room.pvp }) : json({ error: "No world with that code. Check the code with your friend." }, 404);
     if ((req.headers.get("upgrade") || "").toLowerCase() !== "websocket") return json({ error: "Expected a WebSocket" }, 426);
@@ -234,7 +234,7 @@ async function api(req, env, url) {
     return env.ROOMS.get(env.ROOMS.idFromName(room.code)).fetch(new Request(req, { headers: h }));
   }
 
-  // ---- Sogmere worlds: one row per (account, world id). The table is created the first time it is used. ----
+  // ---- Adventure worlds: one row per (account, world id). The table is created the first time it is used. ----
   //   GET    /api/delve          list: [{wid, name, rev, updated, size}]
   //   GET    /api/delve/<wid>    {wid, name, data, rev, updated}
   //   PUT    /api/delve/<wid>    {name, data, baseRev} -> {rev, updated}; 409 {error:"conflict", rev, updated} if the cloud copy changed since baseRev
@@ -352,7 +352,7 @@ export class DelveRoom {
     const refuse = msg => { this.send(server, { t: "error", m: msg }); try { server.close(4000, msg.slice(0, 120)); } catch (e) {} return new Response(null, { status: 101, webSocket: client }); };
     if (role === "host") others.forEach(q => { if (q.m.role === "host") { this.send(q.w, { t: "error", m: "You opened this world somewhere else." }); try { q.w.close(4001, "replaced"); } catch (e) {} } });
     else {
-      if (!others.some(q => q.m.role === "host" && !q.m.left)) return refuse("The host's world isn't open right now. Ask them to keep Sogmere open (or reopen Play together), then try again in a few seconds.");
+      if (!others.some(q => q.m.role === "host" && !q.m.left)) return refuse("The host's world isn't open right now. Ask them to keep Adventure open (or reopen Play together), then try again in a few seconds.");
       if (others.length >= MP_MAX) return refuse("This world is full (" + MP_MAX + " players).");
     }
     const id = ((await this.ctx.storage.get("n")) || 0) + 1; await this.ctx.storage.put("n", id);
