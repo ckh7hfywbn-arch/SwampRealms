@@ -10,7 +10,7 @@
   } catch (e) {}
   // ---- the wordmark ----
   var lg = document.getElementById("dhLogo"), lgB = 0;
-  function logoSize() { var w = Math.min(window.innerWidth, 1180), b = Math.max(6, Math.min(16, Math.floor((window.innerWidth > 700 ? Math.min(w * 0.5, 620) : w - 40) / 38))); return b; }
+  function logoSize() { var w = Math.min(window.innerWidth, 1180), b = Math.max(6, Math.min(16, Math.floor((window.innerWidth > 700 ? Math.min(w * 0.5, 620) : w - 40) / 54))); return b; }
   function drawLogo(t) { if (!lg || typeof DelveLogo === "undefined") return; try { DelveLogo.draw(lg, { b: lgB || (lgB = logoSize()), t: reduce ? 0 : t, dpr: Math.min(2, window.devicePixelRatio || 1) }); } catch (e) {} }
   if (typeof DelveLogo !== "undefined") DelveLogo.onReady(function () { drawLogo(performance.now()); });
   addEventListener("resize", function () { lgB = logoSize(); drawLogo(performance.now()); size(); });
