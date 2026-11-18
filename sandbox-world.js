@@ -1219,7 +1219,7 @@ batwing: { n: "Bat Wing", frag: "bat" },
   Grid.prototype.up = function (q) {   // unpack (or make) page q
     var a = new this.C(PW * this.H), K = this.k[q];
     if (K) { for (var j = 0, o = 0; j < K.length; j += 2) { var n = K[j], v = K[j + 1]; if (v) a.fill(v, o, o + n); o += n; } this.k[q] = null; this.ups++; }
-    this.p[q] = a; if (this.onUp && K) this.onUp(q); return a;
+    this.p[q] = a; if (!this.lt) this.lt = new Float64Array(this.n); this.lt[q] = Date.now(); if (this.onUp && K) this.onUp(q); return a;
   };
   Grid.prototype.pack = function (q) {   // pack page q (an all-zero page is simply dropped)
     var a = this.p[q]; if (!a) return; var runs = 0, i, n = a.length, nz = false;
@@ -1229,6 +1229,9 @@ batwing: { n: "Bat Wing", frag: "bat" },
     this.k[q] = K; this.p[q] = null;
   };
   Grid.prototype.packed = function (q) { return this.p[q] === null; };
+  Grid.prototype.sweep = function (q0, q1, hold) {   // pack every open page outside q0..q1 that has been open at least hold ms; returns how many
+    var n = 0, now = Date.now(); for (var q = 0; q < this.n; q++) { if (q >= q0 && q <= q1 || !this.p[q]) continue; if (this.lt && now - this.lt[q] < hold) continue; this.pack(q); n++; } return n;
+  };
   Grid.prototype.slice = function () { var o = new Grid(this.W, this.H, this.C); for (var q = 0; q < this.n; q++) { o.p[q] = this.p[q] ? this.p[q].slice() : null; o.k[q] = this.k[q]; } return o; };
   Grid.prototype.fill = function (v) { for (var q = 0; q < this.n; q++) { this.k[q] = null; this.p[q] = null; if (v) this.up(q).fill(v); } return this; };
   Grid.prototype.blit = function (src, sw, x0) {   // copy a flat array sw wide (all H rows) into columns x0 .. x0+sw-1
