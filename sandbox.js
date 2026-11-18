@@ -2990,7 +2990,7 @@
   function canPlace(tx, ty, item) {
     var id = get(tx, ty), td = ITEMS[item]; if (id !== T.AIR && id !== T.WATER) return false;
     if (ty < 1 || ty >= H - 3 || tx < 1 || tx >= W - 1) return false;
-    var t = td.tile, solid = TILES[t].solid;
+    var t = td.tile; if (!TILES[t]) return false; var solid = TILES[t].solid;
     if (td.seed) { nag(T.X_farmgate !== undefined ? "Crops grow on your homestead. Step through the Farm Gate at camp to plant." : "Plant seeds on top of Garden Soil."); return T.X_farmgate === undefined && !!soilKind(tx, ty + 1); }
     if (item === "garage") return garageCanPlace(tx, ty);
     if (item === "farmland" || TILES[t].kind === "farmland" || TILES[t].kind === "farmwet") { nag("Garden Soil only exists on your homestead. Step through your Farm Gate and use a hoe there."); return false; }
@@ -6187,17 +6187,24 @@
   }
   function useRod(dt) {
     mine = null; var press = aim.down && !rodPrev; rodPrev = aim.down;
+    if (RODW) { RODW.t -= dt; if (RODW.t > 0) return; var RW = RODW; RODW = null; rodCast(RW.c); return; }   // ROD WIND-UP: the line flies when the swing back is done
     if (!fishing) {
       if (!press || aim.tx < 0) return;
       var c = castTarget(aim.tx, aim.ty);
       if (!c) { nag("Tap water to cast your line" + (S.rod >= 2 ? " (or lava)." : ". In Frostfen you can fish through the ice.")); return; }
       if (c.lq === "lava" && S.rod < 2) { nag("Lava would burn this rod. Craft the Ember Rod to fish in lava."); return; }
       var dx = c.x + 0.5 - p.x, dy = c.y - (p.y - PH / 2); if (dx * dx + dy * dy > ROD_REACH * ROD_REACH) { nag("That's too far to cast."); return; }
-      p.face = dx < 0 ? -1 : 1;
+      p.face = dx < 0 ? -1 : 1; RODW = { t: 0.4, t0: 0.4, c: c }; thud(300, 0.03); return;   // (Nov 2026) a short wind-up before the cast
+    }
+    rodRest(dt, press);
+  }
+  function rodCast(c) {
+    if (fishing || sel !== "rod") return;
       var bait = takeBait();
       fishing = { x: c.x, y: c.y, lq: c.lq, ph: "wait", bait: bait[1], t: (2.5 + Math.random() * 5) * fishBiteMul() * bait[0], bob: 0 };
       thud(520, 0.04); if (c.lq === "lava") chips(c.x + 0.5, c.y + 0.1, "#ffb13b", 6, 3); else if (!cave) waterSplash(c.x + 0.5, waterTopY(c.x + 0.5, c.y + 0.5), 0.45); else chips(c.x + 0.5, c.y + 0.1, "#bff4ff", 6, 3); return;   // the float plops in
-    }
+  }
+  function rodRest(dt, press) {   // the line is out: waiting, the bite, reeling in
     var fx = fishing.x + 0.5 - p.x, fy = fishing.y - (p.y - PH / 2);
     if (fx * fx + fy * fy > (ROD_REACH + 2) * (ROD_REACH + 2) || !liquidAt(fishing.x, fishing.y)) { fishing = null; nag("Your line came loose."); return; }
     fishing.t -= dt; fishing.bob += dt;
@@ -8665,18 +8672,31 @@
   var arrows = [], burns = [];
   function bowAmmo() { var B = BOWS[S.bow]; if (!B) return null; if (B.any && S.ammo && inv(S.ammo) > 0) return S.ammo; for (var i = 0; i < B.ammo.length; i++) if (inv(B.ammo[i]) > 0) return B.ammo[i]; return null; }   // the loaded kind first, then Fire Arrows, then plain Arrows
   function ammoCount() { var B = BOWS[S.bow]; if (!B) return 0; var n = 0; (B.any ? AMMO_ALL : B.ammo).forEach(function (k) { n += inv(k); }); return n; }
+  // BOW DRAW (Nov 2026, like Minecraft): hold to draw the string, let go to shoot. A full draw (the ring round you turns gold) shoots full
+  // strength and full speed; a quick tap barely flies. Quickdraw and a Sapphire make the draw faster.
+  var BOWD = { d: 0, on: false }, RODW = null;
+  function drawDraw(g, x, y) {   // the draw ring (bow) or the wind-up ring (rod)
+    var k = RODW ? 1 - RODW.t / RODW.t0 : BOWD.d; if (!(k > 0.02)) return; var r = ts * 0.85, full = !RODW && k >= 1;
+    g.save(); g.lineCap = "round"; g.lineWidth = Math.max(2, ts * 0.08); g.strokeStyle = "rgba(10,20,16,.55)"; g.beginPath(); g.arc(x, y, r, 0, 6.2832); g.stroke();
+    g.strokeStyle = full ? "#ffe48a" : RODW ? "#9fe8ff" : "#f6eedb"; g.beginPath(); g.arc(x, y, r, -Math.PI / 2, -Math.PI / 2 + 6.2832 * Math.min(1, k)); g.stroke(); g.restore();
+  }
   function useBow(dt) {
-    mine = null; cool -= dt; if (!aim.down || !S.bow) return;
+    mine = null; cool -= dt; if (!S.bow) { BOWD.d = 0; BOWD.on = false; return; }
     var B = BOWS[S.bow], inCave = !!cave, px0 = inCave ? cp.x : p.x, py0 = inCave ? cp.y - 0.5 : p.y - 1.15;
     var tx = (aim.mx - ox) / ts, ty = (aim.my - oy) / ts, dx = tx - px0, dy = ty - py0, d = Math.sqrt(dx * dx + dy * dy) || 1;
-    if (Math.abs(dx) > 0.2) { if (inCave) cp.face = dx < 0 ? -1 : 1; else p.face = dx < 0 ? -1 : 1; }
-    if (cool > 0) return;
+    if (aim.down) {
+      if (Math.abs(dx) > 0.2) { if (inCave) cp.face = dx < 0 ? -1 : 1; else p.face = dx < 0 ? -1 : 1; }
+      if (cool > 0) return; if (!BOWD.on) { BOWD.on = true; BOWD.d = 0; thud(180, 0.02); }
+      var o = BOWD.d; BOWD.d = Math.min(1, BOWD.d + dt / (0.7 * (gem("bow", "sapphire") ? 0.85 : 1) * (1 - 0.08 * enLv("bow", "quick")))); if (o < 1 && BOWD.d >= 1) thud(880, 0.04);
+      return;
+    }
+    if (!BOWD.on) return; var pw = BOWD.d; BOWD.on = false; BOWD.d = 0; if (pw < 0.15) return;   // let go: the arrow flies (a tap too short to draw does nothing)
     var am = bowAmmo();
     if (!am) { cool = 0.6; nag(S.bow === 1 ? "Out of Pebbles. Dig mud or stone for more." : "Out of Arrows. Craft some from Sticks, Pebbles and Fiber."); return; }
-    cool = B.cd * (gem("bow", "sapphire") ? 0.85 : 1) * (1 - 0.08 * enLv("bow", "quick")); if (!(gem("bow", "amethyst") && Math.random() < 0.25)) { S.inv[am]--; if (S.inv[am] <= 0) { delete S.inv[am]; reslot(); } } hbDirty = true; S.st.shots++;
-    var fire = am === "firearrow", sp = B.sp * (gem("bow", "moonstone") ? 1.3 : 1), lift = inCave ? 0 : Math.min(0.35, d * 0.012);   // aim a little high on long shots so the arc lands near where you tapped
+    cool = 0.12; if (!(gem("bow", "amethyst") && Math.random() < 0.25)) { S.inv[am]--; if (S.inv[am] <= 0) { delete S.inv[am]; reslot(); } } hbDirty = true; S.st.shots++;
+    var fire = am === "firearrow", sp = B.sp * (gem("bow", "moonstone") ? 1.3 : 1) * (0.45 + 0.55 * pw), lift = inCave ? 0 : Math.min(0.35, d * 0.012);   // aim a little high on long shots so the arc lands near where you tapped
     var ux = dx / d, uy = dy / d - lift, ul = Math.sqrt(ux * ux + uy * uy); ux /= ul; uy /= ul;
-    arrows.push({ x: px0 + ux * 0.5, y: py0 + uy * 0.5, vx: ux * sp, vy: uy * sp, g: inCave ? 0 : B.g, dmg: Math.round((B.dmg + (fire ? 6 : 0)) * (gem("bow", "ruby") ? 1.2 : gem("bow", "amber") ? 1.1 : 1) * (1 + 0.1 * enLv("bow", "power"))), fire: fire, peb: am === "pebble", life: 2.2, cave: inCave, coat: ARROWK[am] || null });
+    arrows.push({ x: px0 + ux * 0.5, y: py0 + uy * 0.5, vx: ux * sp, vy: uy * sp, g: inCave ? 0 : B.g, dmg: Math.max(1, Math.round((B.dmg + (fire ? 6 : 0)) * (gem("bow", "ruby") ? 1.2 : gem("bow", "amber") ? 1.1 : 1) * (1 + 0.1 * enLv("bow", "power")) * (pw >= 1 ? 1.15 : 0.3 + 0.7 * pw))), fire: fire, peb: am === "pebble", life: 2.2, cave: inCave, coat: ARROWK[am] || null });
     if (S.ammo && am === S.ammo && !(inv(am) > 0)) { toast("Out of " + ITEMS[am].n + "s. Back to " + (inv("firearrow") > 0 ? "Fire Arrows." : "plain Arrows."), "#f6eedb"); S.ammo = null; }
     if (ARROWK[am] || am === S.ammo) drawFx(true);
     thud(S.bow === 1 ? 420 : 260, 0.04);
@@ -13663,13 +13683,19 @@
       if (chg >= 0.5) { var c2 = Math.min(1, chg); SWK = { mul: 1.3 + 1.2 * c2, po: 18 + 22 * c2, kb: 1.8 + c2, up: 6 + 4 * c2, heavy: 1, reach: 0.5 }; cool = wCd() * 1.5; WCB.n = 0; WCB.swT = WCB.swD = cool; heldPh = 0; return true; }
       return false;
     }
-    if (edge && cool <= 0) {
-      var now = performance.now(); WCB.n = now - WCB.last < 750 && WCB.n < 3 ? WCB.n + 1 : 1; WCB.last = now; WCB.held = 0;
+    if (edge && cool <= (WCB.swD || 0) * 0.8) {   // SWING RECHARGE (Nov 2026, like Minecraft): you can swing again early, but an early swing is weak (and breaks the combo)
+      var rc = WCB.swD > 0 ? clamp(1 - Math.max(0, cool) / WCB.swD, 0, 1) : 1, full = rc >= 0.98;
+      var now = performance.now(); WCB.n = full && now - WCB.last < 750 && WCB.n < 3 ? WCB.n + 1 : 1; WCB.last = now; WCB.held = 0;
       var fin = WCB.n === 3; SWK = fin ? { mul: 1.6, po: 12, kb: 1.8, up: 7, fin: 1, reach: 0.25 } : { mul: 1, po: 4, kb: 1, up: 0 };
-      cool = wCd() * (fin ? 1.3 : 0.85); WCB.swT = WCB.swD = cool; heldPh = 0; return true;
+      if (!full) { var wk = 0.2 + 0.8 * rc * rc; SWK = { mul: SWK.mul * wk, po: SWK.po * wk, kb: SWK.kb * (0.4 + 0.6 * rc), up: 0, weak: 1 }; }
+      cool = wCd() * (fin ? 1.3 : 0.85); WCB.swT = WCB.swD = cool; WCB.rc = 0; heldPh = 0; return true;
     }
     if (down) { WCB.held += dt; if (WCB.held > 0.2 && cool <= 0) { var o = WCB.ch; WCB.ch = Math.min(1, WCB.ch + dt / 0.6); if (o < 1 && WCB.ch >= 1) { thud(880, 0.05); WCB.flash = 0.25; } } }
     return false;
+  }
+  function drawRecharge(g, x, y) {   // SWING RECHARGE: a small bar under you that fills back up after each swing (swing when it's full for a full-strength hit)
+    if (!(WCB.swD > 0) || !(cool > 0) || WCB.ch > 0.04) return; var k = clamp(1 - cool / WCB.swD, 0, 1), w = ts * 0.9, h = Math.max(3, ts * 0.1), bx = x - w / 2, by = y;
+    g.save(); g.fillStyle = "rgba(8,16,12,.7)"; g.fillRect(bx - 1, by - 1, w + 2, h + 2); g.fillStyle = k > 0.8 ? "#ffe48a" : "#bff4ea"; g.fillRect(bx, by, w * k, h); g.restore();
   }
   function drawCharge(g, x, y) {   // the charge ring round you while a heavy swing builds
     if (WCB.flash > 0) WCB.flash -= 1 / 60; if (WCB.ch < 0.04 && !(WCB.flash > 0)) return;
@@ -13688,7 +13714,7 @@
       var wi = wpnInput(dt); if (!wi) return;
       if (toolBroken("wpn")) { nag("Your weapon is broken. Craft a new one."); WCB.ch = 0; return; }
       var wdx = aim.mx - (ox + p.x * ts); if (Math.abs(wdx) > ts * 0.3) p.face = wdx < 0 ? -1 : 1;
-      S.st.swings++; swingQ = 0.1; var fin = SWK.fin, hv = SWK.heavy; if (S.st.swings === 3 && !S.st.cmbTip) { S.st.cmbTip = 1; toast("Combat: click three times in a row for a finisher. Keep holding to charge a heavy swing, then let go.", "#9ff0c0"); }
+      S.st.swings++; swingQ = 0.1; var fin = SWK.fin, hv = SWK.heavy; if (S.st.swings === 3 && !S.st.cmbTip) { S.st.cmbTip = 1; toast("Combat: swing when the bar under you is full for a full-strength hit (three full swings in a row make a finisher). Hold to charge a heavy swing.", "#9ff0c0"); }
       if (fin || hv) { p.vx += p.face * (hv ? 5 : 3.5); }   // a finisher or a heavy swing steps you into it
       thud((hv ? 160 : fin ? 220 : 300) + S.wpn * 70, hv ? 0.1 : 0.05); for (var sk = 0; sk < (hv ? 9 : fin ? 6 : 3); sk++) parts.push({ x: p.x + p.face * (0.9 + sk * 0.3), y: p.y - 1.1 - (sk % 3) * 0.25, vx: p.face * (hv ? 5 : 3), vy: -0.4 - (sk % 3) * 0.5, life: 0.22, max: 0.3, c: hv ? "#ffe48a" : WEAPONS[S.wpn].c, s: hv ? 4 : 3 });
       return;
@@ -17626,7 +17652,7 @@
       var top = j, foot = j; while (get(i, top - 1) === T.LOG) top--; while (get(i, foot + 1) === T.LOG) foot++;
       var bare = get(i, top - 1) !== T.LEAVES && (origTree(i, top) || !!SN) && !(st === 2 && bendUp(i, top));   // a world tree whose leaves were picked or whose top was broken off: still a round trunk, with a splintered top
       var crown = get(i, top - 1) === T.LEAVES || st === 2 && trunkTree(i, j) || bare; if (!crown) return null;
-      if (!SN && Ls && get(i - 1, j) !== T.LOG && Rs && get(i + 1, j) !== T.LOG) return null;
+      var buried = !SN && Ls && get(i - 1, j) !== T.LOG && Rs && get(i + 1, j) !== T.LOG; if (buried && !origTree(i, top)) return null;   // (logs you built into a wall stay blocks)
       if (SN) { Ls = Ls && get(i - 1, j) !== T.LOG; Rs = Rs && get(i + 1, j) !== T.LOG; }   // (a bough beside a snag's trunk is not ground)
       var twinL = get(i + 1, j) === T.LOG && get(i + 1, j - 1) !== T.AIR && get(i + 1, j + 1) !== T.AIR, twinR = get(i - 1, j) === T.LOG && get(i - 1, j - 1) !== T.AIR && get(i - 1, j + 1) !== T.AIR;
       var isFoot = TILES[dn].solid && dn !== T.LOG && dn !== T.LEAVES, hgt = foot - top + 1;
@@ -17671,7 +17697,8 @@
       outlinePx(buf, N, NH, deco);
       return pxCanvas(buf, N, NH, (inMC() ? (mcRest(i) ? palRgb("bd", BPAL.d) : palRgb("bm", BPAL.m)) : palRgb("b" + st, BPAL[st])));
     }
-    if (up === T.AIR && TILES[dn].solid && dn !== T.LOG && dn !== T.LEAVES) {   // a root block beside the foot: a buttress root sloping down from the trunk
+    var footN = function (a) { return get(a, j) === T.LOG && get(a, j + 1) !== T.LOG && trunkTree(a, j); };   // (the lowest block of a tree's trunk)
+    if (up !== T.LOG && !TILES[up].solid && dn !== T.LOG && dn !== T.LEAVES && (TILES[dn].solid || footN(i - 1) || footN(i + 1)) && (footN(i - 1) || footN(i + 1) || TILES[dn].solid)) {   // a root block beside the foot: a buttress root sloping down from the trunk (even with a flower or reed growing on it, or the ground dug out from under it)
       var sd = get(i - 1, j) === T.LOG && trunkTree(i - 1, j) ? -1 : get(i + 1, j) === T.LOG && trunkTree(i + 1, j) ? 1 : 0; if (!sd) return null;
       var te = sd > 0 ? 20 : -4, fr = sd > 0 ? -1 : 16;
       for (x = Math.min(te, fr); x <= Math.max(te, fr); x++) { var f2 = (x - fr) / (te - fr), ytop = 16 - 15.5 * Math.pow(Math.max(0, f2), 1.9); for (y = Math.ceil(ytop); y < 16; y++) set(x, y, y - ytop < 1.5 ? 4 : y - ytop < 4 ? 3 : 2, true); }
@@ -18066,7 +18093,7 @@
     mcGrade(g, now, above); mcLand(g, now);   // MALCRUOR: the land and sky stained blood red and black (creatures, you and the portal are drawn after)
     if (!cave) { drawMcGate(g, now); drawFarmGates(g, now); drawMineShaft(g, now); drawBldSigns(g); drawGates(g, X0, X1, Y0, Y1); drawStands(g, X0, X1, Y0, Y1); drawTraps(g, X0, X1, Y0, Y1); drawAmbientNear(g, now); drawMig(g); }
     decoDrawAll(g); decoPreview(g, now); drawMailbox(g, now); drawCampMove(g); drawDinner(g, now); p4WorldDraw(g, now); drawNpc(g, now); drawVillagers(g, now); drawLogi(g, now); drawDrops(g, now); drawGraves(g, now); drawBirds(g, now); drawAnimals(g, now); drawBrawl(g, now); drawFoot(g); drawCrit(g, now); drawAmb2(g, now); drawEnemies(g, now); drawShots(g, now); drawArrows(g, false); drawBlast(g, now); drawHook(g); drawBossBar(); drawMini(); tickMusic(); tickCloud();
-    drawPierGate(g, now); drawVents(g, now); drawRemotes(g, now); trailDraw(g, now); drawPlayer(g, now); if (sel === "weapon") drawCharge(g, ox + p.x * ts, oy + (p.y - PH * 0.5) * ts); drawTag(g, now); drawPet(g, now); drawFishing(g, now);
+    drawPierGate(g, now); drawVents(g, now); drawRemotes(g, now); trailDraw(g, now); drawPlayer(g, now); if (sel === "weapon") { drawCharge(g, ox + p.x * ts, oy + (p.y - PH * 0.5) * ts); drawRecharge(g, ox + p.x * ts, oy + (p.y + 0.25) * ts); } if (sel === "bow" || (RODW && sel === "rod")) drawDraw(g, ox + p.x * ts, oy + (p.y - PH * 0.5) * ts); drawTag(g, now); drawPet(g, now); drawFishing(g, now);
     parts.forEach(function (q) { var al = clamp(q.life / q.max * 1.4, 0, 1); g.globalAlpha = al; g.fillStyle = q.c; var px = ox + q.x * ts, py = oy + q.y * ts; if (q.glw) return; if (q.conf) { var cw = q.s * 1.6, chh = Math.max(1, q.s * (q.s2 || 0.5)); g.fillRect(Math.round(px - cw / 2), Math.round(py - chh / 2), cw, chh); return; } g.fillRect(Math.round(px - q.s / 2), Math.round(py - q.s / 2), q.s, q.s); }); g.globalAlpha = 1;
     drawWaterFx(g);
     // mining cracks and a pulse on the tile being dug (after the trees, so you see them when you chop one)
@@ -19078,7 +19105,7 @@
       return; }   // STATIONS (Nov 2026): no big "Open Workbench" button any more: click or tap the station itself (or press F beside it)
     var fis = S.quake && S.quake.x === h.x && S.quake.y === h.y; drawPill(g, now, (fis ? "Drop into the fissure: floor " + S.quake.f : "Enter the Mine") + (coarse ? "" : " (F)"), ox + (h.x + 0.5) * ts, oy + h.y * ts - ts * (fis ? 1.9 : 4.9), false, function () { enterCave(h.x, h.y); });
   }
-  function drawCavePlayer(g, now) { drawCavePlayer0(g, now); if (sel === "weapon" && cave) drawCharge(g, ox + cp.x * ts, oy + (cp.y - 0.6) * ts); }
+  function drawCavePlayer(g, now) { drawCavePlayer0(g, now); if (sel === "weapon" && cave) { drawCharge(g, ox + cp.x * ts, oy + (cp.y - 0.6) * ts); drawRecharge(g, ox + cp.x * ts, oy + (cp.y + 0.15) * ts); } if (sel === "bow" && cave) drawDraw(g, ox + cp.x * ts, oy + (cp.y - 0.6) * ts); }
   function drawCavePlayer0(g, now) {   // you in the top-down scenes (the Mine, the homestead): the same animation as outside: swings with a swoosh,
     // items in the paw, drinking and eating, a flinch when you are hit, a lean into the swing, the backpack, and the same size
     var sx = ox + cp.x * ts, sy = oy + cp.y * ts, moving = p.vx > 0.5;
@@ -27871,7 +27898,7 @@ var ATK = { on: false, mine: false };
     try { var seenIc = {}; Object.keys(I).forEach(function (k) { if (I[k].tool || /^(sp|t)_/.test(k)) return; var u = icon(k); if (seenIc[u]) say("the items " + I[seenIc[u]].n + " and " + I[k].n + " share one icon (give the new one its own art)"); else seenIc[u] = k; }); } catch (e) {}   // OWN ICONS
     return out.filter(function (m, i) { return out.indexOf(m) === i; });
   }
-  window.__W = { cvStepDown: cvStepDown, enterHome: typeof enterHome !== "undefined" ? enterHome : null, leaveHome: typeof leaveHome !== "undefined" ? leaveHome : null, clean: clean, openStall: openStall, homeS: homeS, flPut: flPut, isPlantT: isPlantT, craftSort: craftSort, trySpecial: trySpecial, get panelOpen() { return panelOpen; }, FOC: FOC, DODGE: DODGE, rarItem: rarItem, rarRec: rarRec, get RECIPES() { return RECIPES; }, openStn: openStn, get drops() { return drops; }, place: place, nearFree: nearFree, get p2() { return p; }, grassGrow: grassGrow, razeStruct: razeStruct, blocks: blocks, setT: setT, breakTile: breakTile, save: save, get rmask() { return rmask; }, get world() { return world; }, get S() { return S; }, get: get, get col() { return col; }, W: W, H: H, T: T, get tiles() { return tiles; }, p: p, cam: cam, TILES: TILES, edit: function () { editN++; }, OPT: OPT, setSel: function (v) { sel = v; bare = false; hbDirty = true; }, get ox() { return ox; }, get oy() { return oy; }, get ts() { return ts; }, setT: setT, recalc: recalc, save: save, get sel() { return sel; }, shapeCount: shapeCount, autoShape: function (x, y) { return autoShape(y * W + x); }, FOOT: FOOT, NLOG: NLOG, pawChop: function (x, y) { return pawChop(get(x, y), x, y); }, pcol: function () { return pcol(); }, place: function (x, y, k) { place(x, y, k); }, tileItem: function (id) { for (var k in ITEMS) if (ITEMS[k].tile === id) return k; return null; }, pscr: function () { return [ox + p.x * ts, oy + p.y * ts, ts]; }, swo: function () { return [SWO.arc.length, SWO.th, heldAmt, toolPose().kind, toolPose().has, toolPose().phi]; }, enterBuilding: function (s) { enterBuilding(s); }, structs: function () { return world.structs; }, showTip: function (m) { showTip(m, "", "#f2c14e"); }, toast: function (m) { toast(m); }, step: function (h, d, j) { step(h, d, j); }, get orig() { return orig; } };
+  window.__W = { wdbg: function () { return [WCB.swD, cool, sel, S.wpn, S.st.swings, aim.down, aim.id, toolBroken("wpn")]; }, treePix: function (i, j) { var c = treePix(i, j); return c ? c.width + "x" + c.height : null; }, origTree: function (i, j) { return origTree(i, j); }, cvStepDown: cvStepDown, enterHome: typeof enterHome !== "undefined" ? enterHome : null, leaveHome: typeof leaveHome !== "undefined" ? leaveHome : null, clean: clean, openStall: openStall, homeS: homeS, flPut: flPut, isPlantT: isPlantT, craftSort: craftSort, trySpecial: trySpecial, get panelOpen() { return panelOpen; }, FOC: FOC, DODGE: DODGE, rarItem: rarItem, rarRec: rarRec, get RECIPES() { return RECIPES; }, openStn: openStn, get drops() { return drops; }, place: place, nearFree: nearFree, get p2() { return p; }, grassGrow: grassGrow, razeStruct: razeStruct, blocks: blocks, setT: setT, breakTile: breakTile, save: save, get rmask() { return rmask; }, get world() { return world; }, get S() { return S; }, get: get, get col() { return col; }, W: W, H: H, T: T, get tiles() { return tiles; }, p: p, cam: cam, TILES: TILES, edit: function () { editN++; }, OPT: OPT, setSel: function (v) { sel = v; bare = false; hbDirty = true; }, get ox() { return ox; }, get oy() { return oy; }, get ts() { return ts; }, setT: setT, recalc: recalc, save: save, get sel() { return sel; }, shapeCount: shapeCount, autoShape: function (x, y) { return autoShape(y * W + x); }, FOOT: FOOT, NLOG: NLOG, pawChop: function (x, y) { return pawChop(get(x, y), x, y); }, pcol: function () { return pcol(); }, place: function (x, y, k) { place(x, y, k); }, tileItem: function (id) { for (var k in ITEMS) if (ITEMS[k].tile === id) return k; return null; }, pscr: function () { return [ox + p.x * ts, oy + p.y * ts, ts]; }, swo: function () { return [SWO.arc.length, SWO.th, heldAmt, toolPose().kind, toolPose().has, toolPose().phi]; }, enterBuilding: function (s) { enterBuilding(s); }, structs: function () { return world.structs; }, showTip: function (m) { showTip(m, "", "#f2c14e"); }, toast: function (m) { toast(m); }, step: function (h, d, j) { step(h, d, j); }, get orig() { return orig; } };
   window.__sbx = { chest: function (x, y) { return openChest(x, y); }, stn: function (k) { var bx = Math.floor(p.x) + 1, by = Math.floor(p.y); setT(bx, by, T.BENCH !== undefined && k === "bench" ? T.BENCH : get(bx, by)); openStn(k, bx, by); }, fell: function (x, y) { fellTree(x, y); }, T: T, place: function (x, y, it) { place(x, y, it); }, tileAt: function (x, y) { return get(x, y); }, rarItem: function (id) { return rarItem(id); }, rarOf: function (id) { var r = RECIPES.filter(function (q) { return q.id === id; })[0]; return r ? rarRec(r) : null; }, mc: { ls: function (k, o) { loadScreen(k, function () {}, o || { min: 3000 }); }, on: inMC, enter: function () { malcS().warned = 1; mcEnter(); }, leave: mcLeave, S: function () { return malcS(); }, gate: mcGate, gy: mcGateY, world: function () { return world; }, enemies: function () { return enemies; }, hp: function (v) { if (v !== undefined) hp = v; return hp; }, hit: function (k, d) { var e = enemies.find(function (q) { return q.k === k && !q.def; }); if (e) damageEnemy(e, d, 1); return e ? e.hp : null; }, brk: function (dx, dy) { var x = Math.floor(p.x) + dx, y = Math.floor(p.y) + dy, id = get(x, y); breakTile(x, y); return TILES[id].n; }, drops: function () { return drops.map(function (d) { return d.k || d.item || d.id; }); }, find: function (n) { var tid = T[n]; for (var r = 1; r < 60; r++) for (var dx = -r; dx <= r; dx++) for (var dy = -12; dy <= 12; dy++) if (get(Math.floor(p.x) + dx, Math.floor(p.y) + dy) === tid) return [dx, dy]; return null; } }, lair: { capt: function () { return cave && cave.F && cave.F.mobs && cave.F.mobs.filter(function (m) { return m.k === "captain"; })[0]; }, hit: hitCaptain, rig: rigAct, btn: rigBtn, fix: rigFix, count: rigCount, total: rigTotal, cap: rigCap, S: function () { return lairS(); } }, audit: auditGame, birds: { w: function () { return wbirds; }, pet: function () { return pet; }, feed: function (b) { feedBird(b); }, drops: function () { return drops; }, drop: function (k, n, x, y) { spawnDrop(k, n, x, y); } }, lore: { pick: function (a, g) { return lorePick(a, g); }, find: function (id, o) { loreFind(LPG[id], o); }, open: function (id) { openLore(id); }, note: function (x, y) { return readNote(x, y); }, F: function () { return cave && cave.F; } }, openPanel: function (t) { openPanel(t); }, growWorld: function (f) { return growWorld(f); }, amb: AMB, tickAmb: function (dt, n) { for (var k = 0; k < (n || 1); k++) tickAmbient(dt); return { reduce: reduce, cave: !!cave, lowq: lowq, surf: p.y < pcol() + 8, col: pcol() }; }, recStatus: function (id) { var r = craftAll().filter(function (q) { return q.id === id; })[0]; return r ? recStatus(r) : null; }, nearBench: function () { return nearBench(); }, MP: MP, canPlace: function (x, y, k) { QUIET = 1; var r = canPlace(x, y, k); QUIET = 0; return r; }, place: function (x, y, k) { place(x, y, k); }, flipDecor: function (x, y) { return flipDecor(x, y); }, breakTile: function (x, y) { breakTile(x, y); }, icon: function (k) { return icon(k); }, drink: function (k) { drink(k); }, wDmg: function () { return wDmg(); }, charms: CHARMS, flow: { lv: function (x, y) { return lvAt(y * W + x); }, q: function () { return FLQ.length; }, tick: function (n) { for (var k = 0; k < n; k++) { flAcc = FLOW.dt; tickFlow(0); } } }, setWall: setWall, get titleOpen() { return titleOpen; }, openTitle: openTitle, closeTitle: closeTitle, cam: cam, exAll: function () { ex.fill(1); }, hurt: function (n, w) { hurt(n, w); }, get hp() { return hp; }, craftAll: function () { return craftAll(); }, BENCH_LV: BENCH_LV, PICKS: PICKS, dropQty: dropQty, openJewel: openJewel, wDmg: function () { return wDmg(); }, armRed: function () { return armRed(); }, openGate: openGate, gateAct: gateAct, gates: function () { return S.gates; }, curCh: function () { return curCh(); }, place: place, breakTile: breakTile, tickTraps: tickTraps, emptyTrap: emptyTrap, sprinkled: sprinkled, trapNear: trapNear, plantCrop: plantCrop, enterBuilding: enterBuilding, structNear: structNear, structs: function () { return world.structs; }, get cave() { return cave; }, cp: cp, enterCave: enterCave, useLadder: useLadder, holeNear: holeNear, ladderNear: ladderNear, leaveCaveNow: leaveCaveNow, setFloor: setFloor, get trans() { return trans; }, blocks: blocks, worlds: function () { return wIdx; }, createWorld: createWorld, switchWorld: switchWorld, deleteWorld: deleteWorld, openWorlds: openWorlds, save: save, enemies: enemies, newEnemy: newEnemy, spawnBat: spawnBat, trySleep: trySleep, wear: wear, durOf: durOf, repair: repair, openChest: openChest, chestNear: chestNear, toggleDoor: toggleDoor, doorNear: doorNear, bedNear: bedNear, spawnEnemy: spawnEnemy, strike: strike, ENEMY: ENEMY, ITEMS: ITEMS, KSTAT: KSTAT, AMB: AMB, wbirds: function () { return wbirds; }, pl: function () { return cave || HOME ? [cp.x, cp.y] : [p.x, p.y]; }, caveF: function () { return cave && cave.F; }, craft: function (id) { craft(id); }, slots: function () { return S.slots; }, over: function () { return S.over || {}; }, setSlot: function (i, k, n) { S.slots[i] = k ? { k: k, n: n } : null; S.inv = totals(S.slots); hbDirty = true; }, toast: function (m, c) { return toast(m, c); }, nag: function (m) { nagT = 0; nag(m); }, inv: function (k, n) { S.inv[k] = n; hbDirty = true; }, selIt: function (k) { choose(k); hbDirty = true; return sel; }, wallAt: function (x, y) { return walls.g(y * W + x); }, spots: function () { return { mine: world.holes && world.holes[0], gate: FGLAST, home: (typeof HOMEP !== "undefined" ? HOMEP : null) }; }, scr: function (x, y) { return [ox + x * ts, oy + y * ts, ts]; }, setHp: function (v) { hp = v; }, WEAPONS: WEAPONS, bar: function () { return barEntries().map(function (e) { return e.id; }).filter(Boolean); }, room: room, reslot: reslot, view: function () { return { ts: ts, ox: ox, oy: oy }; }, get S() { return S; }, p: p, get: get, tiles: function () { return tiles; }, world: function () { return world; }, choose: choose, craft: craft, openPanel: openPanel, give: give, reveal: reveal, trail: function () { return S.trail; }, TRAIL: TRAIL, checkTrail: checkTrail, farmStep: farmStep, eat: eat, clean: clean, wilds: function () { return wilds; }, newAnimal: newAnimal, useAnimal: useAnimal, get fishing() { return fishing; }, standNear: standNear, openStand: openStand, flies: function () { return flies; }, aim: aim, get sel() { return sel; }, get bare() { return bare; }, npc: npc, openStn: openStn, MP: MP, mpHost: mpHost, mpJoin: mpJoin, mpLeave: mpLeave, openMPV: openMPV, openChat: openChat, CHARMS: CHARMS, wearCharm: wearCharm, hasCharm: hasCharm, WX: WX, wxNew: wxNew, wxLabel: wxLabel, CLOUD: CLOUD, cloudPush: cloudPush, cloudPull: cloudPull, wIdx: function () { return wIdx; }, curId: function () { return curId; }, MUS: MUS, MINI: MINI, musicMood: musicMood, rollBounties: rollBounties, btyReady: btyReady, claimBty: claimBty, buyShop: buyShop, BSHOP: BSHOP, renderTalk: renderTalk, activeBoss: activeBoss, newBoss: newBoss, bshots: bshots, BOSS: BOSS, useSummon: useSummon, talkCroaker: talkCroaker, giftsWaiting: giftsWaiting, MAIN: MAIN, SIDE: SIDE, showStory: showStory, get qi() { return S.qi; }, colAt: function (x) { return col[x]; }, setT: setT };
   window.__sbx.star = { launch: launchFaller, impact: starImpact, fallers: fallers, tick: tickStars, get shower() { return SHOWER; }, set shower(v) { SHOWER = v; } };
   window.__sbx.jb = { JB: JB, SONGS: SONGS, play: jbPlay, stop: jbStop, list: jbList, tick: tickJuke };
@@ -28418,12 +28445,16 @@ var ATK = { on: false, mine: false };
   };
   // SWAMP ESSENCE pays for enchanting (Nov 2026): gear only (weapon, pick, armor, bow, fishing rod); charms and everything else can't be enchanted.
   // Level III still needs 3 Dream Shards as well. Spending Essence lowers your Essence level, like spending levels.
-  var EN_ESS = [0, 30, 70, 140];
+  var EN_ESS = [0, 30, 90, 220];   // (Nov 2026: each level costs clearly more than the one before)
   function enHas(s) { return s === "wpn" ? S.wpn > 0 : s === "arm" ? S.arm > 0 : s === "bow" ? S.bow > 0 : s === "rod" ? S.rod > 0 : true; }
   function enPay(c, take) { if ((S.ess | 0) < (c.ess || 0)) return false; for (var q in c) if (q !== "ess" && (S.inv[q] || 0) < c[q]) return false; if (take) { S.ess = (S.ess | 0) - (c.ess || 0); for (var q2 in c) if (q2 !== "ess") { S.inv[q2] -= c[q2]; if (S.inv[q2] <= 0) delete S.inv[q2]; } essHud(true); } return true; }
   function ench(slot) { var o = p8(); if (!o.en || typeof o.en !== "object") o.en = {}; return o.en[slot] || null; }
   function enLv(slot, k) { var e = ench(slot); return e && e.k === k ? e.l : 0; }
-  function enCost(l) { var c = { ess: EN_ESS[l] || 140 }; if (l >= 3) c.dreamshard = 3; return c; }
+  // ENCHANT COSTS (Nov 2026): the level sets the base (I 30, II 90, III 220 Essence) and the piece's rarity raises it: +35% for each rarity step
+  // above Common (a Legendary sword costs about 2.4x a Common one). Level II also takes a Star Shard, level III three Dream Shards.
+  var EN_TOOL = { wpn: "t_weapon", pick: "t_pick", bow: "t_bow", rod: "t_rod" };
+  function enRar(s) { try { if (s === "arm") return Math.max(0, Math.min(5, Math.ceil((S.arm | 0) / 2))); return EN_TOOL[s] ? Math.max(0, rarItem(EN_TOOL[s]) | 0) : 0; } catch (e) { return 0; } }
+  function enCost(l, s) { var r = s ? enRar(s) : 0, c = { ess: Math.round((EN_ESS[l] || 220) * (1 + 0.35 * r) / 5) * 5 }; if (l === 2) c.starshard = 1; if (l >= 3) c.dreamshard = 3; return c; }
   var ECOL = { sharp: "#ff8a3a", heart: "#ff6ab0", swift: "#5ae0ff", luck: "#ffd23f", ward: "#b88aff", fleet: "#7aff9a", power: "#ff5a5a", quick: "#ffe066", bite: "#4fb6e8", line: "#ffd24a" }, ALT = { s: "wpn", just: "" };
   function enchGlow(g, cx, fy, hh, now, E) {   // a soft coloured aura and orbiting sparkles for enchanted gear (on you and on armor stands)
     if (!E || reduce) return; var t = now / 1000, keys = ["arm", "wpn", "pick"].filter(function (k) { return E[k] && ECOL[E[k].k]; }); if (!keys.length) return;
@@ -28441,12 +28472,12 @@ var ATK = { on: false, mine: false };
     h += '<div class="p8-plinths">' + Object.keys(ENCH).map(function (s) { var cur = ench(s), c = cur ? ECOL[cur.k] : "#7af0ff", ic = gearIcon(s);
       return '<button type="button" class="p8-plinth' + (ALT.s === s ? " on" : "") + (cur ? " ench lv" + cur.l : "") + (ALT.just === s ? " just" : "") + '" style="--ec:' + c + '" data-p8="en:sel:' + s + '"><span class="p8-gear"><i class="p8-trim"></i>' + (ic ? '<img alt="" src="' + ic + '">' : '<em>' + (s === "arm" ? "⛨" : s === "bow" ? "➶" : s === "rod" ? "⌇" : "⚔") + "</em>") + '<i class="p8-shine"></i></span><b>' + ENCH[s].n + "</b><small>" + esc(gearName(s)) + "</small>" + (cur ? '<span class="p8-ench">' + ENCH[s].opts[cur.k].n + " " + R[cur.l] + "</span>" : '<span class="p8-ench none">Not enchanted</span>') + "</button>"; }).join("") + "</div>";
     var s0 = ALT.s, E = ENCH[s0], cur0 = ench(s0);
-    h += '<p class="st-tip keep">Enchanting costs <b>Swamp Essence</b> (you have <b>' + (S.ess | 0) + '</b>). Each piece takes one enchantment, up to level III. Choosing the other one replaces it. Level III also needs 3 Dream Shards, which only come from dreams.</p>' + (enHas(s0) ? "" : '<p class="st-tip keep">Make a ' + esc(ENCH[s0].n.toLowerCase()) + " first, then bring it here.</p>") + '<div class="p8-enopts">' + Object.keys(E.opts).map(function (k) { var O = E.opts[k], l = enLv(s0, k), c = enCost(l + 1), max = l >= 3;
+    h += '<p class="st-tip keep">Enchanting costs <b>Swamp Essence</b> (you have <b>' + (S.ess | 0) + '</b>). Each piece takes one enchantment, up to level III. Choosing the other one replaces it. Higher levels and rarer gear cost more: level II also needs a Star Shard, level III 3 Dream Shards (they only come from dreams).</p>' + (enHas(s0) ? "" : '<p class="st-tip keep">Make a ' + esc(ENCH[s0].n.toLowerCase()) + " first, then bring it here.</p>") + '<div class="p8-enopts">' + Object.keys(E.opts).map(function (k) { var O = E.opts[k], l = enLv(s0, k), c = enCost(l + 1, s0), max = l >= 3;
       return '<div class="p8-enopt" style="--ec:' + ECOL[k] + '"><div class="p8-enhd"><b>' + O.n + "</b><span class=\"p8-pips\">" + [1, 2, 3].map(function (i) { return '<i class="' + (i <= l ? "on" : "") + '"></i>'; }).join("") + "</span></div><small>" + O.d + "</small>" + (max ? '<p class="p8-max">Maxed out</p>' : '<p class="p8-cost">' + Object.keys(c).map(function (q) { var have = q === "ess" ? S.ess | 0 : S.inv[q] || 0; return '<span class="' + (have >= c[q] ? "" : "short") + '">' + (q === "ess" ? '<i class="p8-essi" title="Swamp Essence"></i>' : '<img alt="" src="' + icon(q) + '">') + have + "/" + c[q] + (q === "ess" ? " Essence" : "") + "</span>"; }).join("") + '</p><button type="button" class="btn"' + (enPay(c) && enHas(s0) ? "" : " disabled") + ' data-p8="en:' + s0 + ":" + k + '">' + (l ? "Raise to " + R[l + 1] : cur0 && cur0.k !== k ? "Replace" : "Enchant") + "</button>") + "</div>"; }).join("") + "</div>";
     h += '<div class="st-row"><button type="button" class="btn ghost" data-story-close>Done</button></div>'; p4Box(h, "#7af0ff"); ALT.just = "";
   }
   function altarAct(s, k) {
-    var l = enLv(s, k) + 1, c = enCost(l); if (l > 3 || !ENCH[s] || !enHas(s) || !enPay(c)) return; enPay(c, true); reslot(); hbDirty = true;
+    var l = enLv(s, k) + 1, c = enCost(l, s); if (l > 3 || !ENCH[s] || !enHas(s) || !enPay(c)) return; enPay(c, true); reslot(); hbDirty = true;
     ALT.just = s; p8().en[s] = { k: k, l: l }; S.st.enchants = (S.st.enchants || 0) + 1; snd("open", l >= 3 ? "Legendary" : "Epic"); popup("Enchanted!", ENCH[s].n + ": " + ENCH[s].opts[k].n + " " + ["", "I", "II", "III"][l], "#7af0ff", "✦");
     if (!reduce) for (var i = 0; i < 24; i++) parts.push({ x: p.x + (Math.random() - 0.5) * 2, y: p.y - Math.random() * 2, vx: (Math.random() - 0.5) * 2, vy: -1 - Math.random() * 2, life: 1, max: 1, c: "#aff8ff", s: 2 });
     checkGoals(); save(); altarOpen();
@@ -28613,7 +28644,7 @@ var ATK = { on: false, mine: false };
       "<p>Spend it on <b>enchanting</b> your gear at a Mossy Altar.</p><p>Your Essence fills the bar beside your hunger bar, and each full bar is a new level. You're level <b>" + me.lv + "</b>, with " + me.have + " of " + me.need + " toward the next.</p>" });
     add({ id: "e:ench", sec: "essence", cat: "Enchanting", n: "Enchanting", c: "#7af0ff", sub: "Spend Essence at a Mossy Altar", body:
       "<p>At a <b>Mossy Altar</b>, spend Swamp Essence to enchant your gear: weapon, pick, armor, bow and fishing rod. Charms and other items can't be enchanted.</p><p>Each piece takes one enchantment, up to level III; picking the other one replaces it. Level III also needs 3 Dream Shards. Spending Essence lowers your Essence level.</p>" +
-      cxRows([["Level I", EN_ESS[1] + " Essence"], ["Level II", EN_ESS[2] + " Essence"], ["Level III", EN_ESS[3] + " Essence and 3 Dream Shards"]]) +
+      cxRows([["Level I", EN_ESS[1] + " Essence"], ["Level II", EN_ESS[2] + " Essence and a Star Shard"], ["Level III", EN_ESS[3] + " Essence and 3 Dream Shards"], ["Rarer gear", "+35% Essence for each rarity step above Common"]]) +
       Object.keys(ENCH).map(function (sl) { return "<h4>" + cxE(ENCH[sl].n) + "</h4>" + cxRows(Object.keys(ENCH[sl].opts).map(function (k) { return [ENCH[sl].opts[k].n, cxE(ENCH[sl].opts[k].d)]; })); }).join("") });
     add({ id: "e:lv", sec: "essence", cat: "Swamp Essence", n: "Level table", c: "#ffd24a", sub: "How much Essence each level takes", body: cxRows(lvRows) });
     add({ id: "e:val", sec: "essence", cat: "Swamp Essence", n: "Essence by creature", c: "#a8f05a", sub: "About how much each one gives", body: cxRows(foes.map(function (k) { return [ENEMY[k].n, "about " + essVal(Math.round(ENEMY[k].hp * dmul))]; }).concat(Object.keys(BOSS).map(function (k) { return [BOSS[k].n + " (boss)", "about " + essVal(Math.round(BOSS[k].hp * dmul), false, true)]; }))) });
@@ -29200,12 +29231,14 @@ var ATK = { on: false, mine: false };
   function frontGrass(g, x0, x1, gy) {   // FOREGROUND GRASS: a grass lip and blades drawn over the foot of a building, on every grassy block under it
     var u = ts / 16, P = GRASSP[0];
     for (var x = x0; x <= x1; x++) { var id = get(x, gy), td = TILES[id]; if (!td || !td.solid || (id !== T.MOSS && !/grass|moss/i.test(td.n || ""))) continue; var pal = GRASSP[varAt(x) === 1 ? 1 : 0] || P;
-      var bx = ox + x * ts, by = oy + gy * ts; g.fillStyle = pal[0]; g.fillRect(bx, by - u, ts, u * 3); g.fillStyle = pal[1]; g.fillRect(bx, by - u, ts, u);
-      for (var b = 0; b < 6; b++) { var hx = SW.hash(x, b, 77), h = 2 + Math.floor(hx * 4), px = bx + Math.floor((b * 2.6 + hx * 2) * u); g.fillStyle = b % 2 ? pal[0] : pal[3]; g.fillRect(px, by - (h + 1) * u, u, h * u); if (h > 3) { g.fillStyle = pal[1]; g.fillRect(px, by - (h + 1) * u, u, u); } } }
+      var bx = ox + x * ts, by = oy + gy * ts;
+      for (var b = 0; b < 5; b++) { var hx = SW.hash(x, b, 77); if (hx < 0.18) continue; var h = 1 + Math.floor(SW.hash(x, b, 78) * 4), px = bx + Math.floor((b * 3.1 + SW.hash(x, b, 79) * 2.2) * u), lean = SW.hash(x, b, 80) < 0.3 ? 1 : 0;   // tufts of uneven blades, not a comb
+        g.fillStyle = pal[0]; g.fillRect(px, by - h * u, u, h * u + u); if (h > 1) { g.fillStyle = pal[1]; g.fillRect(px + lean * u, by - (h + 1) * u + u, u, u); } if (hx > 0.6) { g.fillStyle = pal[3] || pal[0]; g.fillRect(px + u, by - Math.max(1, h - 2) * u, u, Math.max(1, h - 2) * u + u); } } }
   }
   function mazeDraw(g, now) {   // the arch: a pixel-art mangrove whose two root legs make the doorway (MAZE ART)
     var s = sites(); s = s && s.maze; if (!s || cave || HOME || OCS) return; var sx = ox + (s.x + 2.5) * ts, sy = oy + s.y * ts, t = reduce ? 0 : now / 1000; if (sx < -ts * 5 || sx > vw + ts * 5) return; siteSeen("maze", s);
-    var A = mazeArch(), sc = ts / 16; g.imageSmoothingEnabled = false; g.drawImage(A.c, Math.round(sx - A.fx * sc), Math.round(sy - A.fy * sc), Math.round(A.c.width * sc), Math.round(A.c.height * sc));
+    var A = mazeArch(), sc = ts / 16; g.imageSmoothingEnabled = false; g.save(); g.beginPath(); g.rect(sx - A.fx * sc - ts, sy - A.fy * sc - ts, A.c.width * sc + ts * 2, A.fy * sc + ts + Math.round(sc)); g.clip();   // (cut at the ground line: no dark base strip below the grass)
+    g.drawImage(A.c, Math.round(sx - A.fx * sc), Math.round(sy - A.fy * sc), Math.round(A.c.width * sc), Math.round(A.c.height * sc)); g.restore();
     frontGrass(g, s.x - 1, s.x + 6, s.y);   // the grass grows up in front of its root legs, as it does in front of the Mine and the Homestead gate
     for (var f = 0; f < 5; f++) { var bl = 0.5 + 0.5 * Math.sin(t * 2.2 + f * 1.7); if (bl < 0.2) continue; var fx2 = sx + (Math.sin(t * 0.6 + f * 2.3) * 9 + (f - 2) * 4) * sc, fy2 = sy - (14 + f * 9 + Math.sin(t * 0.8 + f) * 4) * sc, r = Math.max(2, sc * 1.2);
       g.fillStyle = "rgba(200,255,120," + (0.18 * bl).toFixed(3) + ")"; g.beginPath(); g.arc(fx2, fy2, r * 3, 0, 7); g.fill(); g.fillStyle = "rgba(230,255,160," + (0.9 * bl).toFixed(2) + ")"; g.fillRect(fx2 - r / 2, fy2 - r / 2, r, r); }

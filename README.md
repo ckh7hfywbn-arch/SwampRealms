@@ -1566,3 +1566,10 @@ Journal > Craft has a search box at the top (`csearch`, `csIndex`, `csFind`, `cs
   - **Catch up when you return:** crops, saplings, fish traps, belts, hoppers and vacuum chests only run on pages near you; when a page comes back into range it gets the time it missed all at once (`catchUp`; belts and hoppers up to 10 minutes).
   - The explored map is saved page by page (`Grid.dump` / `undump`, strings starting with "P"; old saves still load).
   - Dev menu (Open): "Page system: show memory and pages", "Page system: pack every far page now".
+- **Notion batch 2 (Nov 18):**
+  - **Swing recharge** (like Minecraft): after each sword swing a small bar under you fills back up; swing before it's full and the hit is weaker (down to 20%) and the combo resets. Three full-strength swings in a row still make a finisher; holding still charges a heavy swing.
+  - **Bow draw:** hold to draw (a ring fills round you, gold when full), let go to shoot. A full draw hits 115%, a short one 30-100% and flies slower; a tap too short to draw does nothing. Quickdraw and a Sapphire draw faster.
+  - **Rod wind-up:** a short swing back (0.4 s) before the line flies.
+  - **Enchant costs** rise with level and rarity: I 30, II 90 (+ a Star Shard), III 220 Essence (+ 3 Dream Shards), each +35% per rarity step of the gear above Common.
+  - **Mangrove Maze:** the arch is cut at the ground line (no dark strip), with uneven grass tufts in front.
+  - **Tree roots** never fall back to the old log look: a root block beside a trunk's foot is drawn as a root even with a flower or reed on it or the ground dug out under it, and a world tree's trunk buried between blocks is still drawn as a trunk.
