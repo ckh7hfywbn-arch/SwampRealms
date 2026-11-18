@@ -14,7 +14,7 @@
 (function () {
   "use strict";
   if (typeof SbxWorld === "undefined") return;
-  var SW = SbxWorld, W = SW.W, H = SW.H, SURF = SW.SURF, T = SW.T, TILES = SW.TILES, ITEMS = SW.ITEMS, ORDER = SW.ITEM_ORDER, BIOMES = SW.BIOMES, SC = typeof SbxCave !== "undefined" ? SbxCave : null;
+  var SW = SbxWorld, Grid = SbxWorld.Grid, W = SW.W, H = SW.H, SURF = SW.SURF, T = SW.T, TILES = SW.TILES, ITEMS = SW.ITEMS, ORDER = SW.ITEM_ORDER, BIOMES = SW.BIOMES, SC = typeof SbxCave !== "undefined" ? SbxCave : null;
 
   // ---------- TUNING ----------
   // inventory: 9 hotbar slots + 21 bag slots (tools sit in slots too), 64 per stack (16 for furniture and other bulky things)
@@ -667,8 +667,8 @@
     if (o.bed && typeof o.bed === "object") n.bed = Object.assign({}, o.bed, { x: sx(o.bed.x) });
     n.wv = 8; n.genL = 0; n.genR = 0; return n;
   }
-  function rle(a) { var out = [], v = 0, n = 0; for (var i = 0; i < a.length; i++) { if (a[i] === v) n++; else { out.push(n); v = a[i]; n = 1; } } out.push(n); return out.join(","); }
-  function unrle(s, a) { if (typeof s !== "string") return; var v = 0, i = 0, parts2 = s.split(","); for (var k = 0; k < parts2.length; k++) { var n = parseInt(parts2[k], 10) || 0; if (v) a.fill(1, i, Math.min(a.length, i + n)); i += n; v ^= 1; } }
+  function rle(a) { var out = [], v = 0, n = 0, L = a.length, gr = !!a.g; for (var i = 0; i < L; i++) { var c = gr ? a.g(i) : a[i]; if (c === v) n++; else { out.push(n); v = c; n = 1; } } out.push(n); return out.join(","); }
+  function unrle(s, a) { if (typeof s !== "string") return; var v = 0, i = 0, parts2 = s.split(","); for (var k = 0; k < parts2.length; k++) { var n = parseInt(parts2[k], 10) || 0; if (v) { if (a.g) { for (var j = i, e = Math.min(a.length, i + n); j < e; j++) a.s(j, 1); } else a.fill(1, i, Math.min(a.length, i + n)); } i += n; v ^= 1; } }
   function defaultAnimal() { try { var pk = localStorage.getItem("swamp-delve-char"); if (pk && typeof DelveAv !== "undefined" && DelveAv._AN[pk]) return pk; } catch (e) {} try { return Crystals.outfit().animal || "frog"; } catch (e) { return "frog"; } }
   // CHARACTERS: the people (delve-avatar.js PEOPLE) and the swamp animals you can play as
   function charList() {
@@ -992,23 +992,23 @@
       var b = r.b, x, y, i, touched = false;
       for (y = b.y0; y <= b.y1 + 1 && !touched; y++) for (x = b.x0 - 1; x <= b.x1 + 1; x++) { i = y * W + x; if (edits[i] !== undefined) { touched = true; break; } }
       if (!touched) return;
-      for (y = b.y0; y <= b.y1; y++) for (x = b.x0; x <= b.x1; x++) { i = y * W + x; var id = orig[i]; if ((id === T.LOG || id === T.LEAVES || id === T.VINE) && tiles[i] === id) { tiles[i] = T.AIR; edits[i] = T.AIR; } }
+      for (y = b.y0; y <= b.y1; y++) for (x = b.x0; x <= b.x1; x++) { i = y * W + x; var id = orig.g(i); if ((id === T.LOG || id === T.LEAVES || id === T.VINE) && tiles.g(i) === id) { tiles.s(i, T.AIR); edits[i] = T.AIR; } }
     });
   }
   function build(state) {
     buildN++;
     world = state.dim === "malc" && SW.genMalc ? SW.genMalc(mcSeed(state.seed), state.malc && state.malc.rz) : SW.gen(state.seed, state.bvar); PICT = null;   // MALCRUOR: its own land, from its own seed MAPB = null; if (typeof M !== "undefined" && M) M.img = null;
     if (SW.genChunk && world.lay) { for (var gl = 0; gl < (state.genL | 0); gl++) if (!SW.genChunk(world, -1)) break; for (var gr = 0; gr < (state.genR | 0); gr++) if (!SW.genChunk(world, 1)) break; }   // ENDLESS WORLD: the land you have already explored
-    tiles = world.t; liftStructs(tiles, world.walls); orig = tiles.slice(); edits = {}; flInit();
-    state.e.split(",").forEach(function (s) { var a = s.split(":"), i = parseInt(a[0], 10), id = parseInt(a[1], 10); if (i >= 0 && i < tiles.length && TILES[id]) { tiles[i] = id; if (id !== orig[i]) edits[i] = id; } });
+    liftStructs(world.t, world.walls); tiles = Grid.from(world.t, W, H); orig = tiles.slice(); edits = {}; flInit();   // THE PAGE SYSTEM: the grids live in pages (SbxWorld.Grid)
+    state.e.split(",").forEach(function (s) { var a = s.split(":"), i = parseInt(a[0], 10), id = parseInt(a[1], 10); if (i >= 0 && i < tiles.length && TILES[id]) { tiles.s(i, id); if (id !== orig.g(i)) edits[i] = id; } });
     if ((state.trv | 0) < 3) { treesMigrate(); state.trv = 3; }
     if (state.minepos && world.holes && world.holes[0] && !state.dim) { world.holes[0].x = state.minepos[0]; world.holes[0].y = state.minepos[1]; }   // MOVING CAMP: the Mine where you put it   // (3: CAMP TREES, the short ones round camp, Nov 2026)   // TALL TREES: an older save's trees grow to the new heights (a tree you had chopped or built into is cleared, never left as half a tree)
     smask = null;   // buildings are pictures now (see BUILDING PICTURES), so nothing in the grid is scenery
     rzLoad(state);
     col = new Int16Array(W); for (var x = 0; x < W; x++) recalc(x);
-    flLoad(state.fl); ex = new Uint8Array(W * H); unrle(state.ex, ex);
-    walls = world.walls ? world.walls.slice() : new Uint16Array(W * H); worigW = walls.slice(); wedits = {};   // back walls: world-made ones plus only the ones you changed (S.we, "index:wallId" pairs, 0 = removed)
-    (typeof state.we === "string" ? state.we : "").split(",").forEach(function (q) { var a = q.split(":"), wi = parseInt(a[0], 10), wd = parseInt(a[1], 10); if (wi >= 0 && wi < walls.length && (wd === 0 || (TILES[wd] && TILES[wd].kind === "wall"))) { walls[wi] = wd; if (wd !== worigW[wi]) wedits[wi] = wd; } });
+    flLoad(state.fl); ex = new Grid(W, H, Uint8Array); unrle(state.ex, ex);
+    walls = world.walls ? Grid.from(world.walls, W, H) : new Grid(W, H, Uint16Array); worigW = walls.slice(); wedits = {};   // back walls: world-made ones plus only the ones you changed (S.we, "index:wallId" pairs, 0 = removed)
+    (typeof state.we === "string" ? state.we : "").split(",").forEach(function (q) { var a = q.split(":"), wi = parseInt(a[0], 10), wd = parseInt(a[1], 10); if (wi >= 0 && wi < walls.length && (wd === 0 || (TILES[wd] && TILES[wd].kind === "wall"))) { walls.s(wi, wd); if (wd !== worigW.g(wi)) wedits[wi] = wd; } });
     decoInit(state);   // DECORATING: this world's decorations (S.deco), checked against the furniture now in place
   }
   function start(state) {
@@ -1316,7 +1316,7 @@
     return false;
   }
   // ---------- WORLD ACCESS ----------
-  function get(x, y) { if (x < 0 || x >= W) return T.BEDROCK; if (y < 0) return T.AIR; if (y >= H) return T.BEDROCK; return tiles[y * W + x]; }
+  function get(x, y) { if (x < 0 || x >= W) return T.BEDROCK; if (y < 0) return T.AIR; if (y >= H) return T.BEDROCK; return tiles.g(y * W + x); }
   // Natural trees are scenery: you and the enemies walk through untouched trunks and leaves (you can still chop them). Logs and leaves YOU placed stay solid.
   // Generated buildings (the standalone structures) are scenery: you walk straight through their walls, roofs and doors as if they were in the background.
   // smask marks the footprint (built in build()); only tiles still equal to the generated world count, so anything you place or dig yourself behaves normally.
@@ -1328,30 +1328,30 @@
   function rzBox(q) { var a = q.mx0 !== undefined; return [clamp(a ? q.mx0 : q.x0 - 1, 0, W - 1), clamp(a ? q.mx1 : q.x1 + 1, 0, W - 1), clamp(a ? q.my0 : q.gy - q.bh - 7, 0, H - 1), clamp(q.gy - 1, 0, H - 1)]; }
   function rzPack(q) {   // -> hex string, one bit per cell of the building's box
     var b = rzBox(q), out = "", acc = 0, n = 0;
-    for (var y = b[2]; y <= b[3]; y++) for (var x = b[0]; x <= b[1]; x++) { var i = y * W + x; if (rmask[i] && tiles[i] !== rmask[i]) rmask[i] = 0; acc = acc << 1 | (rmask[i] ? 1 : 0); if (++n === 4) { out += acc.toString(16); acc = 0; n = 0; } }
+    for (var y = b[2]; y <= b[3]; y++) for (var x = b[0]; x <= b[1]; x++) { var i = y * W + x; if (rmask.g(i) && tiles.g(i) !== rmask.g(i)) rmask.s(i, 0); acc = acc << 1 | (rmask.g(i) ? 1 : 0); if (++n === 4) { out += acc.toString(16); acc = 0; n = 0; } }
     if (n) out += (acc << (4 - n)).toString(16); return out;
   }
   function rzSaveAll() { if (!rmask || !S.razed) return; if (!S.rzm) S.rzm = {}; (world.structs || []).forEach(function (q) { if (q.razed) S.rzm[q.id] = rzPack(q); }); }
   function rzLoad(state) {   // after the world and your edits are in place
     rmask = null; if (!state.razed) return;
     (world.structs || []).forEach(function (q) {
-      if (!state.razed[q.id]) return; if (!rmask) rmask = new Uint16Array(W * H);
+      if (!state.razed[q.id]) return; if (!rmask) rmask = new Grid(W, H, Uint16Array);
       var b = rzBox(q), hex = state.rzm && state.rzm[q.id], n = 0;
-      for (var y = b[2]; y <= b[3]; y++) for (var x = b[0]; x <= b[1]; x++, n++) { var i = y * W + x, id = tiles[i]; if (!TILES[id].solid) continue;
-        var on = hex ? (parseInt(hex.charAt(n >> 2), 16) >> (3 - (n & 3))) & 1 : (id === orig[i] && id !== T.LOG && id !== T.LEAVES);   // older saves: every untouched block of it
-        if (on) rmask[i] = id; }
+      for (var y = b[2]; y <= b[3]; y++) for (var x = b[0]; x <= b[1]; x++, n++) { var i = y * W + x, id = tiles.g(i); if (!TILES[id].solid) continue;
+        var on = hex ? (parseInt(hex.charAt(n >> 2), 16) >> (3 - (n & 3))) & 1 : (id === orig.g(i) && id !== T.LOG && id !== T.LEAVES);   // older saves: every untouched block of it
+        if (on) rmask.s(i, id); }
     });
   }
   function buildSMask() {
-    smask = new Uint8Array(W * H); var ss = world.structs || [], i, x, y;
-    function mark(x0, x1, y0, y1) { for (y = Math.max(0, y0); y <= Math.min(H - 1, y1); y++) for (x = Math.max(0, x0); x <= Math.min(W - 1, x1); x++) smask[y * W + x] = 1; }
+    smask = new Grid(W, H, Uint8Array); var ss = world.structs || [], i, x, y;
+    function mark(x0, x1, y0, y1) { for (y = Math.max(0, y0); y <= Math.min(H - 1, y1); y++) for (x = Math.max(0, x0); x <= Math.min(W - 1, x1); x++) smask.s(y * W + x, 1); }
     for (i = 0; i < ss.length; i++) { var q = ss[i]; if (q.mx0 !== undefined) mark(q.mx0, q.mx1, q.my0, q.gy - 1); else mark(q.x0 - 1, q.x1 + 1, q.gy - q.bh - 7, q.gy - 1); }
   }
   function blocks(x, y) {
     var id = get(x, y); if (!TILES[id].solid) return false;
-    if (smask && x >= 0 && x < W && y >= 0 && y < H && smask[y * W + x] && tiles[y * W + x] === orig[y * W + x]) return false;
-    if (rmask && x >= 0 && x < W && y >= 0 && y < H && rmask[y * W + x] === id) return false;
-    if ((id === T.LOG || id === T.LEAVES) && x >= 0 && x < W && y >= 0 && y < H && tiles[y * W + x] === orig[y * W + x]) return false;
+    if (smask && x >= 0 && x < W && y >= 0 && y < H && smask.g(y * W + x) && tiles.g(y * W + x) === orig.g(y * W + x)) return false;
+    if (rmask && x >= 0 && x < W && y >= 0 && y < H && rmask.g(y * W + x) === id) return false;
+    if ((id === T.LOG || id === T.LEAVES) && x >= 0 && x < W && y >= 0 && y < H && tiles.g(y * W + x) === orig.g(y * W + x)) return false;
     return true;
   }
   var opaque = function (id) { return TILES[id].solid && id !== T.LEAVES; };
@@ -1367,7 +1367,7 @@
     return PCOL.v;
   }
   function recalc(x) {   // first row that counts as ground/roof (sets sky light and the dark backwall). World-generated trunks are scenery, so they never count: no backwall appears under a tree when you chop it.
-    var roof = function (y) { var i = y * W + x, id = tiles[i]; return opaque(id) && !(id === T.LOG && id === orig[i]) && !(smask && smask[i] && id === orig[i]) && !(rmask && rmask[i] === id); };
+    var roof = function (y) { var i = y * W + x, id = tiles.g(i); return opaque(id) && !(id === T.LOG && id === orig.g(i)) && !(smask && smask.g(i) && id === orig.g(i)) && !(rmask && rmask.g(i) === id); };
     var gt = world && world.top ? world.top[x] - 4 : -1;
     for (var y = 0; y < H; y++) { if (!roof(y)) continue;
       if (y < gt) {   // FLOATING ISLANDS (the Sky Village, the Cinder Aerie, sky platforms) cast no shade on the land far below: a solid layer high above the ground with a tall open drop under it does not count as a roof
@@ -1379,9 +1379,9 @@
   }
   var editN = 0;
   function setT(x, y, id) {   // (MALLET: a broken or replaced block loses its shape)
-    var i = y * W + x; if (S.shape && S.shape[i] !== undefined && tiles[i] !== id) { delete S.shape[i]; shapeCount(); } if (FL && !isLiq(id)) FL[i] = 0; editN++; if (S.dflip && S.dflip[i] && tiles[i] !== id) delete S.dflip[i]; animDoorNote(i, tiles[i], id); tiles[i] = id; mpTileEdit(x, y, id); flWake(x, y);
+    var i = y * W + x; if (S.shape && S.shape[i] !== undefined && tiles.g(i) !== id) { delete S.shape[i]; shapeCount(); } if (FL && !isLiq(id)) FL.s(i, 0); editN++; if (S.dflip && S.dflip[i] && tiles.g(i) !== id) delete S.dflip[i]; animDoorNote(i, tiles.g(i), id); tiles.s(i, id); mpTileEdit(x, y, id); flWake(x, y);
     if (S.stain && S.stain[i] !== undefined && !STAINABLE[id] && !(id !== T.AIR && STAINS[S.stain[i]] && STAINS[S.stain[i]].all)) delete S.stain[i];   // broken or replaced: the stain goes with it (an opening door keeps its stain)
-    if (id === orig[i]) delete edits[i]; else edits[i] = id;
+    if (id === orig.g(i)) delete edits[i]; else edits[i] = id;
     recalc(x);
   }
   // ---------- FLOWING WATER AND LAVA ----------
@@ -1395,23 +1395,23 @@
   var FL = null, FLM = null, FLQ = [], PUD = {}, flAcc = 0, flN = 0, pudT = 0, hissT = 0;
   var FLOW = { dt: 0.06, lavaEvery: 4, budget: 2400, budgetLow: 1400, waterMin: 2, lavaMin: 4, sheet: 2, lavaSheet: 3, run: 14, lavaRun: 4, dry: [18, 40] };   // sheet: the thinnest a liquid spreads out to
   function isLiq(id) { return id === T.WATER || id === T.LAVA; }
-  function lvAt(i) { return (FL && FL[i]) || 8; }
+  function lvAt(i) { return (FL && FL.g(i)) || 8; }
   function flOpen(id) { if (id === T.AIR) return true; var td = TILES[id]; return !!td && !td.solid && !td.crop && !td.decor && (td.sway || td.kind === "reed" || td.kind === "flower" || td.kind === "bloom" || td.kind === "glowcap" || isPlantT(id)); }
   function isPlantT(id) { var td = TILES[id]; return id !== T.AIR && !!td && !td.solid && !td.crop && !td.decor && id !== T.VINE && rampFree(id); }   // a wild or planted plant (flowers, reeds, mushrooms, ferns, saplings ...)
-  function flInit() { FL = new Uint8Array(W * H); FLM = new Uint8Array(W * H); FLQ = []; PUD = {}; }
+  function flInit() { FL = new Grid(W, H, Uint8Array); FLM = new Grid(W, H, Uint8Array); FLQ = []; PUD = {}; }
   function flWake(x, y) {
     if (!FLM) return;
     for (var k = 0; k < 5; k++) {
       var xx = x + (k === 1 ? -1 : k === 2 ? 1 : 0), yy = y + (k === 3 ? -1 : k === 4 ? 1 : 0); if (xx < 0 || xx >= W || yy < 0 || yy >= H) continue;
-      var i = yy * W + xx; if (!FLM[i] && isLiq(tiles[i])) { FLM[i] = 1; FLQ.push(i); }
+      var i = yy * W + xx; if (!FLM.g(i) && isLiq(tiles.g(i))) { FLM.s(i, 1); FLQ.push(i); }
     }
   }
   function flPut(i, id, lv) {   // set a cell's liquid (or anything else) and its level, with save, light and multiplayer bookkeeping
-    var x = i % W, y = (i / W) | 0; FL[i] = isLiq(id) && lv < 8 ? lv : 0;
-    var was = tiles[i]; if (isLiq(id) && was !== id && !isLiq(was) && isPlantT(was)) {   // WATER WASHES PLANTS AWAY: flowers, reeds and mushrooms in its path break and float off as items (lava just burns them)
+    var x = i % W, y = (i / W) | 0; FL.s(i, isLiq(id) && lv < 8 ? lv : 0);
+    var was = tiles.g(i); if (isLiq(id) && was !== id && !isLiq(was) && isPlantT(was)) {   // WATER WASHES PLANTS AWAY: flowers, reeds and mushrooms in its path break and float off as items (lava just burns them)
       if (id === T.WATER) { var dk = dropOf(TILES[was]); if (dk && ITEMS[dk]) spawnDrop(dk, 1, x, y, true); chips(x + 0.5, y + 0.5, TILES[was].c || "#58d68b", 4, 3); } else chips(x + 0.5, y + 0.5, "#ff8a3d", 5, 4);
     }
-    if (tiles[i] !== id) setT(x, y, id); else { editN++; flWake(x, y); mpTileEdit(x, y, id); }
+    if (tiles.g(i) !== id) setT(x, y, id); else { editN++; flWake(x, y); mpTileEdit(x, y, id); }
     if (id === T.WATER && lv <= FLOW.sheet) PUD[i] = flN + Math.round((FLOW.dry[0] + Math.random() * (FLOW.dry[1] - FLOW.dry[0])) / FLOW.dt); else if (PUD[i] !== undefined) delete PUD[i];
   }
   function flHarden(li, x, y) {   // lava touched water
@@ -1421,52 +1421,52 @@
     if (hissT <= 0 && Math.abs(lx - p.x) < 24 && Math.abs(ly - p.y) < 16) { hissT = 0.35; thud(150, 0.05); }
   }
   function flCell(i) {
-    var id = tiles[i]; if (!isLiq(id)) return;
+    var id = tiles.g(i); if (!isLiq(id)) return;
     var x = i % W, y = (i / W) | 0, L = lvAt(i), lava = id === T.LAVA, other = lava ? T.WATER : T.LAVA, k, j;
     for (k = 0; k < 4; k++) {   // water and lava meet: the lava turns to rock
       var nx = x + (k === 0 ? -1 : k === 1 ? 1 : 0), ny = y + (k === 2 ? -1 : k === 3 ? 1 : 0); if (nx < 0 || nx >= W || ny < 0 || ny >= H) continue;
-      j = ny * W + nx; if (tiles[j] !== other) continue;
+      j = ny * W + nx; if (tiles.g(j) !== other) continue;
       if (lava) { flHarden(i, x, y); return; } flHarden(j, nx, ny);
     }
     if (y + 1 < H) {   // fall
-      var b = i + W, bid = tiles[b];
+      var b = i + W, bid = tiles.g(b);
       if (flOpen(bid)) { flPut(b, id, L); flPut(i, T.AIR, 0); return; }
       if (bid === id) { var bl = lvAt(b); if (bl < 8) { var m = Math.min(L, 8 - bl); flPut(b, id, bl + m); L -= m; if (!L) { flPut(i, T.AIR, 0); return; } flPut(i, id, L); } }
     }
     // level the surface: this cell and the resting cells of the same liquid beside it (up to FLOW.run / lavaRun away), plus an open cell
     // at either end, share their eighths evenly. Already level (within one eighth) and nowhere to spread = nothing to do, so it settles.
-    var R = lava ? FLOW.lavaRun : FLOW.run, lo = x, hi = x, rest = function (c) { var bid = tiles[c + W]; return c + W >= tiles.length || (!flOpen(bid) && !(bid === id && lvAt(c + W) < 8)); };
-    while (x - lo < R && lo > 0 && tiles[y * W + lo - 1] === id && rest(y * W + lo - 1)) lo--;
-    while (hi - x < R && hi < W - 1 && tiles[y * W + hi + 1] === id && rest(y * W + hi + 1)) hi++;
+    var R = lava ? FLOW.lavaRun : FLOW.run, lo = x, hi = x, rest = function (c) { var bid = tiles.g(c + W); return c + W >= tiles.length || (!flOpen(bid) && !(bid === id && lvAt(c + W) < 8)); };
+    while (x - lo < R && lo > 0 && tiles.g(y * W + lo - 1) === id && rest(y * W + lo - 1)) lo--;
+    while (hi - x < R && hi < W - 1 && tiles.g(y * W + hi + 1) === id && rest(y * W + hi + 1)) hi++;
     var tot = 0, mn = 9, mx = 0, c;
     for (c = lo; c <= hi; c++) { var lv = lvAt(y * W + c); tot += lv; if (lv < mn) mn = lv; if (lv > mx) mx = lv; }
-    var oL = lo > 0 && flOpen(tiles[y * W + lo - 1]), oR = hi < W - 1 && flOpen(tiles[y * W + hi + 1]), n = hi - lo + 1, minSp = lava ? FLOW.lavaMin : FLOW.waterMin;
+    var oL = lo > 0 && flOpen(tiles.g(y * W + lo - 1)), oR = hi < W - 1 && flOpen(tiles.g(y * W + hi + 1)), n = hi - lo + 1, minSp = lava ? FLOW.lavaMin : FLOW.waterMin;
     if ((oL || oR) && mx >= minSp) { var n2 = n + (oL ? 1 : 0) + (oR ? 1 : 0); if (Math.floor(tot / n2) >= (lava ? FLOW.lavaSheet : FLOW.sheet)) { if (oL) lo--; if (oR) hi++; n = n2; mn = 0; } }
     if (n < 2 || mx - mn <= 1) return;
     var base = Math.floor(tot / n), rem = tot - base * n, cells = [];
     for (c = lo; c <= hi; c++) cells.push(c);
     cells.sort(function (a, b) { return Math.abs(a - x) - Math.abs(b - x) || ((flN & 1) ? b - a : a - b); });   // spare eighths stay nearest the source
-    for (k = 0; k < cells.length; k++) { var ci = y * W + cells[k], want = base + (k < rem ? 1 : 0), now0 = tiles[ci] === id ? lvAt(ci) : 0; if (want !== now0) flPut(ci, want ? id : T.AIR, want); }
+    for (k = 0; k < cells.length; k++) { var ci = y * W + cells[k], want = base + (k < rem ? 1 : 0), now0 = tiles.g(ci) === id ? lvAt(ci) : 0; if (want !== now0) flPut(ci, want ? id : T.AIR, want); }
   }
   function tickFlow(dt) {
     if (!FL || (MP.on && MP.role === "guest")) return;
     hissT -= dt; flAcc += dt; if (flAcc < FLOW.dt) return; flAcc = Math.min(flAcc - FLOW.dt, FLOW.dt * 3); flN++;
     var lavaTurn = flN % FLOW.lavaEvery === 0, budget = lowq ? FLOW.budgetLow : FLOW.budget, cur = FLQ, keep = []; FLQ = [];
     for (var a = 0; a < cur.length; a++) {
-      var i = cur[a]; if (budget <= 0 || (tiles[i] === T.LAVA && !lavaTurn)) { keep.push(i); continue; }   // still marked: stays queued for later
-      FLM[i] = 0; budget--; flCell(i);
+      var i = cur[a]; if (budget <= 0 || (tiles.g(i) === T.LAVA && !lavaTurn)) { keep.push(i); continue; }   // still marked: stays queued for later
+      FLM.s(i, 0); budget--; flCell(i);
     }
     for (var b = 0; b < keep.length; b++) FLQ.push(keep[b]);
-    pudT -= FLOW.dt; if (pudT <= 0) { pudT = 1; for (var key in PUD) { if (PUD[key] > flN) continue; var pi = +key; delete PUD[key]; if (tiles[pi] === T.WATER && lvAt(pi) <= FLOW.sheet && tiles[pi - W] !== T.WATER && tiles[pi + W] !== T.WATER) flPut(pi, T.AIR, 0); } }   // thin puddles dry up
+    pudT -= FLOW.dt; if (pudT <= 0) { pudT = 1; for (var key in PUD) { if (PUD[key] > flN) continue; var pi = +key; delete PUD[key]; if (tiles.g(pi) === T.WATER && lvAt(pi) <= FLOW.sheet && tiles.g(pi - W) !== T.WATER && tiles.g(pi + W) !== T.WATER) flPut(pi, T.AIR, 0); } }   // thin puddles dry up
   }
   function flLoad(str) {   // saved levels ("index:eighths" for liquid cells that are not full); every one is woken so half-finished flows carry on
-    (typeof str === "string" ? str : "").split(",").forEach(function (q) { var a = q.split(":"), i = parseInt(a[0], 10), v = parseInt(a[1], 10); if (i >= 0 && i < FL.length && v >= 1 && v <= 7 && isLiq(tiles[i])) { FL[i] = v; flWake(i % W, (i / W) | 0); } });
-    Object.keys(edits).forEach(function (k) { var i = +k; if (isLiq(tiles[i])) flWake(i % W, (i / W) | 0); });
+    (typeof str === "string" ? str : "").split(",").forEach(function (q) { var a = q.split(":"), i = parseInt(a[0], 10), v = parseInt(a[1], 10); if (i >= 0 && i < FL.length && v >= 1 && v <= 7 && isLiq(tiles.g(i))) { FL.s(i, v); flWake(i % W, (i / W) | 0); } });
+    Object.keys(edits).forEach(function (k) { var i = +k; if (isLiq(tiles.g(i))) flWake(i % W, (i / W) | 0); });
   }
-  function flSave() { var o = []; if (FL) for (var i = 0; i < FL.length; i++) if (FL[i] && isLiq(tiles[i])) o.push(i + ":" + FL[i]); return o.join(","); }
+  function flSave() { var o = []; if (FL) for (var q = 0; q < FL.n; q++) { var a = FL.p[q]; if (!a && !FL.k[q]) continue; a = a || FL.up(q); for (var j = 0; j < a.length; j++) if (a[j]) { var x = q * Grid.PW + (j % Grid.PW), i = ((j / Grid.PW) | 0) * W + x; if (x < W && isLiq(tiles.g(i))) o.push(i + ":" + a[j]); } } return o.join(","); }
   function wetAt(fx, fy) {   // is this point under water? (a part-filled cell is wet only below its surface)
     var x = Math.floor(fx), y = Math.floor(fy); if (x < 0 || x >= W || y < 0 || y >= H) return false;
-    var i = y * W + x; if (tiles[i] !== T.WATER) return false; var L = lvAt(i); return L >= 8 || tiles[i - W] === T.WATER || fy - y >= 1 - L / 8;
+    var i = y * W + x; if (tiles.g(i) !== T.WATER) return false; var L = lvAt(i); return L >= 8 || tiles.g(i - W) === T.WATER || fy - y >= 1 - L / 8;
   }
   var bioAt = function () { return world.bio[clamp(Math.floor(p.x), 0, W - 1)]; };
   // LEAF PLATFORMS: the tops of tree canopies work like one-way platforms. You walk and jump straight through leaves, but falling onto
@@ -1502,17 +1502,17 @@
     if (cave || OPT.autoramp === false) return 0;
     var i = ix % W, j = (ix / W) | 0; if (i < 2 || i >= W - 2 || j < 2 || j >= H - 2) return 0;
     // world tree trunks are scenery you walk through, so a trunk standing on or beside a block does not stop it sloping (TREE BASES)
-    var nl = function (k) { return tiles[k] === T.LOG && orig[k] === T.LOG; }, fr = function (k) { return rampFree(tiles[k]) || nl(k); }, so = function (k) { return TILES[tiles[k]].solid && !nl(k); };
-    var id = tiles[ix]; if (!NATC[id] || id !== orig[ix] || !fr(ix - W)) return 0;
+    var nl = function (k) { return tiles.g(k) === T.LOG && orig.g(k) === T.LOG; }, fr = function (k) { return rampFree(tiles.g(k)) || nl(k); }, so = function (k) { return TILES[tiles.g(k)].solid && !nl(k); };
+    var id = tiles.g(ix); if (!NATC[id] || id !== orig.g(ix) || !fr(ix - W)) return 0;
     var sL = so(ix - 1), sR = so(ix + 1);
-    var step = function (k) { return fr(k) && TILES[tiles[k + W]].solid; };   // open beside, with ground one block lower
+    var step = function (k) { return fr(k) && TILES[tiles.g(k + W)].solid; };   // open beside, with ground one block lower
     if (!sL && !sR) return step(ix - 1) && step(ix + 1) ? 1 : 0;   // a lone block sticking up one step: a low half-height bump (like Terraria's smoothing)
     var m = sL ? ix - 1 : ix + 1, mo = sL ? -1 : 1;   // a mound two blocks wide and one high: both halves become a low bump
-    if (step(ix - mo) && NATC[tiles[m]] && tiles[m] === orig[m] && fr(m - W) && !so(m + mo) && step(m + mo) && !so(ix - mo) && S.shape[m] === undefined) return 1;
+    if (step(ix - mo) && NATC[tiles.g(m)] && tiles.g(m) === orig.g(m) && fr(m - W) && !so(m + mo) && step(m + mo) && !so(ix - mo) && S.shape[m] === undefined) return 1;
     if (sL === sR) return 0;   // flat ground or a wall on both sides
     var low = sL ? 1 : -1, n = ix + low;   // the open side
-    if (!fr(n) || !TILES[tiles[n + W]].solid) return 0;   // it must step down exactly one block onto ground
-    var hi = ix - low - W; if (!fr(hi) && !(NATC[tiles[hi]] && fr(hi - W))) return 0;   // the high side goes on up as a slope (a staircase) or levels off, but a ramp never runs into a wall (it lifted you into the wall)
+    if (!fr(n) || !TILES[tiles.g(n + W)].solid) return 0;   // it must step down exactly one block onto ground
+    var hi = ix - low - W; if (!fr(hi) && !(NATC[tiles.g(hi)] && fr(hi - W))) return 0;   // the high side goes on up as a slope (a staircase) or levels off, but a ramp never runs into a wall (it lifted you into the wall)
     // (a mound two blocks wide slopes on both sides into a little hump, so the grass runs over it unbroken)
     return low > 0 ? 3 : 2;   // open on the right: rising to the left; open on the left: rising to the right
   }
@@ -1750,7 +1750,7 @@
   // through pawChop/PAWS here, and the Chapter 1 quests (MAIN, ch 0) must stay doable with paws only (see CLAUDE.md, "Progression").
   var PAWS = { chop: 0.6 };   // paws chop at this fraction of their normal speed
   function pawChop(id, tx, ty) {
-    if (id !== T.LOG || cave || walls[ty * W + tx]) return false;
+    if (id !== T.LOG || cave || walls.g(ty * W + tx)) return false;
     return trunkTree(tx, ty) && canStyle(tx) === 0 && world.bio[clamp(tx, 0, W - 1)] === 0;   // a Murkwater tree's trunk (world-grown or grown from a sapling)
   }
   function helmOn() { return gearOn("lamp", "x_helm"); }   // MINER'S HELMET: worn in the Head lamp slot (More gear)
@@ -2939,7 +2939,7 @@
   var LEAFPL = false;
   function breakTile0(x, y) {
     var id = get(x, y), td = TILES[id], pl = LEAFPL; LEAFPL = false;
-    if (rmask && x >= 0 && x < W && y >= 0 && y < H) rmask[y * W + x] = 0;
+    if (rmask && x >= 0 && x < W && y >= 0 && y < H) rmask.s(y * W + x, 0);
     if (td && td.gpart && garageBreak(x, y)) return;   // GARAGE: comes down all at once
     if (td && td.fpart) { var fpa = fAnchor(x, y); if (fpa) breakTile0(fpa[0], fpa[1]); else setT(x, y, T.AIR); return; }   // REAL-SIZE FURNITURE: any cell takes the whole piece down
     if (FSIZE[id]) fBreakParts(x, y, FSIZE[id]);
@@ -2986,7 +2986,7 @@
     for (var gy = y; gy <= y + 2; gy++) for (var gx = x - 1; gx <= x + 1; gx++) if (get(gx, gy) === T.X_farmgate) return { x: gx, y: gy };
     return null;
   }
-  function fgTree(x, y) { var id = get(x, y), i = y * W + x; return id === T.LEAVES && x >= 0 && x < W && y >= 0 && y < H && tiles[i] === orig[i]; }   // leaves of a world tree overhead are fine (they are scenery); trunks are not
+  function fgTree(x, y) { var id = get(x, y), i = y * W + x; return id === T.LEAVES && x >= 0 && x < W && y >= 0 && y < H && tiles.g(i) === orig.g(i); }   // leaves of a world tree overhead are fine (they are scenery); trunks are not
   function canPlace(tx, ty, item) {
     var id = get(tx, ty), td = ITEMS[item]; if (id !== T.AIR && id !== T.WATER) return false;
     if (ty < 1 || ty >= H - 3 || tx < 1 || tx >= W - 1) return false;
@@ -3023,17 +3023,17 @@
     if (item === "ladder") { var lk = function (a, b) { var q = get(a, b); return TILES[q].solid || q === T.LADDER; }; return lk(tx - 1, ty) || lk(tx + 1, ty) || lk(tx, ty - 1) || lk(tx, ty + 1); }
     return TILES[get(tx - 1, ty)].solid || TILES[get(tx + 1, ty)].solid || TILES[get(tx, ty - 1)].solid || TILES[get(tx, ty + 1)].solid;
   }
-  function setWall(x, y, id) { wallN++; mpWallEdit(x, y, id); var i = y * W + x; walls[i] = id; if (S.wstain && S.wstain[i] !== undefined && !WSTAINABLE[id] && !(id && STAINS[S.wstain[i]] && STAINS[S.wstain[i]].all)) delete S.wstain[i]; if (id === worigW[i]) delete wedits[i]; else wedits[i] = id; }
+  function setWall(x, y, id) { wallN++; mpWallEdit(x, y, id); var i = y * W + x; walls.s(i, id); if (S.wstain && S.wstain[i] !== undefined && !WSTAINABLE[id] && !(id && STAINS[S.wstain[i]] && STAINS[S.wstain[i]].all)) delete S.wstain[i]; if (id === worigW.g(i)) delete wedits[i]; else wedits[i] = id; }
   function canWall(tx, ty, wid) {   // walls go on the back layer: the front tile must be free (air or a decor piece), and the wall needs a block or another wall beside, above or below it
     if (tx < 1 || tx >= W - 1 || ty < 1 || ty >= H - 3) return false;
     var id = get(tx, ty); if (TILES[id].solid || id === T.WATER || id === T.LAVA) return false;
-    if (walls[ty * W + tx] === wid) return false;
+    if (walls.g(ty * W + tx) === wid) return false;
     var sup = function (a, b) { return TILES[get(a, b)].solid || hasW(a, b); };
     if (sup(tx - 1, ty) || sup(tx + 1, ty) || sup(tx, ty - 1) || sup(tx, ty + 1)) return true;
     nag("A wall needs a block or another wall next to it to attach to."); return false;
   }
   function placeWall(tx, ty, item) {
-    var wid = ITEMS[item].wall, old = walls[ty * W + tx];
+    var wid = ITEMS[item].wall, old = walls.g(ty * W + tx);
     if (old && old !== wid && WALLITEM[old]) addInv(WALLITEM[old], 1);   // swapping a wall hands the old one back
     setWall(tx, ty, wid); S.inv[item]--; S.st.walls++;
     chips(tx + 0.5, ty + 0.5, TILES[wid].c2 || "#fff", 4, 3); thud(210, 0.04);
@@ -3041,7 +3041,7 @@
     hbDirty = true; if (panelOpen) renderPanel(); checkGoals();
   }
   function wallMine(dt, tx, ty) {   // hold your pick, shovel or paws on an empty tile with a wall behind it to take the wall down
-    var wid = walls[ty * W + tx], item = WALLITEM[wid];
+    var wid = walls.g(ty * W + tx), item = WALLITEM[wid];
     if (!mine || mine.x !== tx || mine.y !== ty) mine = { x: tx, y: ty, p: 0, tick: 0 };
     mine.p += dt * (sel === "shovel" ? SHOVEL.sp : PICKS[effTier()].sp) * (hasCharm("miner") ? 1.25 : 1) * (fx("mine") ? 1.4 : 1) * gemDig() * devDig() * mwPow("pick") / 0.45; mine.tick -= dt;
     if (mine.tick <= 0) { mine.tick = 0.17; thud(180 + Math.random() * 40, 0.03); chips(tx + 0.5, ty + 0.5, TILES[wid].c2 || "#fff", 1, 3); }
@@ -3817,7 +3817,7 @@
     STREAK.n = now - STREAK.last < 1300 ? STREAK.n + 1 : 1; STREAK.last = now; if (STREAK.n > (S.st.bestStreak || 0)) S.st.bestStreak = STREAK.n;
     if (STREAK.n >= 3) funTone(440 * Math.pow(2, Math.min(24, STREAK.n - 3) / 12), 0, 0.08, "sine", 0.022);
     if (STREAK.n >= 5 && STREAK.n % 5 === 0) { text(x + 0.5, y - 0.4, "Streak ×" + STREAK.n + "!", STREAK.n >= 20 ? "#ff9ad0" : STREAK.n >= 10 ? "#ffd36a" : "#9ff3d4"); if (STREAK.n >= 10) chips(x + 0.5, y + 0.5, "#ffd36a", 8, 6); }
-    var plain = td.kind !== "ore" && !td.light && (matOf(id) === "dirt" || matOf(id) === "stone") && (cave ? !cave.bld : tiles[y * W + x] !== undefined);
+    var plain = td.kind !== "ore" && !td.light && (matOf(id) === "dirt" || matOf(id) === "stone") && (cave ? !cave.bld : tiles.g(y * W + x) !== undefined);
     if (plain && Math.random() < (hasCharm("lucky") || fx("luck") ? 1 / 140 : 1 / 260)) luckyFind(x, y);
   }
   function luckyFind(x, y) {
@@ -7611,7 +7611,7 @@
       var x = ix0 + xx, y = iy0 + yy, k = (yy * bw2 + xx) * 4, r = 6, g2 = 10, b = 9;
       if (x >= 0 && x < W && y >= 0 && y < H) {
         var i = y * W + x;
-        if (ex[i]) { var id = tiles[i]; if (id === T.AIR && PICT && PICT[i]) id = PICT[i]; var td = TILES[id], hex = id === T.AIR ? (y < col[x] ? "#2a5a6a" : "#0d1114") : id === T.WATER ? "#2a8f95" : td.kind === "ore" ? td.c2 : td.c; if (hex === "#000") hex = td.c2 || "#2a5a6a"; var c = hexRgb(hex); r = c[0]; g2 = c[1]; b = c[2]; }
+        if (ex.g(i)) { var id = tiles.g(i); if (id === T.AIR && PICT && PICT.g(i)) id = PICT.g(i); var td = TILES[id], hex = id === T.AIR ? (y < col[x] ? "#2a5a6a" : "#0d1114") : id === T.WATER ? "#2a8f95" : td.kind === "ore" ? td.c2 : td.c; if (hex === "#000") hex = td.c2 || "#2a5a6a"; var c = hexRgb(hex); r = c[0]; g2 = c[1]; b = c[2]; }
       }
       d[k] = r; d[k + 1] = g2; d[k + 2] = b; d[k + 3] = 255;
     }
@@ -8107,7 +8107,7 @@
     if (m.t === "welcome" && MP.role === "guest" && !MP.on) return mpEnterGuest(m);
     if (m.t === "me") { q = mpPeer(m.from); q.name = String(m.name || q.name).slice(0, 16); q.animal = m.animal; q.outfit = m.outfit; q.sp = null; return; }
     if (m.t === "p") { q = mpPeer(m.from); mpState(q, m); return; }
-    if (m.t === "set") { MP.applying = true; for (var i = 0; i + 2 < m.L.length; i += 3) { var sv = m.L[i + 2] | 0, sid = sv & 4095, slv = (sv >> 12) & 7; if (m.L[i] >= 0 && m.L[i] < W && m.L[i + 1] >= 0 && m.L[i + 1] < H && TILES[sid]) { if (FL && isLiq(sid)) FL[m.L[i + 1] * W + m.L[i]] = slv; setT(m.L[i], m.L[i + 1], sid); } } MP.applying = false; if (DECO) DECO.dirty(); return; }
+    if (m.t === "set") { MP.applying = true; for (var i = 0; i + 2 < m.L.length; i += 3) { var sv = m.L[i + 2] | 0, sid = sv & 4095, slv = (sv >> 12) & 7; if (m.L[i] >= 0 && m.L[i] < W && m.L[i + 1] >= 0 && m.L[i + 1] < H && TILES[sid]) { if (FL && isLiq(sid)) FL.s(m.L[i + 1] * W + m.L[i], slv); setT(m.L[i], m.L[i + 1], sid); } } MP.applying = false; if (DECO) DECO.dirty(); return; }
     if (m.t === "deco") { decoRecv(m); return; }   // DECORATING (Stage 8)
     if (/^ch(q|m|lk|own|s|r|give|mv|gv)$/.test(m.t)) { chestMsg(m); return; }   // SHARED AND LOCKED STORAGE
     if (m.t === "wall") { MP.applying = true; for (var j = 0; j + 2 < m.L.length; j += 3) if (m.L[j] >= 0 && m.L[j] < W && m.L[j + 1] >= 0 && m.L[j + 1] < H) setWall(m.L[j], m.L[j + 1], m.L[j + 2]); MP.applying = false; return; }
@@ -8248,7 +8248,7 @@
       if (MP.sendT <= 0 && (key !== MP.last || MP.sendT < -1.5)) { MP.sendT = 0.125; MP.last = key; me.t = "p"; mpSend(me); }
     }
   }
-  function mpTileEdit(x, y, id) { if (MP.on && !MP.applying) MP.sets.push(x, y, FL && isLiq(id) ? id | (FL[y * W + x] << 12) : id); }   // liquids carry their level (0 = full) above the tile id
+  function mpTileEdit(x, y, id) { if (MP.on && !MP.applying) MP.sets.push(x, y, FL && isLiq(id) ? id | (FL.g(y * W + x) << 12) : id); }   // liquids carry their level (0 = full) above the tile id
   function mpWallEdit(x, y, id) { if (MP.on && !MP.applying) MP.walls.push(x, y, id); }
   function mpStrikePlayers(lo, hi, dmg, f) {   // PvP: your swing also hits other players in front of you
     if (!MP.on || !MP.pvp || cave) return 0; var n = 0;
@@ -8871,10 +8871,10 @@
     for (var i = 0; i < 3; i++) parts.push({ x: x0, y: y0, vx: (Math.random() - 0.5) * 2, vy: -1 - Math.random(), life: 0.3, max: 0.3, c: "#d8d0c0", s: 2 });
   }
   function bombSafe(x, y) {   // true when a blast must leave this tile alone
-    var i = y * W + x, id = tiles[i], td = TILES[id];
+    var i = y * W + x, id = tiles.g(i), td = TILES[id];
     if (id === T.AIR || id === T.WATER || id === T.LAVA || id === T.BEDROCK || id === T.HOLE || !td || !isFinite(td.hard) || td.tier > 3) return true;
-    if (smask && smask[i] && tiles[i] === orig[i]) return true;                                   // generated buildings are scenery
-    if ((id === T.LOG || id === T.LEAVES) && tiles[i] === orig[i]) return true;                   // so are world trees
+    if (smask && smask.g(i) && tiles.g(i) === orig.g(i)) return true;                                   // generated buildings are scenery
+    if ((id === T.LOG || id === T.LEAVES) && tiles.g(i) === orig.g(i)) return true;                   // so are world trees
     if (td.kind === "door" || td.hatch || td.kind === "realmgate" || td.kind === "armorstand" || td.kind === "jeweltable" || td.kind === "fishtrap" || isBed(id)) return true;
     if (isChest(id) && chestCount(x + "," + y) > 0) return true;
     if (sdoorAt(x, y)) return true;
@@ -10012,10 +10012,10 @@
     for (var tries = 0; tries < 12 && n < 1; tries++) {
       var r = tr[(Math.random() * tr.length) | 0], b = r.b; if (inMC() && !mcRest(r.x)) continue; if (Math.abs(r.x - p.x) > 160 || (b.x1 > cx - half && b.x0 < cx + half)) continue;
       var x, y, i, ok = true, miss = [], by = r.b.y1;
-      for (var tx = r.x; tx <= r.x + (r.k === "oak" ? 1 : 0); tx++) for (y = by; y >= b.y0; y--) { i = y * W + tx; if (orig[i] !== T.LOG) continue; if (tiles[i] !== T.LOG) { ok = false; break; } }   // its own trunk still standing
+      for (var tx = r.x; tx <= r.x + (r.k === "oak" ? 1 : 0); tx++) for (y = by; y >= b.y0; y--) { i = y * W + tx; if (orig.g(i) !== T.LOG) continue; if (tiles.g(i) !== T.LOG) { ok = false; break; } }   // its own trunk still standing
       if (!ok) continue;
-      var st = [], seen = {}; for (y = b.y0; y <= b.y1; y++) for (x = b.x0; x <= b.x1; x++) { i = y * W + x; if (orig[i] === T.LOG && tiles[i] === T.LOG && Math.abs(x - r.x) <= 1) { st.push(i); seen[i] = 1; } }
-      while (st.length) { var c0 = st.pop(), cx0 = c0 % W, cy0 = (c0 / W) | 0; for (var dy = -1; dy <= 1; dy++) for (var dx = -1; dx <= 1; dx++) { var nx = cx0 + dx, ny = cy0 + dy, ni = ny * W + nx; if (seen[ni] || nx < b.x0 || nx > b.x1 || ny < b.y0 || ny > b.y1 || orig[ni] !== T.LEAVES) continue; seen[ni] = 1; st.push(ni); if (tiles[ni] === T.AIR) miss.push(ni); } }   // only leaves of its own crown
+      var st = [], seen = {}; for (y = b.y0; y <= b.y1; y++) for (x = b.x0; x <= b.x1; x++) { i = y * W + x; if (orig.g(i) === T.LOG && tiles.g(i) === T.LOG && Math.abs(x - r.x) <= 1) { st.push(i); seen[i] = 1; } }
+      while (st.length) { var c0 = st.pop(), cx0 = c0 % W, cy0 = (c0 / W) | 0; for (var dy = -1; dy <= 1; dy++) for (var dx = -1; dx <= 1; dx++) { var nx = cx0 + dx, ny = cy0 + dy, ni = ny * W + nx; if (seen[ni] || nx < b.x0 || nx > b.x1 || ny < b.y0 || ny > b.y1 || orig.g(ni) !== T.LEAVES) continue; seen[ni] = 1; st.push(ni); if (tiles.g(ni) === T.AIR) miss.push(ni); } }   // only leaves of its own crown
       miss.sort(function (a2, b2) { return b2 - a2; });   // from the trunk outward and upward
       if (!ok || !miss.length) continue;
       for (var k = 0; k < Math.min(8, miss.length); k++) { i = miss[k]; setT(i % W, (i / W) | 0, T.LEAVES); } n++;
@@ -10027,9 +10027,9 @@
     if (cave || OCS || HOME || !isDayish() || (MP.on && MP.role === "guest")) return;
     for (var n = 0; n < 24; n++) {
       var x = Math.floor(p.x) + ((Math.random() * 240) | 0) - 120; if (x < 1 || x >= W - 1 || world.bio[x] !== 0) continue;
-      var y = col[x], i = y * W + x; if (y < 2 || y >= H - 1 || tiles[i] !== T.MUD) continue;
-      var up = tiles[i - W]; if (TILES[up].solid || up === T.WATER || up === T.LAVA) continue;
-      if (orig[i] === T.MUD && !TILES[orig[i - W]].solid) continue;   // open mud the world was made with
+      var y = col[x], i = y * W + x; if (y < 2 || y >= H - 1 || tiles.g(i) !== T.MUD) continue;
+      var up = tiles.g(i - W); if (TILES[up].solid || up === T.WATER || up === T.LAVA) continue;
+      if (orig.g(i) === T.MUD && !TILES[orig.g(i - W)].solid) continue;   // open mud the world was made with
       if (Math.random() > 0.15) continue;
       var sh = S.shape ? S.shape[i] : undefined; setT(x, y, T.MOSS); if (sh !== undefined) { S.shape[i] = sh; shapeCount(); }
     }
@@ -10374,8 +10374,8 @@
     var x = -1, y = -1, dir = 1;
     for (var tr = 0; tr < 30 && y < 0; tr++) {
       dir = Math.random() < 0.5 ? -1 : 1; x = Math.round(p.x + dir * (35 + Math.random() * 70)); var g0 = starSite(x); if (g0 < 0) continue;
-      var yy = g0 + 3 + Math.floor(Math.random() * 4), i = yy * W + x, id = tiles[i];
-      if (yy < H - 12 && TILES[id].solid && !(smask && smask[i]) && id !== T.BEDROCK && TILES[id].tier <= 2 && TILES[id].kind !== "ore" && !isChest(id)) y = yy;
+      var yy = g0 + 3 + Math.floor(Math.random() * 4), i = yy * W + x, id = tiles.g(i);
+      if (yy < H - 12 && TILES[id].solid && !(smask && smask.g(i)) && id !== T.BEDROCK && TILES[id].tier <= 2 && TILES[id].kind !== "ore" && !isChest(id)) y = yy;
     }
     if (y < 0) { nag("The map's markings don't match the land around here. Try reading it somewhere else."); return; }
     setT(x, y, T.X_buried); S.tmap = { x: x, y: y }; if (isBottle) S.tmap.b = 1; S.st.maps++;
@@ -11267,8 +11267,8 @@
     for (d = 0; d < 260; d++) { if (inMC()) { order.push(sx - 6 - d, sx + 6 + d); } else order.push(sx - 64 - d, sx - 64 + d); }
     var flat = function (c) {
       if (c < 6 || c > W - 7 || (world.gx0 !== undefined && (c < world.gx0 + 8 || c > world.gx1 - 8))) return false;
-      var g0 = tp[c]; for (var q = c - 2; q <= c + 2; q++) { if (tp[q] !== g0) return false; var id = orig[g0 * W + q]; if (!TILES[id].solid || TILES[id].kind === "water" || id === T.LAVA || id === T.ICE) return false;
-        for (var y2 = g0 - 5; y2 < g0; y2++) { var a2 = orig[y2 * W + q]; if (TILES[a2].solid || a2 === T.WATER || a2 === T.LAVA || a2 === T.LOG) return false; } }
+      var g0 = tp[c]; for (var q = c - 2; q <= c + 2; q++) { if (tp[q] !== g0) return false; var id = orig.g(g0 * W + q); if (!TILES[id].solid || TILES[id].kind === "water" || id === T.LAVA || id === T.ICE) return false;
+        for (var y2 = g0 - 5; y2 < g0; y2++) { var a2 = orig.g(y2 * W + q); if (TILES[a2].solid || a2 === T.WATER || a2 === T.LAVA || a2 === T.LOG) return false; } }
       for (var s = 0; s < (world.structs || []).length; s++) { var st = world.structs[s]; if (c + 4 >= st.mx0 && c - 4 <= st.mx1) return false; }
       return true; };
     for (var i = 0; i < order.length && !best; i++) if (flat(order[i])) best = order[i];
@@ -11487,7 +11487,7 @@
     var x0 = Math.max(0, Math.floor(-ox / ts)), x1 = Math.min(W - 1, Math.ceil((vw - ox) / ts)), y0 = Math.max(0, Math.floor(-oy / ts)), y1 = Math.min(H - 1, Math.ceil((vh - oy) / ts)), x, y, lv = [];
     g.save(); g.globalCompositeOperation = "lighter"; g.lineCap = "round"; var lw = Math.max(1, ts / 14);
     for (x = x0; x <= x1; x++) for (y = y0; y <= y1; y++) {
-      var id = tiles[y * W + x]; if (id === T.LOG && !(world.mcz && world.mcz[x]) && (tiles[(y - 1) * W + x] === T.LOG || tiles[(y + 1) * W + x] === T.LOG)) {   // (trunks only: boughs keep their own bark)
+      var id = tiles.g(y * W + x); if (id === T.LOG && !(world.mcz && world.mcz[x]) && (tiles.g((y - 1) * W + x) === T.LOG || tiles.g((y + 1) * W + x) === T.LOG)) {   // (trunks only: boughs keep their own bark)
         var h = ((x * 73856093) ^ (y * 19349663)) >>> 0, pulse = 0.55 + 0.35 * Math.sin(t * 1.8 + (h % 628) / 100), sx = ox + x * ts, sy = oy + y * ts, cx = sx + ts * (0.25 + (h % 50) / 100);
         g.strokeStyle = "rgba(255," + (40 + (h % 30)) + ",36," + (0.7 * pulse).toFixed(3) + ")"; g.lineWidth = lw;
         g.beginPath(); g.moveTo(cx, sy); g.lineTo(cx + ts * ((h >> 3) % 3 - 1) * 0.12, sy + ts * 0.35); g.lineTo(cx - ts * 0.06, sy + ts * 0.65); g.lineTo(cx + ts * ((h >> 5) % 3 - 1) * 0.1, sy + ts); g.stroke();
@@ -12272,7 +12272,7 @@
     g.putImageData(im, 0, 0); return (STC[key] = c);
   }
   function drawStain(g, i, j, sx3, sy) {   // called after the normal cell is drawn: paint the stained version on top
-    var ix = j * W + i, si = S.stain[ix], id = tiles[ix], v = ((Math.imul(i, 73856093) ^ Math.imul(j, 19349663)) >>> 0) & 3;
+    var ix = j * W + i, si = S.stain[ix], id = tiles.g(ix), v = ((Math.imul(i, 73856093) ^ Math.imul(j, 19349663)) >>> 0) & 3;
     if (si !== undefined && (STAINABLE[id] || (STAINS[si] && STAINS[si].all))) {
       var td = TILES[id], vv = SMOP[id] || td.solid ? v : 0; g.imageSmoothingEnabled = false;
       if (MATF[id]) { matTile(g, id, i, j, sx3, sy, si); return; }
@@ -12299,12 +12299,12 @@
     var tx = aim.tx, ty = aim.ty; if (tx < 0) return;
     var key = tx + "," + ty; if (key === stainLast) return; stainLast = key;
     var ddx = tx + 0.5 - p.x, ddy = ty + 0.5 - (p.y - PH / 2); if (ddx * ddx + ddy * ddy > REACH * REACH) { nag("That is too far away."); return; }
-    var ix = ty * W + tx, id = tiles[ix], wl = walls[ix], sand = sel === "sandpaper", si = STAIN_OF[sel];
+    var ix = ty * W + tx, id = tiles.g(ix), wl = walls.g(ix), sand = sel === "sandpaper", si = STAIN_OF[sel];
     var pnt = si !== undefined && STAINS[si].all, front = sand ? S.stain[ix] !== undefined : pnt ? paintOk(id) : !!STAINABLE[id], back = !front && !TILES[id].solid && wl && (sand ? S.wstain[ix] !== undefined : pnt || WSTAINABLE[wl]);
     if (!front && !back) { nag(sand ? "Sandpaper takes stain or paint off." : pnt ? "There's nothing there to paint." : "Stain only works on wood: Planks, doors, ladders, fences, wooden furniture and wooden walls."); return; }
     var map = front ? S.stain : S.wstain;
     // doors are two tiles: stain (or sand) both halves together
-    var cells = [ix]; if (front && TILES[id].kind === "door") { [ix - W, ix + W].forEach(function (q) { if (q >= 0 && q < W * H && TILES[tiles[q]] && TILES[tiles[q]].kind === "door") cells.push(q); }); }
+    var cells = [ix]; if (front && TILES[id].kind === "door") { [ix - W, ix + W].forEach(function (q) { if (q >= 0 && q < W * H && TILES[tiles.g(q)] && TILES[tiles.g(q)].kind === "door") cells.push(q); }); }
     if (sand) {
       if (map[ix] === undefined) return;
       cells.forEach(function (q) { delete map[q]; });
@@ -12333,9 +12333,9 @@
     if (MP.on && MP.role === "guest") { nag("The Mallet works in your own world for now."); return; }
     var tx = aim.tx, ty = aim.ty; if (tx < 0) return;
     var ddx = tx + 0.5 - p.x, ddy = ty + 0.5 - (p.y - PH / 2); if (ddx * ddx + ddy * ddy > REACH * REACH) { nag("That is too far away."); return; }
-    var ix = ty * W + tx, id = tiles[ix];
+    var ix = ty * W + tx, id = tiles.g(ix);
     if (!malletOk(id)) { nag(TILES[id] && TILES[id].solid ? (MATF[id] && ROOFF[MATF[id].f] ? "Roof tiles already slope at a roof's edge." : "The Mallet can't shape that.") : "Tap a solid block to shape it."); return; }
-    if (smask && smask[ix] && tiles[ix] === orig[ix]) { nag("That is part of an old building."); return; }
+    if (smask && smask.g(ix) && tiles.g(ix) === orig.g(ix)) { nag("That is part of an old building."); return; }
     var cur = shapeAt(ix) | 0, nx = (cur + 1) % 6; if (nx) S.shape[ix] = nx; else if (autoShape(ix)) S.shape[ix] = 0; else delete S.shape[ix]; shapeCount(); editN++;   // (0: keep a natural ramp a full block)
     var g2 = 0; while (boxHit(p.x, p.y) && g2++ < 30) p.y -= 0.05;   // never trap yourself in the new shape
     S.st.malleted = (S.st.malleted || 0) + 1;
@@ -13186,12 +13186,12 @@
     if (!world || !world.lay || !SW.genChunk || (cave && !force)) return false;
     var sd = p.x < world.gx0 + GROW_AHEAD ? -1 : p.x > world.gx1 - GROW_AHEAD ? 1 : 0; if (!sd) return false;
     var r = SW.genChunk(world, sd); if (!r) return false;
-    liftStructs(tiles, world.walls, r.structs);
+    liftStructs(world.t, world.walls, r.structs);
     var x, y, i;
-    for (y = 0; y < H; y++) for (x = r.x0; x <= r.x1; x++) { i = y * W + x; orig[i] = tiles[i]; walls[i] = worigW[i] = world.walls[i]; }
+    for (y = 0; y < H; y++) for (x = r.x0; x <= r.x1; x++) { i = y * W + x; tiles.s(i, world.t[i]); orig.s(i, tiles.g(i)); walls.s(i, worigW.s(i, world.walls[i])); }
     editN++; wallN++; exVer++;
-    Object.keys(edits).forEach(function (k) { var ii = +k, xx = ii % W; if (xx >= r.x0 && xx <= r.x1) { tiles[ii] = edits[k]; if (edits[k] === orig[ii]) delete edits[k]; } });   // anything already changed there (e.g. by a friend) stays changed
-    Object.keys(wedits).forEach(function (k) { var ii = +k, xx = ii % W; if (xx >= r.x0 && xx <= r.x1) { walls[ii] = wedits[k]; if (wedits[k] === worigW[ii]) delete wedits[k]; } });
+    Object.keys(edits).forEach(function (k) { var ii = +k, xx = ii % W; if (xx >= r.x0 && xx <= r.x1) { tiles.s(ii, edits[k]); if (edits[k] === orig.g(ii)) delete edits[k]; } });   // anything already changed there (e.g. by a friend) stays changed
+    Object.keys(wedits).forEach(function (k) { var ii = +k, xx = ii % W; if (xx >= r.x0 && xx <= r.x1) { walls.s(ii, wedits[k]); if (wedits[k] === worigW.g(ii)) delete wedits[k]; } });
     for (x = Math.max(0, r.x0 - 1); x <= Math.min(W - 1, r.x1 + 1); x++) recalc(x);
     S.genL = world.done["-1"]; S.genR = world.done["1"]; M.img = null; MAPB = null;
     return true;
@@ -13549,7 +13549,7 @@
     if (down && p.on) for (xx = x0; xx <= x1; xx++) { var fy = Math.floor(p.y + 0.05); if (isHatch(get(xx, fy)) && !TILES[get(xx, fy)].hatch.open) toggleHatch(xx, fy, false); }   // drop through
     var hy = Math.floor(p.y - PH - 0.08); if ((keys.j || tk.j || p.vy < 0) && p.y - PH - (hy + 1) < 0.2) for (xx = x0; xx <= x1; xx++) { if (isHatch(get(xx, hy)) && !TILES[get(xx, hy)].hatch.open) toggleHatch(xx, hy, false); }   // climb up through (jump into it from below)
     for (var k in hatchAuto) {
-      var hi = +k, hx = hi % W, hy2 = (hi - hx) / W, td = TILES[tiles[hi]];
+      var hi = +k, hx = hi % W, hy2 = (hi - hx) / W, td = TILES[tiles.g(hi)];
       if (!td.hatch || !td.hatch.open) { delete hatchAuto[k]; delete hatchUp[k]; continue; }
       var nearX = Math.abs(p.x - (hx + 0.5)) < 1;
       if (nearX && p.y > hy2 + 0.5) hatchUp[k] = 1;   // you have been below it
@@ -13573,7 +13573,7 @@
       for (var yy = Math.floor(p.y - PH + 0.05); yy <= Math.floor(p.y - 0.05); yy++) { var td = TILES[get(fx, yy)]; if (td.kind === "door" && !td.door.open) { toggleDoor(fx, yy, false); break; } }
     }
     for (var k in doorAuto) {
-      var bi = +k, bx = bi % W, by = (bi - bx) / W, tdb = TILES[tiles[bi]];
+      var bi = +k, bx = bi % W, by = (bi - bx) / W, tdb = TILES[tiles.g(bi)];
       if (tdb.kind !== "door" || !tdb.door.open) { delete doorAuto[k]; continue; }
       if (doorInTheWay(bx, by) || (Math.abs(p.x - (bx + 0.5)) < 1.4 && Math.abs(p.y - by) < 2 && dir)) doorAuto[k] = 0;
       else { doorAuto[k] += dt; if (doorAuto[k] > 0.8) { setDoor(bx, by, false); delete doorAuto[k]; } }
@@ -13710,7 +13710,7 @@
         if (sdoorAt(tx, ty) === rq) { nag("Tap the door to go inside."); mine = null; return; }
         var rk = rq.id + ":" + tx + "," + ty; if (razeHold.k !== rk) { razeHold.k = rk; razeHold.t = 0; } razeHold.t += dt; mine = null;
         if (razeHold.t >= 0.45) { razeHold.k = ""; askRaze(rq, tx, ty); } return; } }
-      if (id === T.AIR && walls[ty * W + tx]) { wallMine(dt, tx, ty); return; }
+      if (id === T.AIR && walls.g(ty * W + tx)) { wallMine(dt, tx, ty); return; }
       if (id === T.BEDROCK) { nag("Bedrock can't be broken."); mine = null; return; }
       if (id === T.AIR || !isFinite(td.hard)) { mine = null; return; }
       if (sdoorAt(tx, ty)) { nag("Tap the door to go inside."); mine = null; return; }
@@ -14099,7 +14099,7 @@
     for (x = Math.max(0, cx - 28); x <= Math.min(W - 1, cx + 28); x++) {
       for (y = Math.max(0, cy - 16); y <= Math.min(H - 1, cy + 16); y++) {
         if (y > col[x] + (st.deep || 0)) break;
-        if (st.tg.indexOf(tiles[y * W + x]) < 0) continue;
+        if (st.tg.indexOf(tiles.g(y * W + x)) < 0) continue;
         var d = (x - p.x) * (x - p.x) + (y - p.y) * (y - p.y); if (d < best) { best = d; guide = { x: x, y: y }; }
       }
     }
@@ -14429,7 +14429,7 @@
     var cx = Math.floor(p.x), cy = Math.floor(p.y - 1), R = 9;
     for (var y = cy - R; y <= cy + R; y++) for (var x = cx - R; x <= cx + R; x++) {
       if (x < 0 || x >= W || y < 0 || y >= H) continue; var dx = x - cx, dy = y - cy;
-      if (dx * dx + dy * dy <= R * R + 2 && !ex[y * W + x]) { ex[y * W + x] = 1; exVer++; }
+      if (dx * dx + dy * dy <= R * R + 2 && !ex.g(y * W + x)) { ex.s(y * W + x, 1); exVer++; }
     }
   }
 
@@ -14441,7 +14441,7 @@
     for (y = cy - 3; y <= cy + 3; y++) for (x = cx - 3; x <= cx + 3; x++) if (isBed(get(x, y))) { dx = x + 0.5 - p.x; dy = y + 0.5 - (p.y - 0.7); d = dx * dx + dy * dy; if (d < bd) { bd = d; best = { x: x, y: y }; } }
     return best;
   }
-  function sheltered() { var x = Math.floor(p.x), y0 = Math.floor(p.y - PH); for (var y = y0 - 1; y >= Math.max(0, y0 - 5); y--) if (blocks(x, y) || (smask && smask[y * W + x] && TILES[tiles[y * W + x]].solid)) return true; return false; }   // a roof within 5 tiles overhead
+  function sheltered() { var x = Math.floor(p.x), y0 = Math.floor(p.y - PH); for (var y = y0 - 1; y >= Math.max(0, y0 - 5); y--) if (blocks(x, y) || (smask && smask.g(y * W + x) && TILES[tiles.g(y * W + x)].solid)) return true; return false; }   // a roof within 5 tiles overhead
   function sleepBlock() {   // why you cannot sleep right now ("" = you can). A roof overhead means nothing outside can reach you.
     if (activeBoss()) return "Not with a boss on the loose!";
     if (sheltered()) return "";
@@ -14505,7 +14505,7 @@
     p.vy = Math.min(p.wet ? 4 : 27, p.vy + (p.wet ? 13 : 40) * h);
     if (devFly(h, jump)) return;   // DEVELOPER MODE: fly / ghost
     if (fx("feather") && !p.wet && !(keys.d || tk.d) && p.vy > 7) p.vy = 7;   // Slow Falling Potion: drift down (hold down to drop)
-    if (p.wet && FLM) { var fxi = Math.floor(p.x), fyi = Math.floor(p.y - PH * 0.5), fci = fyi * W + fxi; if (fyi > 0 && FLM[fci] && tiles[fci - W] === T.WATER && FLM[fci - W]) p.vy = Math.min(7, p.vy + 30 * h); }   // a flowing waterfall pushes you down
+    if (p.wet && FLM) { var fxi = Math.floor(p.x), fyi = Math.floor(p.y - PH * 0.5), fci = fyi * W + fxi; if (fyi > 0 && FLM.g(fci) && tiles.g(fci - W) === T.WATER && FLM.g(fci - W)) p.vy = Math.min(7, p.vy + 30 * h); }   // a flowing waterfall pushes you down
     if (p.on || feetWet) p.coy = 0.1; else p.coy -= h;
     moltCling(dir, h); moltPound(!!(keys.d || tk.d)); mountStep(h, !!jump);   // MOLTING: tree frogs cling to walls, bullfrogs slam
     var lad = onLadder();
@@ -14633,7 +14633,7 @@
   // everything you build, so you walk past in front of it. Its lamps still glow and light up the dark. A building is entered at its door (structNear).
   var PIC_MAX = 10, picUse = 0, PICT = null;   // PICT: building tile per world cell, for the maps
   function liftStructs(t, wl, list) {   // world gen output -> pictures; the cells become air with no back wall
-    if (!PICT || PICT.length !== W * H) PICT = new Uint16Array(W * H);
+    if (!PICT || PICT.length !== W * H) PICT = new Grid(W, H, Uint16Array);
     (list || world.structs || []).forEach(function (q) {
       if (S && S.razed && S.razed[q.id]) { q.razed = 1; razedLift(q, t); return; }
       var x0 = q.mx0 !== undefined ? q.mx0 : q.x0 - 1, x1 = q.mx0 !== undefined ? q.mx1 : q.x1 + 1, y0 = q.mx0 !== undefined ? q.my0 : q.gy - q.bh - 7, y1 = q.gy - 1;
@@ -14643,7 +14643,7 @@
         var gi = (y0 + yy) * W + x0 + xx, k = yy * w + xx, id = t[gi], wv = wl ? wl[gi] : 0;
         if (id === T.WATER || id === T.LAVA) id = T.AIR;
         if (q.sky && (x0 + xx < q.x0 || x0 + xx > q.x1) && y0 + yy >= q.gy - q.bh && !(x0 + xx === q.outX && y0 + yy === q.gy - 3)) continue;   // a sky house's wide roof must not swallow the market stall or lamp beside its walls
-        if (id !== T.AIR) { P.t[k] = id; PICT[gi] = id; t[gi] = T.AIR; any = true; if (TILES[id].light > 0) P.lt.push([x0 + xx, y0 + yy, TILES[id].light]); if (TILES[id].kind === "glass" || /^stained/.test(TILES[id].kind || "")) P.win.push([x0 + xx, y0 + yy]); }
+        if (id !== T.AIR) { P.t[k] = id; PICT.s(gi, id); t[gi] = T.AIR; any = true; if (TILES[id].light > 0) P.lt.push([x0 + xx, y0 + yy, TILES[id].light]); if (TILES[id].kind === "glass" || /^stained/.test(TILES[id].kind || "")) P.win.push([x0 + xx, y0 + yy]); }
         if (wv) { P.wl[k] = wv; wl[gi] = 0; any = true; }
       }
       if (P.win.length) {   // panes that touch make one window: they light up and go out together (keyed by the window's first pane)
@@ -14726,11 +14726,11 @@
     var cv = document.createElement("canvas"), w = P.w, h = P.h; cv.width = w * ts; cv.height = h * ts; var c = cv.getContext("2d"); c.imageSmoothingEnabled = false;
     // put the building back into the world for a moment, so edge shading and wall borders see their real neighbours
     var keepT = [], keepW = [], k, xx, yy, gi;
-    for (yy = 0; yy < h; yy++) for (xx = 0; xx < w; xx++) { k = yy * w + xx; gi = (P.y0 + yy) * W + P.x0 + xx; keepT.push(tiles[gi]); keepW.push(walls[gi]); if (P.t[k]) tiles[gi] = P.t[k]; if (P.wl[k]) walls[gi] = P.wl[k]; }
+    for (yy = 0; yy < h; yy++) for (xx = 0; xx < w; xx++) { k = yy * w + xx; gi = (P.y0 + yy) * W + P.x0 + xx; keepT.push(tiles.g(gi)); keepW.push(walls.g(gi)); if (P.t[k]) tiles.s(gi, P.t[k]); if (P.wl[k]) walls.s(gi, P.wl[k]); }
     var g0 = glows.length, cw0 = CELL.wob, ce0 = CELL.edge, cs0 = CELL.sw; CELL.wob = 0; CELL.edge = Math.max(1, Math.round(ts / 9)); CELL.sw = 0;
     try { for (yy = 0; yy < h; yy++) for (xx = 0; xx < w; xx++) { k = yy * w + xx; if (P.t[k] || P.wl[k]) drawCell(c, P.x0 + xx, P.y0 + yy, xx * ts, yy * ts, 0); } }
     finally {
-      for (yy = 0; yy < h; yy++) for (xx = 0; xx < w; xx++) { gi = (P.y0 + yy) * W + P.x0 + xx; tiles[gi] = keepT[yy * w + xx]; walls[gi] = keepW[yy * w + xx]; }
+      for (yy = 0; yy < h; yy++) for (xx = 0; xx < w; xx++) { gi = (P.y0 + yy) * W + P.x0 + xx; tiles.s(gi, keepT[yy * w + xx]); walls.s(gi, keepW[yy * w + xx]); }
       CELL.wob = cw0; CELL.edge = ce0; CELL.sw = cs0;
     }
     try { bakeDepth(c, P); } catch (e) { try { console.warn("[Delve] building depth:", e); } catch (e2) {} }
@@ -15252,14 +15252,14 @@
   // ---------- ONE CELL OF THE WORLD: its back wall and its tile, drawn at (sx3, sy). Used by the main view and to paint building pictures. ----------
   var CELL = { wob: 0, edge: 1, sw: 0 };
   function drawCell(g, i, j, sx3, sy, now) {
-    if (!cave && T.X_farmgate !== undefined && tiles[j * W + i] === T.X_farmgate && sx3 === ox + i * ts) { FGVIS.push(i, j); return; }
-    if (!cave && T.X_piergate !== undefined && tiles[j * W + i] === T.X_piergate) return;   // PIER KIT: drawn as the big pier gate by drawPierGate   // FARM GATE: drawn big by drawFarmGates
+    if (!cave && T.X_farmgate !== undefined && tiles.g(j * W + i) === T.X_farmgate && sx3 === ox + i * ts) { FGVIS.push(i, j); return; }
+    if (!cave && T.X_piergate !== undefined && tiles.g(j * W + i) === T.X_piergate) return;   // PIER KIT: drawn as the big pier gate by drawPierGate   // FARM GATE: drawn big by drawFarmGates
     var shp = SHAPEN && !cave ? shapeAt(j * W + i) : 0;
     if (shp) { shapeDraw(g, i, j, sx3, sy, now, shp); return; }   // MALLET: a half-block or ramp
-    if (SHAPEN && !cave && j < H - 1 && tiles[j * W + i] !== T.AIR && !TILES[tiles[j * W + i]].solid) { var bs = shapeAt((j + 1) * W + i); if (bs === 1 || bs === 2 || bs === 3) { g.save(); g.translate(0, Math.round(ts * 0.5)); drawCell0(g, i, j, sx3, sy, now); g.restore(); return; } }   // AUTO RAMPS: a plant on a slope settles onto it
+    if (SHAPEN && !cave && j < H - 1 && tiles.g(j * W + i) !== T.AIR && !TILES[tiles.g(j * W + i)].solid) { var bs = shapeAt((j + 1) * W + i); if (bs === 1 || bs === 2 || bs === 3) { g.save(); g.translate(0, Math.round(ts * 0.5)); drawCell0(g, i, j, sx3, sy, now); g.restore(); return; } }   // AUTO RAMPS: a plant on a slope settles onto it
     drawCell0(g, i, j, sx3, sy, now); if (S.stain[j * W + i] !== undefined) drawStain(g, i, j, sx3, sy);
-    var ft = TILES[tiles[j * W + i]];
-    if (ft && ft.top && !ft.solid && j > 0) { var uid = tiles[(j - 1) * W + i]; if (TILES[uid].small) {   // the bottom of a small piece standing on this furniture
+    var ft = TILES[tiles.g(j * W + i)];
+    if (ft && ft.top && !ft.solid && j > 0) { var uid = tiles.g((j - 1) * W + i); if (TILES[uid].small) {   // the bottom of a small piece standing on this furniture
       var op = Math.round(ft.top * ts / 16), uv = ((Math.imul(i, 73856093) ^ Math.imul(j - 1, 19349663)) >>> 0) & 3, fl = S.dflip && S.dflip[(j - 1) * W + i];
       if (fl) { g.save(); g.translate(sx3 * 2 + ts, 0); g.scale(-1, 1); } decoPart(g, uv, uid, 16 - ft.top, ft.top, sx3, sy, ts, op); if (fl) g.restore();
     } }
@@ -15269,15 +15269,15 @@
   var SHPOLY = [null, [[0, 0.5], [1, 0.5], [1, 1], [0, 1]], [[1, 0], [1, 1], [0, 1]], [[0, 0], [1, 1], [0, 1]], [[0, 0], [1, 0], [0, 1]], [[0, 0], [1, 0], [1, 1]]];
   var SHEDGE = [null, [0, 0.5, 1, 0.5], [0, 1, 1, 0], [0, 0, 1, 1], [1, 0, 0, 1], [0, 0, 1, 1]];
   function halfRound(g, i, j, sx, sy, top) {   // a half-block's outline with its open top corners rounded off (only on natural ground)
-    var rl = !TILES[get(i - 1, j)].solid && !walls[j * W + i - 1], rr = !TILES[get(i + 1, j)].solid, r = ts * 0.24, y0 = sy + ts * top;
+    var rl = !TILES[get(i - 1, j)].solid && !walls.g(j * W + i - 1), rr = !TILES[get(i + 1, j)].solid, r = ts * 0.24, y0 = sy + ts * top;
     g.beginPath(); g.moveTo(sx, sy + ts * 1.2);
     if (rl) { g.lineTo(sx, y0 + r); g.quadraticCurveTo(sx, y0, sx + r, y0); } else g.lineTo(sx, y0);
     if (rr) { g.lineTo(sx + ts - r, y0); g.quadraticCurveTo(sx + ts, y0, sx + ts, y0 + r); } else g.lineTo(sx + ts, y0);
     g.lineTo(sx + ts, sy + ts * 1.2); g.closePath();
   }
   function shapeDraw(g, i, j, sx, sy, now, sh) {
-    var ix = j * W + i, under = j > col[i] && j > world.top[i], id = tiles[ix], td = TILES[id];   // (a sloped block on the top of the ground shows the sky above its slope, not cave rock)
-    if (walls[ix]) drawWall(g, walls[ix], i, j, sx, sy); else if (under) drawBackRock(g, i, j, sx, sy);
+    var ix = j * W + i, under = j > col[i] && j > world.top[i], id = tiles.g(ix), td = TILES[id];   // (a sloped block on the top of the ground shows the sky above its slope, not cave rock)
+    if (walls.g(ix)) drawWall(g, walls.g(ix), i, j, sx, sy); else if (under) drawBackRock(g, i, j, sx, sy);
     var P = SHPOLY[sh], E = SHEDGE[sh], floor = sh <= 3, L = Math.hypot(E[2] - E[0], E[3] - E[1]) * ts, ang = Math.atan2(E[3] - E[1], E[2] - E[0]);
     var x0 = sx + E[0] * ts, y0 = sy + E[1] * ts, nat = NATC[id] ? id : SMGEM[id] ? orePal(td) : 0;
     g.save(); if (sh === 1 && NATC[id]) halfRound(g, i, j, sx, sy, 0.5); else { g.beginPath(); g.moveTo(sx + P[0][0] * ts, sy + P[0][1] * ts); for (var k = 1; k < P.length; k++) g.lineTo(sx + P[k][0] * ts, sy + P[k][1] * ts); g.closePath(); } g.clip();
@@ -15294,16 +15294,16 @@
     for (var q = 0; q < SHQ.length; q += 3) shapeTop(g, SHQ[q], SHQ[q + 1], ox + SHQ[q] * ts, oy + SHQ[q + 1] * ts, SHQ[q + 2]);
     for (q = 0; q < SHQ.length; q += 3) {   // where two ramps meet back to back (a little mound), the top is rounded off into a soft grassy cap
       var i = SHQ[q], j = SHQ[q + 1]; if (SHQ[q + 2] !== 2 || shapeAt(j * W + i + 1) !== 3) continue;
-      var grassy = tiles[j * W + i] === T.MOSS, GP = GRASSP[varAt(i)] || GRASSP[0], cx = ox + (i + 1) * ts, cy = oy + j * ts, rx = ts * 0.24, ry = ts * 0.13;
+      var grassy = tiles.g(j * W + i) === T.MOSS, GP = GRASSP[varAt(i)] || GRASSP[0], cx = ox + (i + 1) * ts, cy = oy + j * ts, rx = ts * 0.24, ry = ts * 0.13;
       var top = grassy ? GP[0] : null;
-      if (!top) { var pal = NATC[tiles[j * W + i]]; top = pal ? (pal.top || pal[0] || "#6a5a4a") : "#6a5a4a"; }
+      if (!top) { var pal = NATC[tiles.g(j * W + i)]; top = pal ? (pal.top || pal[0] || "#6a5a4a") : "#6a5a4a"; }
       g.fillStyle = typeof top === "string" ? top : rgbA(top); g.beginPath(); g.ellipse(cx, cy + ry, rx, ry, 0, Math.PI, 0); g.lineTo(cx + rx * 1.3, cy + ry * 2.3); g.lineTo(cx - rx * 1.3, cy + ry * 2.3); g.closePath(); g.fill();
       if (grassy) { g.fillStyle = GP[1]; g.beginPath(); g.ellipse(cx, cy + ry * 1.15, rx * 0.8, ry * 0.8, 0, Math.PI, 0); g.closePath(); g.fill(); g.fillStyle = GP[2]; g.beginPath(); g.ellipse(cx - rx * 0.25, cy + ry * 0.9, rx * 0.3, ry * 0.3, 0, Math.PI, 0); g.closePath(); g.fill(); }
     }
     SHQ.length = 0;
   }
   function shapeTop(g, i, j, sx, sy, sh) {
-    var id = tiles[j * W + i], E = SHEDGE[sh], floor = sh <= 3, L = Math.hypot(E[2] - E[0], E[3] - E[1]) * ts, ang = Math.atan2(E[3] - E[1], E[2] - E[0]), x0 = sx + E[0] * ts, y0 = sy + E[1] * ts, k, GP, hh = function (q) { return SW.hash(i, j, q + 300); };
+    var id = tiles.g(j * W + i), E = SHEDGE[sh], floor = sh <= 3, L = Math.hypot(E[2] - E[0], E[3] - E[1]) * ts, ang = Math.atan2(E[3] - E[1], E[2] - E[0]), x0 = sx + E[0] * ts, y0 = sy + E[1] * ts, k, GP, hh = function (q) { return SW.hash(i, j, q + 300); };
     // along the cut, inside the block: top-lit for a floor (it is now the top), shadowed for a ceiling ramp. It may reach a little into the
     // solid block beside or below (that is why this runs after all the blocks), but never above the cut.
     g.save(); if (sh === 1 && NATC[id]) halfRound(g, i, j, sx, sy, 0.5); else { g.beginPath(); g.rect(sx - ts * 0.25, sy - ts * 0.45, ts * 1.5, ts * 1.7); } g.clip();
@@ -15700,9 +15700,9 @@
     DBON = !!(DECO && !cave && !HOME && !OCS && DECO.count());
     if (!DBON) { if (DBG !== -1) { DBR = {}; if (DBK) DBK.fill(0); DBG = -1; } return; }
     var gn = DECO.gen(); if (gn === DBG && DBK && DBK.length === W * H) return; DBG = gn;
-    if (!DBK || DBK.length !== W * H) DBK = new Uint8Array(W * H); else DBK.fill(0); DBR = {};
+    if (!DBK || DBK.length !== W * H) DBK = new Grid(W, H, Uint8Array); else DBK.fill(0); DBR = {};
     DECO.all().forEach(function (r) { var w = r._w; if (!w || w.layer > 0) return;
-      for (var y = Math.max(0, Math.floor(w.y - w.h + 1e-3)); y <= Math.min(H - 1, Math.floor(w.y - 1e-3)); y++) for (var x = Math.max(0, Math.floor(w.x + 1e-3)); x <= Math.min(W - 1, Math.floor(w.x + w.w - 1e-3)); x++) { var ix = y * W + x; DBK[ix] = 1; (DBR[ix] = DBR[ix] || []).push(r); } });
+      for (var y = Math.max(0, Math.floor(w.y - w.h + 1e-3)); y <= Math.min(H - 1, Math.floor(w.y - 1e-3)); y++) for (var x = Math.max(0, Math.floor(w.x + 1e-3)); x <= Math.min(W - 1, Math.floor(w.x + w.w - 1e-3)); x++) { var ix = y * W + x; DBK.s(ix, 1); (DBR[ix] = DBR[ix] || []).push(r); } });
     for (var ix2 in DBR) DBR[ix2].sort(function (a, b) { return (a._w.layer - b._w.layer) || (+a.id - +b.id); });
   }
   function decoCellBack(g, i, j, sx3, sy) {   // the slice of each rug and wall piece that falls in cell (i, j), drawn at the cell's own spot
@@ -15984,7 +15984,7 @@
   }
   function decoMigrate() {   // OLD SAVES: small pieces placed as tiles on furniture, and rug tiles, become decorations (once per world; only what you placed)
     if (!DECO || S.dmig >= 1 || (MP.on && MP.role === "guest") || cave || HOME || OCS) return 0; S.dmig = 1; var n = 0, x, y, ix;
-    for (y = 1; y < H - 1; y++) for (x = 0; x < W; x++) { ix = y * W + x; var id = tiles[ix]; if (id === T.AIR || id === orig[ix]) continue; var td = TILES[id]; if (!td || td.solid || td.fpart) continue;
+    for (y = 1; y < H - 1; y++) for (x = 0; x < W; x++) { ix = y * W + x; var id = tiles.g(ix); if (id === T.AIR || id === orig.g(ix)) continue; var td = TILES[id]; if (!td || td.solid || td.fpart) continue;
       var k = dropOf(td); if (!k || !DelveDecor.ITEM[k] || !ITEMS[k] || ITEMS[k].tile !== id) continue; var it = DelveDecor.ITEM[k], fl = S.dflip && S.dflip[ix] ? 1 : 0, off = S.loff && S.loff[ix] ? 1 : 0, rr = null;
       if (it.cat === "rug") { if (td.kind !== "rug" || !decoFloorAt(x, y)) continue; MP.applying = true; try { setT(x, y, T.AIR); } finally { MP.applying = false; } if (!decoFloorAt(x, y)) continue; rr = DECO.add("g:" + x + "," + y, "floor", k, 16, { f: fl || undefined }); if (!rr.ok) { setT(x, y, id); continue; } }
       else if (td.small) {
@@ -16109,20 +16109,20 @@
     if (fl) g.restore(); if (bop) g.restore(); if (swa) g.restore();
   }
   function drawCell0(g, i, j, sx3, sy, now) {
-    if (tiles[j * W + i] === T.X_thermalvent && now && !reduce && Math.random() < 0.5) parts.push({ x: i + 0.5 + (Math.random() - 0.5) * 2.4, y: j + 0.3, vx: (Math.random() - 0.5) * 0.6, vy: -7 - Math.random() * 5, life: 1.6, max: 1.6, c: Math.random() < 0.5 ? "#ffb04a" : "#ffe9b0", s: 2 });
-    if (now) { var ptd2 = TILES[tiles[j * W + i]]; if (ptd2 && PUFFK[ptd2.kind]) stationPuff(ptd2, i, j, now); if (ptd2 && ptd2.decor !== false && P5K[ptd2.kind]) p5Cell(tiles[j * W + i], i, j); }
-    if (tiles[j * W + i] === T.X_sprinkler && now && !reduce && Math.random() < 0.08) parts.push({ x: i + 0.5 + (Math.random() - 0.5) * 0.4, y: j + 0.1, vx: (Math.random() - 0.5) * 5, vy: -2 - Math.random() * 2, life: 0.5, max: 0.5, c: "#bfeeff", s: 2 });
-      var id = tiles[j * W + i], td = TILES[id], under = j >= col[i] && j > world.top[i];   // cave wall only below the natural ground line: air under a roof, eave or overhang you build stays open sky
+    if (tiles.g(j * W + i) === T.X_thermalvent && now && !reduce && Math.random() < 0.5) parts.push({ x: i + 0.5 + (Math.random() - 0.5) * 2.4, y: j + 0.3, vx: (Math.random() - 0.5) * 0.6, vy: -7 - Math.random() * 5, life: 1.6, max: 1.6, c: Math.random() < 0.5 ? "#ffb04a" : "#ffe9b0", s: 2 });
+    if (now) { var ptd2 = TILES[tiles.g(j * W + i)]; if (ptd2 && PUFFK[ptd2.kind]) stationPuff(ptd2, i, j, now); if (ptd2 && ptd2.decor !== false && P5K[ptd2.kind]) p5Cell(tiles.g(j * W + i), i, j); }
+    if (tiles.g(j * W + i) === T.X_sprinkler && now && !reduce && Math.random() < 0.08) parts.push({ x: i + 0.5 + (Math.random() - 0.5) * 0.4, y: j + 0.1, vx: (Math.random() - 0.5) * 5, vy: -2 - Math.random() * 2, life: 0.5, max: 0.5, c: "#bfeeff", s: 2 });
+      var id = tiles.g(j * W + i), td = TILES[id], under = j >= col[i] && j > world.top[i];   // cave wall only below the natural ground line: air under a roof, eave or overhang you build stays open sky
       if (id === T.AIR) {
-        if (walls[j * W + i]) { drawWall(g, walls[j * W + i], i, j, sx3, sy); if (DBON && DBK[j * W + i]) decoCellBack(g, i, j, sx3, sy); return; }
+        if (walls.g(j * W + i)) { drawWall(g, walls.g(j * W + i), i, j, sx3, sy); if (DBON && DBK.g(j * W + i)) decoCellBack(g, i, j, sx3, sy); return; }
         if (under) drawBackRock(g, i, j, sx3, sy);   // textured cave back wall (see BACKGROUND TEXTURES)
-        if (DBON && DBK[j * W + i]) decoCellBack(g, i, j, sx3, sy);   // DECORATING: rugs and wall pieces, behind the cell's furniture
+        if (DBON && DBK.g(j * W + i)) decoCellBack(g, i, j, sx3, sy);   // DECORATING: rugs and wall pieces, behind the cell's furniture
         return;
       }
       if (id === T.WATER) {
         var top = get(i, j - 1) !== T.WATER, dd = 0; if (!top) { dd = 1; while (dd < 6 && get(i, j - dd - 1) === T.WATER) dd++; }
         var wl = top ? lvAt(j * W + i) : 8, woff = wl < 8 ? Math.round(ts * (1 - wl / 8)) : 0;   // a part-filled cell: what is behind shows above the surface
-        if (woff) { if (walls[j * W + i]) drawWall(g, walls[j * W + i], i, j, sx3, sy); else if (under) drawBackRock(g, i, j, sx3, sy); }
+        if (woff) { if (walls.g(j * W + i)) drawWall(g, walls.g(j * W + i), i, j, sx3, sy); else if (under) drawBackRock(g, i, j, sx3, sy); }
         g.fillStyle = inMC() && mcRest(i) ? (WSTA[dd] || (WSTA[dd] = "rgba(" + (240 - dd * 12) + "," + (176 - dd * 12) + "," + (70 - dd * 4) + "," + (0.6 + dd * 0.04) + ")")) : inMC() ? (WSTM[dd] || (WSTM[dd] = "rgba(" + (150 - dd * 14) + "," + (10 + dd) + "," + (24 - dd) + "," + (0.7 + dd * 0.04) + ")")) : WST[dd] || (WST[dd] = "rgba(" + (52 - dd * 6) + "," + (170 - dd * 14) + "," + (178 - dd * 8) + "," + (0.62 + dd * 0.04) + ")");   // (MALCRUOR: its pools run blood red) g.fillRect(sx3, sy + woff, ts, ts - woff);
         if (top) {   // the surface: a smooth swell that runs on from cell to cell (two waves), bent by any ripples from splashes
           var wsu = ts / 32, wpts = [], wq, wmax = ts - woff - 2, wsurf = j + woff / ts;
@@ -16130,14 +16130,14 @@
           g.fillStyle = "rgba(255,255,255,.25)"; g.beginPath(); g.moveTo(sx3, sy + woff); for (wq = 0; wq <= 4; wq++) g.lineTo(sx3 + ts * wq / 4, sy + woff + wpts[wq]); g.lineTo(sx3 + ts, sy + woff); g.closePath(); g.fill();
           g.strokeStyle = "rgba(210,255,248,.75)"; g.lineWidth = 2; g.beginPath(); g.moveTo(sx3, sy + woff + wpts[0]); for (wq = 1; wq <= 4; wq++) g.lineTo(sx3 + ts * wq / 4, sy + woff + wpts[wq]); g.stroke();
         }
-        if (!reduce && FLM && FLM[j * W + i] && get(i, j + 1) === T.WATER && !top) { g.fillStyle = "rgba(220,255,250,.28)"; var fo = (now / 60 + i * 7) % ts; g.fillRect(sx3 + ts * 0.3, sy + fo, Math.max(1, ts * 0.08), ts * 0.3); g.fillRect(sx3 + ts * 0.66, sy + (fo + ts * 0.5) % ts, Math.max(1, ts * 0.06), ts * 0.24); }   // moving water: streaks
+        if (!reduce && FLM && FLM.g(j * W + i) && get(i, j + 1) === T.WATER && !top) { g.fillStyle = "rgba(220,255,250,.28)"; var fo = (now / 60 + i * 7) % ts; g.fillRect(sx3 + ts * 0.3, sy + fo, Math.max(1, ts * 0.08), ts * 0.3); g.fillRect(sx3 + ts * 0.66, sy + (fo + ts * 0.5) % ts, Math.max(1, ts * 0.06), ts * 0.24); }   // moving water: streaks
         else if (!reduce && ((i * 31 + j * 17 + (now / 380 | 0)) % 11) === 0) { g.fillStyle = "rgba(190,255,248,.22)"; g.fillRect(sx3 + ts * 0.2, sy + ts * 0.4, ts * 0.5, 2); }
         return;
       }
       if (id === T.LAVA) {
         var ll = get(i, j - 1) !== T.LAVA ? lvAt(j * W + i) : 8, loff = ll < 8 ? Math.round(ts * (1 - ll / 8)) : 0;
         if (loff) {   // a part-filled cell: the background, then the lava from its surface down
-          if (walls[j * W + i]) drawWall(g, walls[j * W + i], i, j, sx3, sy); else if (under) drawBackRock(g, i, j, sx3, sy);
+          if (walls.g(j * W + i)) drawWall(g, walls.g(j * W + i), i, j, sx3, sy); else if (under) drawBackRock(g, i, j, sx3, sy);
           var lc = shadeC("lava"); g.drawImage(lc, 0, loff * lc.width / ts, lc.width, lc.height - loff * lc.height / ts, sx3, sy + loff, ts, ts - loff);
           g.fillStyle = "#ffe9a0"; g.fillRect(sx3, sy + loff, ts, Math.max(2, CELL.edge)); if (!(i & 1)) glows.push([sx3 + ts / 2, sy + loff, "255,110,30", 2.6, lowq ? 0.26 : 0.17]); return;
         }
@@ -16149,9 +16149,9 @@
       }
       var v = ((Math.imul(i, 73856093) ^ Math.imul(j, 19349663)) >>> 0) & 3;
       if (!td.solid) {
-        if (walls[j * W + i]) drawWall(g, walls[j * W + i], i, j, sx3, sy);
+        if (walls.g(j * W + i)) drawWall(g, walls.g(j * W + i), i, j, sx3, sy);
         else if (under) drawBackRock(g, i, j, sx3, sy);
-        if (DBON && DBK[j * W + i]) decoCellBack(g, i, j, sx3, sy);   // DECORATING: a rug under the furniture, a painting behind it
+        if (DBON && DBK.g(j * W + i)) decoCellBack(g, i, j, sx3, sy);   // DECORATING: a rug under the furniture, a painting behind it
         if (td.kind === "vine") drawVine(g, i, j, sx3, sy, now);
         else if (td.kind === "reed" || td.kind === "bloom" || td.kind === "glowcap" || td.kind === "flower" || td.sway) { var half = Math.round(ts / 2), off = Math.round(CELL.sw * ts * 0.06 * (1 + (i % 3) * 0.3)); smDraw(g, v, id, 0, 8, 16, 8, sx3, sy + half, ts, ts - half); smDraw(g, v, id, 0, 0, 16, 8, sx3 + off, sy, ts, half); }
         else if (td.kind === "painting") g.drawImage(paintingCanvas(i, j), 0, 0, 16, 16, sx3, sy, ts, ts);
@@ -16162,13 +16162,13 @@
         var lmask = (lo(i, j - 1) ? 1 : 0) | (lo(i, j + 1) ? 2 : 0) | (lo(i - 1, j) ? 4 : 0) | (lo(i + 1, j) ? 8 : 0);
         lmask |= (!(lmask & 5) && lo(i - 1, j - 1) ? 16 : 0) | (!(lmask & 9) && lo(i + 1, j - 1) ? 32 : 0) | (!(lmask & 6) && lo(i - 1, j + 1) ? 64 : 0) | (!(lmask & 10) && lo(i + 1, j + 1) ? 128 : 0);   // inner corners get a rounded notch
         if (OPT.canopy === false) natLeaf(g, i, j, sx3, sy, lmask);
-        else if (walls[j * W + i]) drawWall(g, walls[j * W + i], i, j, sx3, sy); else if (under) drawBackRock(g, i, j, sx3, sy);   // TREE CANOPIES: the leaves themselves are painted after all the blocks (drawCanopies)
+        else if (walls.g(j * W + i)) drawWall(g, walls.g(j * W + i), i, j, sx3, sy); else if (under) drawBackRock(g, i, j, sx3, sy);   // TREE CANOPIES: the leaves themselves are painted after all the blocks (drawCanopies)
       } else {
         if (NATC[id]) { natTile(g, id, i, j, sx3, sy); return; }
         if (id === T.LOG) { if (OPT.canopy === false || cave || !treeLogC(g, i, j, sx3, sy, under)) natLogC(g, i, j, sx3, sy); }
         else if (SMGEM[id]) { NATOV = function () { smDraw(g, v, id, 0, 0, 16, 16, sx3, sy, ts, ts); }; natTile(g, orePal(td), i, j, sx3, sy); NATOV = null; }   // the gems are drawn inside the rounded clip
         else if (td.kind === "door" || td.hatch) matWood(g, td, i, j, sx3, sy);
-        else if (MATF[id]) { cvA = carveBuildStart(g, id, i, j, sx3, sy); if (MATF[id].see) { if (walls[j * W + i]) drawWall(g, walls[j * W + i], i, j, sx3, sy); else if (under) drawBackRock(g, i, j, sx3, sy); } matTile(g, id, i, j, sx3, sy); }   // ADVENTURE LOOK building blocks (glass shows what is behind it)
+        else if (MATF[id]) { cvA = carveBuildStart(g, id, i, j, sx3, sy); if (MATF[id].see) { if (walls.g(j * W + i)) drawWall(g, walls.g(j * W + i), i, j, sx3, sy); else if (under) drawBackRock(g, i, j, sx3, sy); } matTile(g, id, i, j, sx3, sy); }   // ADVENTURE LOOK building blocks (glass shows what is behind it)
         else { var cvA = carveAtlasStart(g, id, i, j, sx3, sy); sharpDraw(g, ATLAS, v * 16, id * 16, "a" + id + "_" + v, 0, 0, 16, 16, sx3, sy, ts, ts); }
         // exposed faces get a lit rim on top and a shadow on the sides and bottom, so caves and cliffs read clearly
         var nT = !TILES[get(i, j - 1)].solid || get(i, j - 1) === T.LEAVES, nB = !TILES[get(i, j + 1)].solid, nL = !TILES[get(i - 1, j)].solid, nR = !TILES[get(i + 1, j)].solid;
@@ -16260,7 +16260,7 @@
       if (X >= 0 && X < W && Y < col[X] && skyL > L) L = skyL;
       else if (X >= 0 && X < W && Y >= col[X] && Y - col[X] < 12) { var seep = (skyL * 0.3 * (1 - (Y - col[X]) / 12)) | 0; if (seep > L) L = seep; }
       var rsl = MATF[id] && X >= 0 && X < W && roofSlope(id, X, Y); if (rsl) { if (skyL > L) L = skyL; }   // ROOF SLOPES: half the cell is open sky, so light it like the sky (no pale or dark box round a sloped roof)
-      LG[c] = L; OP[c] = rsl ? LQ : TILES[id].solid && !TILES[id].see && !(rmask && X >= 0 && X < W && Y >= 0 && Y < H && rmask[Y * W + X] === id) && !(smask && X >= 0 && X < W && Y >= 0 && Y < H && smask[Y * W + X] && tiles[Y * W + X] === orig[Y * W + X]) ? (SHAPEN && !cave && X >= 0 && X < W && Y >= 0 && Y < H && shapeAt(Y * W + X) ? LQ * 2 : 3 * LQ) : LQ;   // MALLET: light seeps through a shaped block's open part
+      LG[c] = L; OP[c] = rsl ? LQ : TILES[id].solid && !TILES[id].see && !(rmask && X >= 0 && X < W && Y >= 0 && Y < H && rmask.g(Y * W + X) === id) && !(smask && X >= 0 && X < W && Y >= 0 && Y < H && smask.g(Y * W + X) && tiles.g(Y * W + X) === orig.g(Y * W + X)) ? (SHAPEN && !cave && X >= 0 && X < W && Y >= 0 && Y < H && shapeAt(Y * W + X) ? LQ * 2 : 3 * LQ) : LQ;   // MALLET: light seeps through a shaped block's open part
     }
     var pi = pcx - gx0, pj = pcy - gy0; if (pi >= 0 && pi < gw && pj >= 0 && pj < gh) LG[pj * gw + pi] = Math.max(LG[pj * gw + pi], (fx("night") ? 15 : hasCharm("glow") || hasCharm("order") || fx("glow") ? 15 : hasCharm("owl") ? 13 : p.y > pcol() + 3 ? (helmOn() ? 9 : 3) : helmOn() ? 10 : Math.round(10 - 6 * nk)) * LQ);   // DARK CAVES: underground you only glow faintly; the Miner's Helmet lights a medium circle
     if (hasCharm("owl") && !fx("night")) for (var oj = Math.max(0, pj - 6); oj <= Math.min(gh - 1, pj + 6); oj++) for (var oi = Math.max(0, pi - 8); oi <= Math.min(gw - 1, pi + 8); oi++) { var oc = oj * gw + oi; if (LG[oc] < 5 * LQ) LG[oc] = 5 * LQ; }   // Owl Charm: a dimmer, smaller Night Eye
@@ -16360,7 +16360,7 @@
     g.globalAlpha = 1;
   }
   var CLOUDB = [[0, 0, 1.6], [1.3, 0.3, 1.2], [-1.4, 0.35, 1.1], [0.5, -0.5, 1.1], [2.4, 0.55, 0.8]];   // PERF: the puffs of a cloud, made once
-  function hasW(x, y) { return x >= 0 && x < W && y >= 0 && y < H && walls[y * W + x] > 0; }
+  function hasW(x, y) { return x >= 0 && x < W && y >= 0 && y < H && walls.g(y * W + x) > 0; }
   function drawWall(g, wl, i, j, sx, sy) {   // a back wall tile: its picture, pushed back with a dark wash, with a soft edge where the wall stops so rooms read as rooms
     var v = ((Math.imul(i, 73856093) ^ Math.imul(j, 19349663)) >>> 0) & 3, e = Math.max(1, Math.round(ts / 11));
     if (!drawWallStain(g, wl, i, j, sx, sy)) { if (MATF[wl]) matWall(g, wl, i, j, sx, sy); else g.drawImage(ATLAS, v * 16, wl * 16, 16, 16, sx, sy, ts, ts); }
@@ -16499,7 +16499,7 @@
   function carveOpen(x, y) { var k = get(x, y); return !TILES[k].solid && k !== T.WATER && k !== T.LAVA; }
   function carveUnder(x, y) { return x >= 0 && x < W && y >= col[x] && y > world.top[x]; }
   function carveBack(g, i, j, sx, sy, tl, tr, bl, br) {   // what shows through a rounded corner: a back wall, cave rock, or nothing (open sky)
-    var wl = walls[j * W + i] || ((tl || bl) && walls[j * W + i - 1]) || ((tl || tr) && j > 0 && walls[(j - 1) * W + i]) || ((tr || br) && walls[j * W + i + 1]) || ((bl || br) && walls[(j + 1) * W + i]);
+    var wl = walls.g(j * W + i) || ((tl || bl) && walls.g(j * W + i - 1)) || ((tl || tr) && j > 0 && walls.g((j - 1) * W + i)) || ((tr || br) && walls.g(j * W + i + 1)) || ((bl || br) && walls.g((j + 1) * W + i));
     if (wl) { drawWall(g, wl, i, j, sx, sy); return; }
     if (((tl || bl) && carveUnder(i - 1, j)) || ((tr || br) && carveUnder(i + 1, j)) || ((tl || tr) && carveUnder(i, j - 1)) || ((bl || br) && carveUnder(i, j + 1))) drawBackRock(g, i, j, sx, sy);
   }
@@ -16570,7 +16570,7 @@
     if (!c) return null; carveBack(g, i, j, sx, sy, c[0], c[1], c[3], c[2]); g.save(); carvePath(g, sx, sy, c[0], c[1], c[2], c[3], false); g.clip(); return c;
   }
   function natTile(g, id, i, j, sx, sy) {
-    var up = (j - 1) * W + i, scen = j > 0 && i >= 0 && i < W && tiles[up] === T.LOG && orig[up] === T.LOG;
+    var up = (j - 1) * W + i, scen = j > 0 && i >= 0 && i < W && tiles.g(up) === T.LOG && orig.g(up) === T.LOG;
     var nT = !TILES[get(i, j - 1)].solid || get(i, j - 1) === T.LEAVES || scen, nB = !TILES[get(i, j + 1)].solid, nL = !TILES[get(i - 1, j)].solid, nR = !TILES[get(i + 1, j)].solid;
     var cc = scen ? null : carveCorners(i, j, nT, nB, nL, nR), tl = cc ? cc[0] : 0, tr = cc ? cc[1] : 0, br = cc ? cc[2] : 0, bl = cc ? cc[3] : 0;
     var carved = tl || tr || br || bl;
@@ -16604,7 +16604,7 @@
   var GSC = {}, GSK = 0;
   function grassSide(g, id, i, j, sx, sy, tl, tr) {
     if (cave || OPT.gside === false || !(id === T.MOSS || id === T.MUD || id === T.CLAY || id === T.X_peat || id === T.X_silt)) return;
-    var top = col[i], d = j - top; if (d < 0 || d > 3 || tiles[top * W + i] !== T.MOSS) return;
+    var top = col[i], d = j - top; if (d < 0 || d > 3 || tiles.g(top * W + i) !== T.MOSS) return;
     for (var s = -1; s <= 1; s += 2) {
       var nb = get(i + s, j); if (TILES[nb].solid || nb === T.WATER || nb === T.LAVA || j >= col[i + s]) continue;   // only a face open to the sky
       var rc = d === 0 && (s < 0 ? tl : tr) ? 1 : 0; g.drawImage(grassSideC(s, d, SW.hash(i, j, 77 + s) * 4 | 0, varAt(i), rc), sx, sy, ts, ts);
@@ -17134,7 +17134,7 @@
   }
   function mixHex(a, b, k) { var A = hexRgb(a), B = hexRgb(b); return "rgb(" + Math.round(A[0] + (B[0] - A[0]) * k) + "," + Math.round(A[1] + (B[1] - A[1]) * k) + "," + Math.round(A[2] + (B[2] - A[2]) * k) + ")"; }
   function matMask(id, i, j, isWall) {   // sides where the neighbour is a different block (or, for walls, a different wall)
-    var F = MATF[id], same = isWall ? function (a, b) { return walls[b * W + a] === id || (a < 0 || a >= W); } : function (a, b) { var n = get(a, b); return n === id || (F.f === "glass" && MATF[n] && MATF[n].f === "glass"); };
+    var F = MATF[id], same = isWall ? function (a, b) { return walls.g(b * W + a) === id || (a < 0 || a >= W); } : function (a, b) { var n = get(a, b); return n === id || (F.f === "glass" && MATF[n] && MATF[n].f === "glass"); };
     return (same(i, j - 1) ? 0 : 1) | (same(i, j + 1) ? 0 : 2) | (same(i - 1, j) ? 0 : 4) | (same(i + 1, j) ? 0 : 8);
   }
   TILES.forEach(function (td) { if (td && td.mat && !MATF[td.id]) defMat(Object.keys(T).filter(function (k) { return T[k] === td.id; })[0], td.mat.f, td.mat.p, td.mat); });   // NEW BUILDING BLOCKS (sandbox-extra) bring their own look
@@ -17184,7 +17184,7 @@
     return (WDC[key] = cv);
   }
   function doorBack(g, td, i, j, sx, sy) {   // what is behind a door: your own back wall if there is one, else a wall of the block built over (or beside) the doorway
-    var k = j * W + i; if (walls[k]) { if (td.solid) drawWall(g, walls[k], i, j, sx, sy); return; }   // (an open door's cell has already drawn its back wall)
+    var k = j * W + i; if (walls.g(k)) { if (td.solid) drawWall(g, walls.g(k), i, j, sx, sy); return; }   // (an open door's cell has already drawn its back wall)
     var ty = td.door.top ? j : j - 1, src = 0, cand = [get(i, ty - 1), get(i - 1, j), get(i + 1, j), get(i - 1, ty), get(i + 1, ty)];
     for (var c = 0; c < cand.length && !src; c++) { var q = TILES[cand[c]]; if (q && q.solid && q.kind !== "door" && !q.hatch && cand[c] !== T.LEAVES && !NATC[cand[c]] && cand[c] !== T.LOG) src = cand[c]; }
     if (!src) return;
@@ -17241,7 +17241,7 @@
   }
   function matTile(g, id, i, j, sx, sy, si) {
     var mask = matMask(id, i, j, false), dir = roofSlope(id, i, j);
-    if (dir) { var k = j * W + i; if (walls[k]) drawWall(g, walls[k], i, j, sx, sy); g.drawImage(slopeCanvas(id, matVar(MATF[id], i, j), mask, si, dir), sx, sy); return; }   // what shows through the cut-away corner: the back wall behind it, if any
+    if (dir) { var k = j * W + i; if (walls.g(k)) drawWall(g, walls.g(k), i, j, sx, sy); g.drawImage(slopeCanvas(id, matVar(MATF[id], i, j), mask, si, dir), sx, sy); return; }   // what shows through the cut-away corner: the back wall behind it, if any
     g.drawImage(matCanvas(id, matVar(MATF[id], i, j), mask, si), sx, sy);
     if (!MATF[id].see && OPT.bedge !== false) buildEdge(g, id, i, j, sx, sy);
   }
@@ -17394,9 +17394,9 @@
     return l && !r ? -1 : r && !l ? 1 : 0;
   }
   function origTree(i, j) {   // was this block part of a world tree's trunk when the world was made (a column of logs, leaning for palms, under a crown)?
-    if (!orig || orig[j * W + i] !== T.LOG || walls[j * W + i]) return false;
-    for (var y = j, n = 0; y > 1 && n < 30; y--, n++) { var u = orig[(y - 1) * W + i]; if (u === T.LEAVES) return true; if (u === T.LOG) continue;
-      var l = orig[(y - 1) * W + i - 1] === T.LOG, r = orig[(y - 1) * W + i + 1] === T.LOG; if (l !== r) { i += l ? -1 : 1; continue; } return false; }
+    if (!orig || orig.g(j * W + i) !== T.LOG || walls.g(j * W + i)) return false;
+    for (var y = j, n = 0; y > 1 && n < 30; y--, n++) { var u = orig.g((y - 1) * W + i); if (u === T.LEAVES) return true; if (u === T.LOG) continue;
+      var l = orig.g((y - 1) * W + i - 1) === T.LOG, r = orig.g((y - 1) * W + i + 1) === T.LOG; if (l !== r) { i += l ? -1 : 1; continue; } return false; }
     return false;
   }
   function trunkTree(i, j) {   // is this log part of a tree (a trunk crowned with leaves, or a world tree that lost them), not a house beam?
@@ -17517,17 +17517,17 @@
   function drawCanopies(g, now, X0, X1, Y0, Y1) {
     var i, j, q, tt = now / 1000, S = Math.max(2, Math.round(ts * dpr));
     if (CANSZ !== S) { CANSZ = S; canFree(); }
-    if (!CSTAMP || CSTAMP.length !== W * H) CSTAMP = new Uint32Array(W * H); CSTN++;
+    if (!CSTAMP || CSTAMP.length !== W * H) CSTAMP = new Grid(W, H, Uint32Array); CSTN++;
     if (CSTN % 240 === 0) CANT.forEach(function (e) { if (e.up && CSTN - (e.seen || 0) > 240) { CANT_PX -= e.up.width * e.up.height; cvFree(e.up); e.up = null; } });   // crowns long off screen drop their big sharp copy (remade when seen again)
     var sm = g.imageSmoothingEnabled; g.imageSmoothingEnabled = false;
     for (j = Math.max(1, Y0 - 3); j <= Math.min(H - 2, Y1 + 3); j++) for (i = Math.max(1, X0 - 3); i <= Math.min(W - 2, X1 + 3); i++) {   // (crowns are fluffier than their leaves: look a few tiles past the screen)
-      if (tiles[j * W + i] !== T.LEAVES || CSTAMP[j * W + i] === CSTN) continue;
-      CANL.length = 0; CANBFS.length = 0; CANBFS.push(j * W + i); CSTAMP[j * W + i] = CSTN;
+      if (tiles.g(j * W + i) !== T.LEAVES || CSTAMP.g(j * W + i) === CSTN) continue;
+      CANL.length = 0; CANBFS.length = 0; CANBFS.push(j * W + i); CSTAMP.s(j * W + i, CSTN);
       var x0 = i, x1 = i, y0 = j, y1 = j, mn = j * W + i, sig = 0, n = 0;
       while (CANBFS.length && n < 900) {
         var c = CANBFS.pop(), cx = c % W, cy = (c / W) | 0; n++; CANL.push(cx, cy); if (c < mn) mn = c; sig = (sig + Math.imul(c, 2654435761)) | 0;
         if (cx < x0) x0 = cx; if (cx > x1) x1 = cx; if (cy < y0) y0 = cy; if (cy > y1) y1 = cy;
-        for (var dy = -1; dy <= 1; dy++) for (var dx = -1; dx <= 1; dx++) { if (!dx && !dy) continue; var nx = cx + dx, ny = cy + dy; if (nx < 1 || nx >= W - 1 || ny < 1 || ny >= H - 1) continue; var ni = ny * W + nx; if (CSTAMP[ni] !== CSTN && tiles[ni] === T.LEAVES) { CSTAMP[ni] = CSTN; CANBFS.push(ni); } }
+        for (var dy = -1; dy <= 1; dy++) for (var dx = -1; dx <= 1; dx++) { if (!dx && !dy) continue; var nx = cx + dx, ny = cy + dy; if (nx < 1 || nx >= W - 1 || ny < 1 || ny >= H - 1) continue; var ni = ny * W + nx; if (CSTAMP.g(ni) !== CSTN && tiles.g(ni) === T.LEAVES) { CSTAMP.s(ni, CSTN); CANBFS.push(ni); } }
       }
       var e = CANT.get(mn), M = 2;
       if (!e || e.sig !== sig || e.n !== n) {
@@ -17553,7 +17553,7 @@
   // ---- trunks ----
   var TLC = new Map(), TLS = 0;
   function treeLogC(g, i, j, sx, sy, under) {   // PERF: each trunk block's pixel art is painted once and kept while the blocks round it stay the same
-    var ix = j * W + i; if (walls[ix]) return false;   // (a log with a back wall is part of a building)
+    var ix = j * W + i; if (walls.g(ix)) return false;   // (a log with a back wall is part of a building)
     var S = Math.max(2, Math.round(ts * dpr)); if (S !== TLS) { TLC.clear(); TLS = S; }
     var t = j, f = j, dx, dy; while (get(i, t - 1) === T.LOG && j - t < 24) t--; while (get(i, f + 1) === T.LOG && f - j < 24) f++;
     var sig = (t * 131 + f) | 0;
@@ -17571,7 +17571,7 @@
   // crooked boughs, instead of square log blocks. snagAt: the snag a log belongs to (from the world's tree list), or null.
   var SNAGIX = { w: null, m: null };
   function snagAt(i, j) {
-    if (!world || !world.trees || !orig || orig[j * W + i] !== T.LOG) return null;
+    if (!world || !world.trees || !orig || orig.g(j * W + i) !== T.LOG) return null;
     if (SNAGIX.w !== world) { SNAGIX.w = world; SNAGIX.m = {}; world.trees.forEach(function (t) { if (t.k !== "snag" || !t.b) return; for (var x = t.b.x0 - 1; x <= t.b.x1 + 1; x++) (SNAGIX.m[x] || (SNAGIX.m[x] = [])).push(t); }); }
     var L = SNAGIX.m[i]; if (!L) return null;
     for (var q = 0; q < L.length; q++) { var t = L[q]; if (j >= t.b.y0 - 1 && j <= t.b.y1 + 1) return t; }
@@ -17770,7 +17770,7 @@
   function drawSparkles(g, X0, X1, Y0, Y1, now, day) {
     if (reduce || !LE.a) return; var t = now / 1000, vgw = LE.w, i, j, n = 0;
     for (j = Y0; j <= Y1; j++) for (i = X0; i <= X1; i++) {
-      if (i < 0 || i >= W || j < 0 || j >= H) continue; var id = tiles[j * W + i], td = TILES[id]; if (!td) continue;
+      if (i < 0 || i >= W || j < 0 || j >= H) continue; var id = tiles.g(j * W + i), td = TILES[id]; if (!td) continue;
       var ore = td.kind === "ore" || id === T.CRYSTAL || id === T.SPIKE, snow = !ore && id === T.SNOW && day > 0.6 && j <= col[i] + 1 && !TILES[get(i, j - 1)].solid;
       if (!ore && !snow) continue;
       var h = SW.hash(i, j, 91), per = snow ? 9 : 5.5, ph = (t + h * per * 3) % per; if (ph > 0.5) continue;
@@ -17810,13 +17810,13 @@
   var CHK = { m: new Map(), q: 0, g: "", vis: null, vx0: 0, vy0: 0, vw: 0, vh: 0 }, CHS = 8, CHM = 1;   // (8 x 8 blocks: small enough that a piece of open sky needs no picture at all and memory stays low on sharp screens)
   function chkClear() { CHK.m.forEach(function (c) { if (c.cv) cvFree(c.cv); }); CHK.m.clear(); CHK.vis = null; }
   function chkStaticAt(ix) {   // a block that can be painted once: natural ground (not a slope or half block) or plain open air
-    var id = tiles[ix]; if (walls[ix] || S.stain[ix] !== undefined || AFX.place[ix] || (DBON && DBK[ix])) return false;   // (a rug or wall piece is drawn live)
+    var id = tiles.g(ix); if (walls.g(ix) || S.stain[ix] !== undefined || AFX.place[ix] || (DBON && DBK.g(ix))) return false;   // (a rug or wall piece is drawn live)
     if (id === T.AIR) return true;
     return (!!NATC[id] || !!SMGEM[id]) && TILES[id].solid && !(SHAPEN && shapeAt(ix));   // (an ore's twinkle and glow are added live: chkLive)
   }
   function cellGlow(td, id, i, j, sx3, sy) { glowPush(td, i, j, [sx3 + ts / 2, sy + ts / 2, td.glow ? td.glow : id === T.TORCH || id === T.LANTERN || id === T.CAMPFIRE ? "255,170,60" : id === T.CINDER || id === T.BLOOM ? "255,120,50" : id === T.SPIKE || id === T.CRYSTAL ? "130,225,255" : "80,240,190", td.gr ? td.gr : id === T.TORCH ? 4.6 : id === T.CAMPFIRE ? 5 : id === T.LANTERN ? 4.2 : 2.7, td.ga ? td.ga : id === T.TORCH ? 0.3 : id === T.CAMPFIRE ? 0.33 : id === T.LANTERN ? 0.26 : 0.17]); }
   function chkLive(g, i, j, sx3, sy, now) {   // the moving part of a painted ore block: its glow and its twinkle (as drawCell0 does)
-    var id = tiles[j * W + i], td = TILES[id]; if (!SMGEM[id]) return;
+    var id = tiles.g(j * W + i), td = TILES[id]; if (!SMGEM[id]) return;
     if ((td.light >= 3 && td.solid === false || td.light >= 6) && !(LOFN && S.loff && S.loff[j * W + i])) cellGlow(td, id, i, j, sx3, sy);
     if (td.kind === "ore" && !reduce && ((now / 90 + i * 7 + j * 3) | 0) % 41 === 0) { g.fillStyle = "#fff"; g.fillRect(sx3 + ts * 0.55, sy + ts * 0.25, 2, 2); g.fillRect(sx3 + ts * 0.55 - 1, sy + ts * 0.25 + 0.5, 4, 1); g.fillRect(sx3 + ts * 0.55 + 0.5, sy + ts * 0.25 - 1, 1, 4); }
   }
@@ -17824,7 +17824,7 @@
     var x0 = cx * CHS - 3, y0 = cy * CHS - 3, x1 = x0 + CHS + 6, y1 = y0 + CHS + 6, h = 2166136261 | 0, x, y, ix;
     for (y = y0; y < y1; y++) { if (y < 0 || y >= H) { h = Math.imul(h ^ 77, 16777619); continue; }
       for (x = x0; x < x1; x++) { if (x < 0 || x >= W) { h = Math.imul(h ^ 91, 16777619); continue; } ix = y * W + x;
-        h = Math.imul(h ^ tiles[ix], 16777619); h = Math.imul(h ^ (walls[ix] | 0) ^ (orig[ix] === T.LOG ? 1 << 20 : 0) ^ (DBON && DBK[ix] ? 1 << 21 : 0), 16777619);
+        h = Math.imul(h ^ tiles.g(ix), 16777619); h = Math.imul(h ^ (walls.g(ix) | 0) ^ (orig.g(ix) === T.LOG ? 1 << 20 : 0) ^ (DBON && DBK.g(ix) ? 1 << 21 : 0), 16777619);
         if (S.stain[ix] !== undefined) h = Math.imul(h ^ 0x5151, 16777619); if (S.shape[ix] !== undefined) h = Math.imul(h ^ (S.shape[ix] + 7) * 131, 16777619); if (AFX.place[ix]) h = Math.imul(h ^ 0x3333, 16777619); } }
     for (x = x0; x < x1; x++) if (x >= 0 && x < W) h = Math.imul(h ^ (col[x] * 977 + world.top[x] * 31 + (world.bio[x] | 0)), 16777619);
     return h;
@@ -17837,8 +17837,8 @@
     for (j = 0; j < CHS; j++) for (i = 0; i < CHS; i++) {   // a block is painted into the piece only if it and everything round it (one block each side, two above) stays still
       var gx = x0 + i, gy = y0 + j; ok = gx >= 1 && gx < W - 1 && gy >= 2 && gy < H - 1;
       for (b = -1; ok && b <= 1; b++) for (a = -1; a <= 1; a++) if (!chkStaticAt((gy + b) * W + gx + a)) { ok = false; break; }
-      if (ok) for (a = -1; a <= 1; a++) { var t2 = tiles[(gy - 2) * W + gx + a]; if (t2 === T.LOG) { ok = false; break; } }   // (a tree's roots reach down two blocks)
-      bk[j * CHS + i] = ok ? 1 : 0; if (ok && (tiles[gy * W + gx] !== T.AIR || (gy >= col[gx] && gy > world.top[gx]))) any++;   // (open sky draws nothing: no picture needed)
+      if (ok) for (a = -1; a <= 1; a++) { var t2 = tiles.g((gy - 2) * W + gx + a); if (t2 === T.LOG) { ok = false; break; } }   // (a tree's roots reach down two blocks)
+      bk[j * CHS + i] = ok ? 1 : 0; if (ok && (tiles.g(gy * W + gx) !== T.AIR || (gy >= col[gx] && gy > world.top[gx]))) any++;   // (open sky draws nothing: no picture needed)
     }
     for (j = 0; j < CHS; j++) for (i = 0; i < CHS; i++) if (bk[j * CHS + i]) drawCell(q, x0 + i, y0 + j, (i + CHM) * ts, (j + CHM) * ts, now);
     c.cv = any ? cv : (cvFree(cv), null); c.any = any; c.ok = true;
@@ -18027,10 +18027,10 @@
     decoBackSync(); var chOn = chkFrame(g, X0, X1, Y0, Y1, now);   // CHUNK PAINTING: the still ground in big pieces first
     for (j = Y0 - 1; j <= Y1 + 2; j++) for (i = X0 - 2; i <= X1 + 2; i++) {   // (a little past the edges: trunks, roots and plants reach into the next tile, so nothing pops out before it has left the screen)
       if (i < 0 || i >= W || j < 0 || j >= H) continue;
-      if (chOn && chkSkip(i, j)) { if (SMGEM[tiles[j * W + i]]) chkLive(g, i, j, ox + i * ts, oy + j * ts, now); continue; }
+      if (chOn && chkSkip(i, j)) { if (SMGEM[tiles.g(j * W + i)]) chkLive(g, i, j, ox + i * ts, oy + j * ts, now); continue; }
       var pfk = AFX.place[j * W + i];
       if (pfk) {   // a block you just placed pops in (grows from 70% with a little overshoot)
-        var pk = (performance.now() - pfk) / PLACE_POP, ptd = TILES[tiles[j * W + i]];
+        var pk = (performance.now() - pfk) / PLACE_POP, ptd = TILES[tiles.g(j * W + i)];
         if (pk >= 1 || reduce || !ptd || ptd.light || ptd.glow) delete AFX.place[j * W + i];
         else { var sc = 0.7 + 0.3 * (1 + 2.2 * Math.pow(pk - 1, 3) + 1.2 * Math.pow(pk - 1, 2)); g.save(); g.translate(ox + i * ts + ts / 2, oy + (j + 1) * ts); g.scale(sc, sc); drawCell(g, i, j, -ts / 2, -ts, now); g.restore(); continue; }
       }
@@ -18413,19 +18413,19 @@
     for (var yy = 0; yy < P.h; yy++) for (var xx = 0; xx < P.w; xx++) {
       var k = yy * P.w + xx, x = P.x0 + xx, y = P.y0 + yy, gi = y * W + x, id = P.t[k], wv = P.wl[k];
       if (id) {
-        if (PICT) PICT[gi] = 0;
+        if (PICT) PICT.s(gi, 0);
         if (id === T.LOG || id === T.LEAVES) {   // kept as if you had placed them, so they stay solid and never wither
-          if (tiles[gi] === T.AIR) { tiles[gi] = id; if (id === orig[gi]) delete edits[gi]; else edits[gi] = id; }
+          if (tiles.g(gi) === T.AIR) { tiles.s(gi, id); if (id === orig.g(gi)) delete edits[gi]; else edits[gi] = id; }
           if (id === T.LEAVES) { if (!S.pleaf) S.pleaf = {}; S.pleaf[gi] = 1; }
         } else {
-          var cur = tiles[gi]; orig[gi] = id;
-          if (cur === T.AIR) { tiles[gi] = id; delete edits[gi]; } else if (cur !== id) edits[gi] = cur; else delete edits[gi];   // a block you built in front of it stays yours
+          var cur = tiles.g(gi); orig.s(gi, id);
+          if (cur === T.AIR) { tiles.s(gi, id); delete edits[gi]; } else if (cur !== id) edits[gi] = cur; else delete edits[gi];   // a block you built in front of it stays yours
         }
       }
-      if (wv) { var cw = walls[gi]; worigW[gi] = wv; if (!cw) { walls[gi] = wv; delete wedits[gi]; } else if (cw !== wv) wedits[gi] = cw; else delete wedits[gi]; }
+      if (wv) { var cw = walls.g(gi); worigW.s(gi, wv); if (!cw) { walls.s(gi, wv); delete wedits[gi]; } else if (cw !== wv) wedits[gi] = cw; else delete wedits[gi]; }
     }
-    if (!rmask) rmask = new Uint16Array(W * H);
-    for (yy = 0; yy < P.h; yy++) for (xx = 0; xx < P.w; xx++) { var gi2 = (P.y0 + yy) * W + P.x0 + xx, id2 = P.t[yy * P.w + xx]; if (id2 && TILES[id2].solid && tiles[gi2] === id2) rmask[gi2] = id2; }   // still walk-past (see rmask)
+    if (!rmask) rmask = new Grid(W, H, Uint16Array);
+    for (yy = 0; yy < P.h; yy++) for (xx = 0; xx < P.w; xx++) { var gi2 = (P.y0 + yy) * W + P.x0 + xx, id2 = P.t[yy * P.w + xx]; if (id2 && TILES[id2].solid && tiles.g(gi2) === id2) rmask.s(gi2, id2); }   // still walk-past (see rmask)
     for (var cx = Math.max(0, P.x0 - 1); cx <= Math.min(W - 1, P.x0 + P.w); cx++) recalc(cx);
     q.pic = null; q.razed = 1; if (!S.razed) S.razed = {}; S.razed[q.id] = 1; S.st.razed = (S.st.razed || 0) + 1;
     editN++; wallN++; buildN++; if (typeof M !== "undefined" && M) M.img = null; MAPB = null;
@@ -20601,19 +20601,19 @@
         x = k + gx0; top = col[x]; bi = mc ? 0 : clamp(world.bio[x] | 0, 0, 2);
         for (y = 0; y < h; y++) {
           i = y * W + x; c = mpFog(x, y);
-          if (ex[i]) {
-            id = tiles[i]; if (id === T.AIR && PICT && PICT[i]) id = PICT[i]; td = TILES[id];
+          if (ex.g(i)) {
+            id = tiles.g(i); if (id === T.AIR && PICT && PICT.g(i)) id = PICT.g(i); td = TILES[id];
             if (id === T.AIR || !td) c = y < top ? sky[mc ? 0 : bi][y] : cav[mc ? 0 : bi];
-            else if (id === T.WATER) { c = lut[id]; up = y > 0 ? tiles[i - W] : 0; c = up === T.AIR ? mpLit(c, 0.3) : mpMul(c, Math.max(0.6, 1 - Math.max(0, y - top) * 0.004)); }
+            else if (id === T.WATER) { c = lut[id]; up = y > 0 ? tiles.g(i - W) : 0; c = up === T.AIR ? mpLit(c, 0.3) : mpMul(c, Math.max(0.6, 1 - Math.max(0, y - top) * 0.004)); }
             else if (!td.solid) c = mpMix(y < top ? sky[bi][y] : cav[bi], lut[id] === undefined ? MP_ROCK : lut[id], 0.55);
             else {
               c = lut[id]; if (c === undefined) c = MP_ROCK; var d = y - top, br = mc ? MP_BROCK_MC : MP_BROCK[bi];
               if (td.kind === "ore") c = mpMix(c, br, 0.6); else if (d > 3) c = mpMix(c, br, 0.32);   // underground rock leans to its land's own tone, ores just a hint, so the map reads cleanly
               if (d > 2) c = mpMul(c, Math.max(0.52, 1 - (d - 2) * 0.0042));
-              up = y > 0 ? TILES[tiles[i - W]] : null; dn = y < H - 1 ? TILES[tiles[i + W]] : null;
+              up = y > 0 ? TILES[tiles.g(i - W)] : null; dn = y < H - 1 ? TILES[tiles.g(i + W)] : null;
               if (!up || !up.solid) c = mpLit(c, 0.26); else if (!dn || !dn.solid) c = mpMul(c, 0.7);
             }
-          } else if ((x > 0 && ex[i - 1]) || (x < W - 1 && ex[i + 1]) || (y > 0 && ex[i - W]) || (y < H - 1 && ex[i + W])) c = MP_FOG2;   // a soft rim where the fog meets what you have seen
+          } else if ((x > 0 && ex.g(i - 1)) || (x < W - 1 && ex.g(i + 1)) || (y > 0 && ex.g(i - W)) || (y < H - 1 && ex.g(i + W))) c = MP_FOG2;   // a soft rim where the fog meets what you have seen
           u[y * w + k] = c;
         }
       }
@@ -20788,7 +20788,7 @@
       var bt0 = BX.n.toUpperCase(), bw0 = g.measureText(bt0).width + 26, bxc = (l + r) / 2;
       if (r - l >= bw0 + 20 && bxc + bw0 / 2 > -PD && bxc - bw0 / 2 < M.cw + PD) { var bx = bxc, bt = bt0, bw = bw0, tx0 = Math.floor((z[0] + z[1]) / 2), topY = 1e9; for (var tq = tx0 - 24; tq <= tx0 + 24; tq += 2) topY = Math.min(topY, col[clamp(tq, 0, W - 1)]); var by = Math.max(ribY, m2s(0, topY - 9)[1] - 16); if (bx - bw / 2 - 10 < lastR) { g.globalAlpha = 1; return; } lastR = bx + bw / 2 + 10; g.globalAlpha = 0.92; g.fillStyle = "#0b1a15"; g.strokeStyle = BX.c; g.lineWidth = 2; g.beginPath(); g.moveTo(bx - bw / 2 - 8, by - 12); g.lineTo(bx + bw / 2 + 8, by - 12); g.lineTo(bx + bw / 2, by + 1); g.lineTo(bx + bw / 2 + 8, by + 13); g.lineTo(bx - bw / 2 - 8, by + 13); g.lineTo(bx - bw / 2, by + 1); g.closePath(); g.fill(); g.stroke(); g.fillStyle = BX.c; g.fillText(bt, bx, by + 6); } g.globalAlpha = 1;
     });
-    (world.structs || []).forEach(function (s2) { if (s2.razed || !ex[s2.doorY * W + s2.dx]) return; var q = m2s(s2.x0 + s2.w / 2, s2.gy - 1); g.fillStyle = "#e8d9a8"; g.strokeStyle = "#050607"; g.lineWidth = 1.6; g.fillRect(q[0] - 4, q[1] - 4, 8, 7); g.strokeRect(q[0] - 4, q[1] - 4, 8, 7); });
+    (world.structs || []).forEach(function (s2) { if (s2.razed || !ex.g(s2.doorY * W + s2.dx)) return; var q = m2s(s2.x0 + s2.w / 2, s2.gy - 1); g.fillStyle = "#e8d9a8"; g.strokeStyle = "#050607"; g.lineWidth = 1.6; g.fillRect(q[0] - 4, q[1] - 4, 8, 7); g.strokeRect(q[0] - 4, q[1] - 4, 8, 7); });
     (world.marks || []).forEach(function (m) { if (!S.vis["m" + m.x]) return; var q = m2s(m.x + 0.5, m.y + 0.5); g.fillStyle = MARKC[m.k] || "#f2c14e"; g.strokeStyle = "#050607"; g.lineWidth = 1.6; g.beginPath(); g.moveTo(q[0] - 3, q[1] + 5); g.lineTo(q[0] - 3, q[1] - 7); g.lineTo(q[0] + 5, q[1] - 4); g.lineTo(q[0] - 3, q[1] - 1); g.closePath(); g.fill(); g.stroke(); });   // LANDMARKS: a little flag
     (world.holes || []).forEach(function (hh) { var q = m2s(hh.x + 0.5, hh.y); g.fillStyle = "#050607"; g.strokeStyle = "#f2c14e"; g.lineWidth = 1.8; g.beginPath(); g.arc(q[0], q[1], 4.6, 0, 6.2832); g.fill(); g.stroke(); g.font = signFont(12); g.textAlign = "center"; g.lineWidth = 3; g.strokeStyle = "rgba(0,0,0,.75)"; if (s >= 1.5) { g.strokeText("Mine", q[0], q[1] - 8); g.fillStyle = "#f2c14e"; g.fillText("Mine", q[0], q[1] - 8); } });   // THE MINE: always on the map, so you can find your way back
     (S.ways || []).forEach(function (w) { var q = m2s(w.x + 0.5, w.y + 0.5), r = 5; g.fillStyle = "#4ee6d0"; g.strokeStyle = "#06100d"; g.lineWidth = 1.6; g.beginPath(); g.moveTo(q[0], q[1] - r * 1.3); g.lineTo(q[0] + r, q[1]); g.lineTo(q[0], q[1] + r * 1.3); g.lineTo(q[0] - r, q[1]); g.closePath(); g.fill(); g.stroke(); g.font = signFont(11); g.textAlign = "center"; g.lineWidth = 3; g.strokeStyle = "rgba(0,0,0,.7)"; g.strokeText(w.n, q[0], q[1] - 10); g.fillStyle = "#d4fff6"; g.fillText(w.n, q[0], q[1] - 10); });   // WAYSTONES
@@ -20929,8 +20929,8 @@
   }
   function mapSeenWidth() {   // how wide the explored stretch of surface around you is (columns), to pick a sensible zoom
     if (!ex || !col) return 300; var px = clamp(Math.floor(p.x), 0, W - 1), a = px, z = px, gap = 0, x;
-    for (x = px; x >= 0 && gap < 24; x--) { var y = clamp(col[x], 0, H - 1); if (ex[y * W + x]) { a = x; gap = 0; } else gap++; }
-    gap = 0; for (x = px; x < W && gap < 24; x++) { var y2 = clamp(col[x], 0, H - 1); if (ex[y2 * W + x]) { z = x; gap = 0; } else gap++; }
+    for (x = px; x >= 0 && gap < 24; x--) { var y = clamp(col[x], 0, H - 1); if (ex.g(y * W + x)) { a = x; gap = 0; } else gap++; }
+    gap = 0; for (x = px; x < W && gap < 24; x++) { var y2 = clamp(col[x], 0, H - 1); if (ex.g(y2 * W + x)) { z = x; gap = 0; } else gap++; }
     return Math.max(1, z - a + 1);
   }
   function closeMap() { mapPopClose(); mapOpen = false; panelOpen = false; $("sbxMapV").hidden = true; stageEl.classList.remove("panel"); M.pts = {}; M.drag = M.pinch = null; $("sbxMenuBtn").focus({ preventScroll: true }); }
@@ -21901,7 +21901,7 @@
   function tickFlood() {
     if (!world || !S || !S.flood || !S.flood.length || cave || (typeof OCS !== "undefined" && OCS) || (typeof HOME !== "undefined" && HOME) || (MP.on && MP.role === "guest")) return;
     S.flood.forEach(function (q) { var qx = q[0], qy = q[1];
-      for (var yy = qy - 2; yy <= qy + 1; yy++) for (var xx = qx - 10; xx <= qx + 10; xx++) { if (xx < 1 || xx >= W - 1 || yy < 1 || yy >= H - 1) continue; var j = yy * W + xx; if (tiles[j] === T.WATER && orig[j] !== T.WATER) setT(xx, yy, T.AIR); } });
+      for (var yy = qy - 2; yy <= qy + 1; yy++) for (var xx = qx - 10; xx <= qx + 10; xx++) { if (xx < 1 || xx >= W - 1 || yy < 1 || yy >= H - 1) continue; var j = yy * W + xx; if (tiles.g(j) === T.WATER && orig.g(j) !== T.WATER) setT(xx, yy, T.AIR); } });
     S.flood = [];
   }
 
@@ -26570,7 +26570,7 @@
       var id = get(x, y), td = TILES[id];
       if (td.kind === "door" || td.hatch) { door++; if ((td.light || 0) > 0) lights++; continue; }
       if (td.solid) { if ((td.light || 0) > 0) lights++; continue; }
-      R.push(key); if (walls[y * W + x]) wallN++; if ((td.light || 0) > 0) lights++;
+      R.push(key); if (walls.g(y * W + x)) wallN++; if ((td.light || 0) > 0) lights++;
       if (id !== T.AIR && !(x === sx && y === sy) && td.kind !== "ladder" && !isLiq(id)) { dec[td.kind || td.n] = 1; decN++; }
       if (R.length > 220) { open = true; break; }
       Q.push([x + 1, y], [x - 1, y], [x, y + 1], [x, y - 1]); }
@@ -26689,7 +26689,7 @@
   function til2it() { if (TIL2IT) return TIL2IT; TIL2IT = {}; ORDER.forEach(function (k) { var it = ITEMS[k]; if (!it || it.seed) return; if (it.tile !== undefined && TIL2IT[it.tile] === undefined) TIL2IT[it.tile] = k; if (it.wall !== undefined) TIL2IT["w" + it.wall] = k; }); return TIL2IT; }
   function bpSave(a, b) {
     var x0 = Math.min(a[0], b[0]), x1 = Math.max(a[0], b[0]), y0 = Math.min(a[1], b[1]), y1 = Math.max(a[1], b[1]); if (x1 - x0 > 23 || y1 - y0 > 15) { nag("A blueprint can be at most 24 x 16 tiles."); return; }
-    var M = til2it(), C = [], n = 0; for (var y = y0; y <= y1; y++) for (var x = x0; x <= x1; x++) { var id = get(x, y), wl = walls[y * W + x], td = TILES[id], t2 = (M[id] !== undefined || (td.kind === "door" && id !== T.AIR)) ? id : 0, w2 = wl && M["w" + wl] ? wl : 0; C.push([t2, w2]); if (t2 || w2) n++; }
+    var M = til2it(), C = [], n = 0; for (var y = y0; y <= y1; y++) for (var x = x0; x <= x1; x++) { var id = get(x, y), wl = walls.g(y * W + x), td = TILES[id], t2 = (M[id] !== undefined || (td.kind === "door" && id !== T.AIR)) ? id : 0, w2 = wl && M["w" + wl] ? wl : 0; C.push([t2, w2]); if (t2 || w2) n++; }
     if (!n) { nag("There's nothing built there to save."); return; }
     var L = p5().bpL; if (L.length >= 12) L.shift(); L.push({ n: "Build " + ((S.st.bpsaved || 0) + 1), w: x1 - x0 + 1, h: y1 - y0 + 1, c: C }); S.st.bpsaved = (S.st.bpsaved || 0) + 1;
     popup("Blueprint saved", L[L.length - 1].n + " (" + (x1 - x0 + 1) + " x " + (y1 - y0 + 1) + "). Tap Blueprints to place a copy.", "#4a8ae8", "▦"); snd("open", "Rare"); save();
@@ -26704,7 +26704,7 @@
   function bpPlace(tx, ty) {
     var B = p5().bpL[BP.pl]; BP.pl = -1; if (!B) return; var M = til2it(), put = 0, skip = 0;
     for (var j = 0; j < B.h; j++) for (var i = 0; i < B.w; i++) { var q = B.c[j * B.w + i], x = tx + i, y = ty + j; if (x < 1 || y < 1 || x >= W - 1 || y >= H - 1) continue;
-      if (q[1] && !walls[y * W + x]) { var wk = M["w" + q[1]]; if (wk && S.inv[wk] > 0) { setWall(x, y, q[1]); S.inv[wk]--; if (S.inv[wk] <= 0) delete S.inv[wk]; put++; } else skip++; }
+      if (q[1] && !walls.g(y * W + x)) { var wk = M["w" + q[1]]; if (wk && S.inv[wk] > 0) { setWall(x, y, q[1]); S.inv[wk]--; if (S.inv[wk] <= 0) delete S.inv[wk]; put++; } else skip++; }
       if (q[0] && get(x, y) === T.AIR) { var ik = M[q[0]]; if (ik === undefined && TILES[q[0]].kind === "door") { setT(x, y, q[0]); continue; } if (ik && S.inv[ik] > 0) { setT(x, y, q[0]); if (TILES[q[0]].solid && S.shape) S.shape[y * W + x] = 0; S.inv[ik]--; if (S.inv[ik] <= 0) delete S.inv[ik]; put++; } else skip++; } }
     if (sel && !(S.inv[sel] > 0) && sel !== "blueprint") { sel = "pick"; bare = true; } reslot(); hbDirty = true; S.st.placed += put; S.st.bpplaced = (S.st.bpplaced || 0) + 1;
     chips(tx + B.w / 2, ty + B.h / 2, "#4a8ae8", 30, 9); thud(260, 0.08); toast("Placed " + put + " pieces" + (skip ? ", " + skip + " skipped (not enough in your bag)" : "") + ".", "#4a8ae8"); checkGoals(); save();
@@ -27848,7 +27848,7 @@ var ATK = { on: false, mine: false };
     return out.filter(function (m, i) { return out.indexOf(m) === i; });
   }
   window.__W = { cvStepDown: cvStepDown, enterHome: typeof enterHome !== "undefined" ? enterHome : null, leaveHome: typeof leaveHome !== "undefined" ? leaveHome : null, clean: clean, openStall: openStall, homeS: homeS, flPut: flPut, isPlantT: isPlantT, craftSort: craftSort, trySpecial: trySpecial, get panelOpen() { return panelOpen; }, FOC: FOC, DODGE: DODGE, rarItem: rarItem, rarRec: rarRec, get RECIPES() { return RECIPES; }, openStn: openStn, get drops() { return drops; }, place: place, nearFree: nearFree, get p2() { return p; }, grassGrow: grassGrow, razeStruct: razeStruct, blocks: blocks, setT: setT, breakTile: breakTile, save: save, get rmask() { return rmask; }, get world() { return world; }, get S() { return S; }, get: get, get col() { return col; }, W: W, H: H, T: T, get tiles() { return tiles; }, p: p, cam: cam, TILES: TILES, edit: function () { editN++; }, OPT: OPT, setSel: function (v) { sel = v; bare = false; hbDirty = true; }, get ox() { return ox; }, get oy() { return oy; }, get ts() { return ts; }, setT: setT, recalc: recalc, save: save, get sel() { return sel; }, shapeCount: shapeCount, autoShape: function (x, y) { return autoShape(y * W + x); }, FOOT: FOOT, NLOG: NLOG, pawChop: function (x, y) { return pawChop(get(x, y), x, y); }, pcol: function () { return pcol(); }, place: function (x, y, k) { place(x, y, k); }, tileItem: function (id) { for (var k in ITEMS) if (ITEMS[k].tile === id) return k; return null; }, pscr: function () { return [ox + p.x * ts, oy + p.y * ts, ts]; }, swo: function () { return [SWO.arc.length, SWO.th, heldAmt, toolPose().kind, toolPose().has, toolPose().phi]; }, enterBuilding: function (s) { enterBuilding(s); }, structs: function () { return world.structs; }, showTip: function (m) { showTip(m, "", "#f2c14e"); }, toast: function (m) { toast(m); }, step: function (h, d, j) { step(h, d, j); }, get orig() { return orig; } };
-  window.__sbx = { chest: function (x, y) { return openChest(x, y); }, stn: function (k) { var bx = Math.floor(p.x) + 1, by = Math.floor(p.y); setT(bx, by, T.BENCH !== undefined && k === "bench" ? T.BENCH : get(bx, by)); openStn(k, bx, by); }, fell: function (x, y) { fellTree(x, y); }, T: T, place: function (x, y, it) { place(x, y, it); }, tileAt: function (x, y) { return get(x, y); }, rarItem: function (id) { return rarItem(id); }, rarOf: function (id) { var r = RECIPES.filter(function (q) { return q.id === id; })[0]; return r ? rarRec(r) : null; }, mc: { ls: function (k, o) { loadScreen(k, function () {}, o || { min: 3000 }); }, on: inMC, enter: function () { malcS().warned = 1; mcEnter(); }, leave: mcLeave, S: function () { return malcS(); }, gate: mcGate, gy: mcGateY, world: function () { return world; }, enemies: function () { return enemies; }, hp: function (v) { if (v !== undefined) hp = v; return hp; }, hit: function (k, d) { var e = enemies.find(function (q) { return q.k === k && !q.def; }); if (e) damageEnemy(e, d, 1); return e ? e.hp : null; }, brk: function (dx, dy) { var x = Math.floor(p.x) + dx, y = Math.floor(p.y) + dy, id = get(x, y); breakTile(x, y); return TILES[id].n; }, drops: function () { return drops.map(function (d) { return d.k || d.item || d.id; }); }, find: function (n) { var tid = T[n]; for (var r = 1; r < 60; r++) for (var dx = -r; dx <= r; dx++) for (var dy = -12; dy <= 12; dy++) if (get(Math.floor(p.x) + dx, Math.floor(p.y) + dy) === tid) return [dx, dy]; return null; } }, lair: { capt: function () { return cave && cave.F && cave.F.mobs && cave.F.mobs.filter(function (m) { return m.k === "captain"; })[0]; }, hit: hitCaptain, rig: rigAct, btn: rigBtn, fix: rigFix, count: rigCount, total: rigTotal, cap: rigCap, S: function () { return lairS(); } }, audit: auditGame, birds: { w: function () { return wbirds; }, pet: function () { return pet; }, feed: function (b) { feedBird(b); }, drops: function () { return drops; }, drop: function (k, n, x, y) { spawnDrop(k, n, x, y); } }, lore: { pick: function (a, g) { return lorePick(a, g); }, find: function (id, o) { loreFind(LPG[id], o); }, open: function (id) { openLore(id); }, note: function (x, y) { return readNote(x, y); }, F: function () { return cave && cave.F; } }, openPanel: function (t) { openPanel(t); }, growWorld: function (f) { return growWorld(f); }, amb: AMB, tickAmb: function (dt, n) { for (var k = 0; k < (n || 1); k++) tickAmbient(dt); return { reduce: reduce, cave: !!cave, lowq: lowq, surf: p.y < pcol() + 8, col: pcol() }; }, recStatus: function (id) { var r = craftAll().filter(function (q) { return q.id === id; })[0]; return r ? recStatus(r) : null; }, nearBench: function () { return nearBench(); }, MP: MP, canPlace: function (x, y, k) { QUIET = 1; var r = canPlace(x, y, k); QUIET = 0; return r; }, place: function (x, y, k) { place(x, y, k); }, flipDecor: function (x, y) { return flipDecor(x, y); }, breakTile: function (x, y) { breakTile(x, y); }, icon: function (k) { return icon(k); }, drink: function (k) { drink(k); }, wDmg: function () { return wDmg(); }, charms: CHARMS, flow: { lv: function (x, y) { return lvAt(y * W + x); }, q: function () { return FLQ.length; }, tick: function (n) { for (var k = 0; k < n; k++) { flAcc = FLOW.dt; tickFlow(0); } } }, setWall: setWall, get titleOpen() { return titleOpen; }, openTitle: openTitle, closeTitle: closeTitle, cam: cam, exAll: function () { ex.fill(1); }, hurt: function (n, w) { hurt(n, w); }, get hp() { return hp; }, craftAll: function () { return craftAll(); }, BENCH_LV: BENCH_LV, PICKS: PICKS, dropQty: dropQty, openJewel: openJewel, wDmg: function () { return wDmg(); }, armRed: function () { return armRed(); }, openGate: openGate, gateAct: gateAct, gates: function () { return S.gates; }, curCh: function () { return curCh(); }, place: place, breakTile: breakTile, tickTraps: tickTraps, emptyTrap: emptyTrap, sprinkled: sprinkled, trapNear: trapNear, plantCrop: plantCrop, enterBuilding: enterBuilding, structNear: structNear, structs: function () { return world.structs; }, get cave() { return cave; }, cp: cp, enterCave: enterCave, useLadder: useLadder, holeNear: holeNear, ladderNear: ladderNear, leaveCaveNow: leaveCaveNow, setFloor: setFloor, get trans() { return trans; }, blocks: blocks, worlds: function () { return wIdx; }, createWorld: createWorld, switchWorld: switchWorld, deleteWorld: deleteWorld, openWorlds: openWorlds, save: save, enemies: enemies, newEnemy: newEnemy, spawnBat: spawnBat, trySleep: trySleep, wear: wear, durOf: durOf, repair: repair, openChest: openChest, chestNear: chestNear, toggleDoor: toggleDoor, doorNear: doorNear, bedNear: bedNear, spawnEnemy: spawnEnemy, strike: strike, ENEMY: ENEMY, ITEMS: ITEMS, KSTAT: KSTAT, AMB: AMB, wbirds: function () { return wbirds; }, pl: function () { return cave || HOME ? [cp.x, cp.y] : [p.x, p.y]; }, caveF: function () { return cave && cave.F; }, craft: function (id) { craft(id); }, slots: function () { return S.slots; }, over: function () { return S.over || {}; }, setSlot: function (i, k, n) { S.slots[i] = k ? { k: k, n: n } : null; S.inv = totals(S.slots); hbDirty = true; }, toast: function (m, c) { return toast(m, c); }, nag: function (m) { nagT = 0; nag(m); }, inv: function (k, n) { S.inv[k] = n; hbDirty = true; }, selIt: function (k) { choose(k); hbDirty = true; return sel; }, wallAt: function (x, y) { return walls[y * W + x]; }, spots: function () { return { mine: world.holes && world.holes[0], gate: FGLAST, home: (typeof HOMEP !== "undefined" ? HOMEP : null) }; }, scr: function (x, y) { return [ox + x * ts, oy + y * ts, ts]; }, setHp: function (v) { hp = v; }, WEAPONS: WEAPONS, bar: function () { return barEntries().map(function (e) { return e.id; }).filter(Boolean); }, room: room, reslot: reslot, view: function () { return { ts: ts, ox: ox, oy: oy }; }, get S() { return S; }, p: p, get: get, tiles: function () { return tiles; }, world: function () { return world; }, choose: choose, craft: craft, openPanel: openPanel, give: give, reveal: reveal, trail: function () { return S.trail; }, TRAIL: TRAIL, checkTrail: checkTrail, farmStep: farmStep, eat: eat, clean: clean, wilds: function () { return wilds; }, newAnimal: newAnimal, useAnimal: useAnimal, get fishing() { return fishing; }, standNear: standNear, openStand: openStand, flies: function () { return flies; }, aim: aim, get sel() { return sel; }, get bare() { return bare; }, npc: npc, openStn: openStn, MP: MP, mpHost: mpHost, mpJoin: mpJoin, mpLeave: mpLeave, openMPV: openMPV, openChat: openChat, CHARMS: CHARMS, wearCharm: wearCharm, hasCharm: hasCharm, WX: WX, wxNew: wxNew, wxLabel: wxLabel, CLOUD: CLOUD, cloudPush: cloudPush, cloudPull: cloudPull, wIdx: function () { return wIdx; }, curId: function () { return curId; }, MUS: MUS, MINI: MINI, musicMood: musicMood, rollBounties: rollBounties, btyReady: btyReady, claimBty: claimBty, buyShop: buyShop, BSHOP: BSHOP, renderTalk: renderTalk, activeBoss: activeBoss, newBoss: newBoss, bshots: bshots, BOSS: BOSS, useSummon: useSummon, talkCroaker: talkCroaker, giftsWaiting: giftsWaiting, MAIN: MAIN, SIDE: SIDE, showStory: showStory, get qi() { return S.qi; }, colAt: function (x) { return col[x]; }, setT: setT };
+  window.__sbx = { chest: function (x, y) { return openChest(x, y); }, stn: function (k) { var bx = Math.floor(p.x) + 1, by = Math.floor(p.y); setT(bx, by, T.BENCH !== undefined && k === "bench" ? T.BENCH : get(bx, by)); openStn(k, bx, by); }, fell: function (x, y) { fellTree(x, y); }, T: T, place: function (x, y, it) { place(x, y, it); }, tileAt: function (x, y) { return get(x, y); }, rarItem: function (id) { return rarItem(id); }, rarOf: function (id) { var r = RECIPES.filter(function (q) { return q.id === id; })[0]; return r ? rarRec(r) : null; }, mc: { ls: function (k, o) { loadScreen(k, function () {}, o || { min: 3000 }); }, on: inMC, enter: function () { malcS().warned = 1; mcEnter(); }, leave: mcLeave, S: function () { return malcS(); }, gate: mcGate, gy: mcGateY, world: function () { return world; }, enemies: function () { return enemies; }, hp: function (v) { if (v !== undefined) hp = v; return hp; }, hit: function (k, d) { var e = enemies.find(function (q) { return q.k === k && !q.def; }); if (e) damageEnemy(e, d, 1); return e ? e.hp : null; }, brk: function (dx, dy) { var x = Math.floor(p.x) + dx, y = Math.floor(p.y) + dy, id = get(x, y); breakTile(x, y); return TILES[id].n; }, drops: function () { return drops.map(function (d) { return d.k || d.item || d.id; }); }, find: function (n) { var tid = T[n]; for (var r = 1; r < 60; r++) for (var dx = -r; dx <= r; dx++) for (var dy = -12; dy <= 12; dy++) if (get(Math.floor(p.x) + dx, Math.floor(p.y) + dy) === tid) return [dx, dy]; return null; } }, lair: { capt: function () { return cave && cave.F && cave.F.mobs && cave.F.mobs.filter(function (m) { return m.k === "captain"; })[0]; }, hit: hitCaptain, rig: rigAct, btn: rigBtn, fix: rigFix, count: rigCount, total: rigTotal, cap: rigCap, S: function () { return lairS(); } }, audit: auditGame, birds: { w: function () { return wbirds; }, pet: function () { return pet; }, feed: function (b) { feedBird(b); }, drops: function () { return drops; }, drop: function (k, n, x, y) { spawnDrop(k, n, x, y); } }, lore: { pick: function (a, g) { return lorePick(a, g); }, find: function (id, o) { loreFind(LPG[id], o); }, open: function (id) { openLore(id); }, note: function (x, y) { return readNote(x, y); }, F: function () { return cave && cave.F; } }, openPanel: function (t) { openPanel(t); }, growWorld: function (f) { return growWorld(f); }, amb: AMB, tickAmb: function (dt, n) { for (var k = 0; k < (n || 1); k++) tickAmbient(dt); return { reduce: reduce, cave: !!cave, lowq: lowq, surf: p.y < pcol() + 8, col: pcol() }; }, recStatus: function (id) { var r = craftAll().filter(function (q) { return q.id === id; })[0]; return r ? recStatus(r) : null; }, nearBench: function () { return nearBench(); }, MP: MP, canPlace: function (x, y, k) { QUIET = 1; var r = canPlace(x, y, k); QUIET = 0; return r; }, place: function (x, y, k) { place(x, y, k); }, flipDecor: function (x, y) { return flipDecor(x, y); }, breakTile: function (x, y) { breakTile(x, y); }, icon: function (k) { return icon(k); }, drink: function (k) { drink(k); }, wDmg: function () { return wDmg(); }, charms: CHARMS, flow: { lv: function (x, y) { return lvAt(y * W + x); }, q: function () { return FLQ.length; }, tick: function (n) { for (var k = 0; k < n; k++) { flAcc = FLOW.dt; tickFlow(0); } } }, setWall: setWall, get titleOpen() { return titleOpen; }, openTitle: openTitle, closeTitle: closeTitle, cam: cam, exAll: function () { ex.fill(1); }, hurt: function (n, w) { hurt(n, w); }, get hp() { return hp; }, craftAll: function () { return craftAll(); }, BENCH_LV: BENCH_LV, PICKS: PICKS, dropQty: dropQty, openJewel: openJewel, wDmg: function () { return wDmg(); }, armRed: function () { return armRed(); }, openGate: openGate, gateAct: gateAct, gates: function () { return S.gates; }, curCh: function () { return curCh(); }, place: place, breakTile: breakTile, tickTraps: tickTraps, emptyTrap: emptyTrap, sprinkled: sprinkled, trapNear: trapNear, plantCrop: plantCrop, enterBuilding: enterBuilding, structNear: structNear, structs: function () { return world.structs; }, get cave() { return cave; }, cp: cp, enterCave: enterCave, useLadder: useLadder, holeNear: holeNear, ladderNear: ladderNear, leaveCaveNow: leaveCaveNow, setFloor: setFloor, get trans() { return trans; }, blocks: blocks, worlds: function () { return wIdx; }, createWorld: createWorld, switchWorld: switchWorld, deleteWorld: deleteWorld, openWorlds: openWorlds, save: save, enemies: enemies, newEnemy: newEnemy, spawnBat: spawnBat, trySleep: trySleep, wear: wear, durOf: durOf, repair: repair, openChest: openChest, chestNear: chestNear, toggleDoor: toggleDoor, doorNear: doorNear, bedNear: bedNear, spawnEnemy: spawnEnemy, strike: strike, ENEMY: ENEMY, ITEMS: ITEMS, KSTAT: KSTAT, AMB: AMB, wbirds: function () { return wbirds; }, pl: function () { return cave || HOME ? [cp.x, cp.y] : [p.x, p.y]; }, caveF: function () { return cave && cave.F; }, craft: function (id) { craft(id); }, slots: function () { return S.slots; }, over: function () { return S.over || {}; }, setSlot: function (i, k, n) { S.slots[i] = k ? { k: k, n: n } : null; S.inv = totals(S.slots); hbDirty = true; }, toast: function (m, c) { return toast(m, c); }, nag: function (m) { nagT = 0; nag(m); }, inv: function (k, n) { S.inv[k] = n; hbDirty = true; }, selIt: function (k) { choose(k); hbDirty = true; return sel; }, wallAt: function (x, y) { return walls.g(y * W + x); }, spots: function () { return { mine: world.holes && world.holes[0], gate: FGLAST, home: (typeof HOMEP !== "undefined" ? HOMEP : null) }; }, scr: function (x, y) { return [ox + x * ts, oy + y * ts, ts]; }, setHp: function (v) { hp = v; }, WEAPONS: WEAPONS, bar: function () { return barEntries().map(function (e) { return e.id; }).filter(Boolean); }, room: room, reslot: reslot, view: function () { return { ts: ts, ox: ox, oy: oy }; }, get S() { return S; }, p: p, get: get, tiles: function () { return tiles; }, world: function () { return world; }, choose: choose, craft: craft, openPanel: openPanel, give: give, reveal: reveal, trail: function () { return S.trail; }, TRAIL: TRAIL, checkTrail: checkTrail, farmStep: farmStep, eat: eat, clean: clean, wilds: function () { return wilds; }, newAnimal: newAnimal, useAnimal: useAnimal, get fishing() { return fishing; }, standNear: standNear, openStand: openStand, flies: function () { return flies; }, aim: aim, get sel() { return sel; }, get bare() { return bare; }, npc: npc, openStn: openStn, MP: MP, mpHost: mpHost, mpJoin: mpJoin, mpLeave: mpLeave, openMPV: openMPV, openChat: openChat, CHARMS: CHARMS, wearCharm: wearCharm, hasCharm: hasCharm, WX: WX, wxNew: wxNew, wxLabel: wxLabel, CLOUD: CLOUD, cloudPush: cloudPush, cloudPull: cloudPull, wIdx: function () { return wIdx; }, curId: function () { return curId; }, MUS: MUS, MINI: MINI, musicMood: musicMood, rollBounties: rollBounties, btyReady: btyReady, claimBty: claimBty, buyShop: buyShop, BSHOP: BSHOP, renderTalk: renderTalk, activeBoss: activeBoss, newBoss: newBoss, bshots: bshots, BOSS: BOSS, useSummon: useSummon, talkCroaker: talkCroaker, giftsWaiting: giftsWaiting, MAIN: MAIN, SIDE: SIDE, showStory: showStory, get qi() { return S.qi; }, colAt: function (x) { return col[x]; }, setT: setT };
   window.__sbx.star = { launch: launchFaller, impact: starImpact, fallers: fallers, tick: tickStars, get shower() { return SHOWER; }, set shower(v) { SHOWER = v; } };
   window.__sbx.jb = { JB: JB, SONGS: SONGS, play: jbPlay, stop: jbStop, list: jbList, tick: tickJuke };
   window.__sbx.way = { open: openWay, act: wayAct, list: wayList, dests: function () { return wayDst; }, get warp() { return warp; } };
@@ -29865,7 +29865,7 @@ var ATK = { on: false, mine: false };
   window.__sbxIcon = icon; window.__sbx.cc = function (f) { ccOpen(!!f); }; window.__sbx.ccTab = function (t) { CC.tab = t; ccRender(); }; window.__sbx.ccSet = function (k, v) { CC.d[k] = v; ccRender(); }; window.__sbx.ccDone = function () { ccClose(true); };
   window.__sbx.dev = { on: DEVON, open: devOpen, act: dmAct, A: DEVA, L: devTabList, tp: function (x, y) { devTp(x, y); }, mineInfo: function () { if (!cave || !cave.F) return null; var F = cave.F, n = 0, first = -1; for (var i = 0; i < F.node.length; i++) if (F.node[i]) { n++; if (first < 0) first = i; } return { f: cave.f, run: cave.run, n: n, first: first, bottom: !!F.bottom, hoard: F.hoard, down: F.down }; }, mineZap: function (i) { cave.F.node[i] = 0; }, leave: function () { leaveCaveNow(); }, camp: function () { return campPieces(); }, campFits: function (k, x) { var q = campPieces().find(function (o) { return o.k === k; }); return q ? campFits(q, x) : false; } };
   window.__sbx.ess = { get v() { return S.ess | 0; }, drop: function (x, y, n) { essDrop(x, y, n); }, orbs: function () { return ORBS.length; }, lv: function () { return essLevel(S.ess | 0); }, tgt: function () { return essTgt(); }, vox: function (k, ev) { return vxPlay(k, ev || "i", 0, 0, 0, 0, true); }, kinds: function () { return Object.keys(KVOX); }, cx: function (s2, sel) { cxOpen(s2, sel); }, cxData: function () { return cxBuild(); }, cxAct: function (a) { cxAct(a); }, spr: function (i) { return orbSprite(i); } };
-  window.__sbx.ui = {hold: function (k, a, ph) { sel = k; bare = false; heldAmt = a; heldPh = ph; }, joy: function (x, y) { joy.x = x; joy.y = y; }, aiOpen: function () { try { return aiOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, altarOpen: function () { try { return altarOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, banOpen: function () { try { return banOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, bankOpen: function () { try { return bankOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, bpOpen: function () { try { return bpOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, btyOpen: function () { try { return btyOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, cardsOpen: function () { try { return cardsOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, carveOpen: function () { try { return carveOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, ccOpen: function () { try { return ccOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, cgOpen: function () { try { return cgOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, cmdOpen: function () { try { return cmdOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, devOpen: function () { try { return devOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, dinOpen: function () { try { return dinOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, festOpen: function () { try { return festOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, flOpen: function () { try { return flOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, heartOpen: function () { try { return heartOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, houseOpen: function () { try { return houseOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, mailOpen: function () { try { return mailOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, merOpen: function () { try { return merOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, moltOpen: function () { try { return moltOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, museumOpen: function () { try { return museumOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, nbOpen: function () { try { return nbOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, quakeOpen: function () { try { return quakeOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, radioOpen: function () { try { return radioOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, sideOpen: function () { try { return sideOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, skillOpen: function () { try { return skillOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, smOpen: function () { try { return smOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, taleOpen: function () { try { return taleOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, terrOpen: function () { try { return terrOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, vaultOpen: function () { try { return vaultOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, wardOpen: function () { try { return wardOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, stn: function (k) { var kind = STATIONS[k].kind, id = -1; for (var i in TILES) if (TILES[i] && TILES[i].kind === kind) { id = +i; break; } if (id < 0) return "no tile"; var x = Math.floor(p.x) + 2, y = Math.floor(p.y) - 1; setT(x, y, id); openStn(k, x, y); }, cmd: function () { S.cheats = 1; cmdOpen(); }, iconKind: function (id) { var it = ITEMS[id]; if (!it) return "none"; if (it.tool) return "tool"; if (OCI[id]) return "oci"; if (it.pb || it.qb) return "crop"; if (SPR[id]) return "spr"; if (it.mat) return "mat"; if (it.frag) return "frag"; if (it.gem) return "gem"; if (it.tile != null) return "tile"; return "other"; }, items: function () { return Object.keys(ITEMS); }, camp: function () { var c = campSpots(); return { pier: c.pier, farm: c.farm, spawn: Math.floor(world.spawn.x), mine: world.holes && world.holes[0] ? world.holes[0].x : null, mail: mailSpot(), fg: S.campfg, fgTile: c.farm >= 0 ? get(c.farm, col[c.farm] - 1) === T.X_farmgate : false }; }, tp: function (x) { dmTp(x + 0.5, null, "test"); }, put: function (dx, dy, item) { var it = ITEMS[item], id = it && it.tile != null ? it.tile : T[item]; var x = Math.floor(p.x) + dx, y = Math.floor(p.y) + dy; setT(x, y, id); return id; }, probe: function (r) { var o = {}, x0 = Math.floor(p.x), y0 = Math.floor(p.y); for (var y = y0 - r; y <= y0 + 2; y++) for (var x = x0 - r; x <= x0 + r; x++) { var id = get(x, y); if (!TILES[id].solid) continue; var k = TILES[id].n + (MATF[id] ? " M" + (MATF[id].see ? "s" : "") : " -") + (smask && smask[y * W + x] ? " S" : "") + (walls[y * W + x] ? " W" : ""); o[k] = (o[k] || 0) + 1; } return o; }, structs: function () { return (world.structs || []).map(function (q) { return { k: q.kind, dx: q.dx, gy: q.gy, x0: q.mx0, x1: q.mx1 }; }); }, picDump: function (dx) { var x = p.x + (dx || 0), out = []; (world.structs || []).forEach(function (q) { var P = q.pic; if (P && x >= P.x0 && x <= P.x0 + P.w) out.push(q.kind + "|" + P.x0 + "|" + P.w + "|" + structCanvas(P).toDataURL()); }); return out; }, slopeTest: function () { for (var d = 0; d < 40; d++) for (var sg = 1; sg >= -1; sg -= 2) { var x = Math.floor(p.x) + sg * d, y = col[x] - 1; if (get(x, y) === T.LOG && TILES[get(x, y + 1)].solid) { setT(x - 1, y + 1, T.AIR); setT(x - 1, y, T.AIR); return x; } } return -1; }, findVar: function (b) { for (var d = 0; d < W; d++) for (var sg = 1; sg >= -1; sg -= 2) { var x = Math.floor(p.x) + sg * d; if (x > 5 && x < W - 5 && world.bio[x] === b && world.sub && world.sub[x] && world.sub[x + 8] && world.bio[x + 8] === b) return x + 4; } return -1; }};   // UI AUDIT: open any window from tests
+  window.__sbx.ui = {hold: function (k, a, ph) { sel = k; bare = false; heldAmt = a; heldPh = ph; }, joy: function (x, y) { joy.x = x; joy.y = y; }, aiOpen: function () { try { return aiOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, altarOpen: function () { try { return altarOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, banOpen: function () { try { return banOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, bankOpen: function () { try { return bankOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, bpOpen: function () { try { return bpOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, btyOpen: function () { try { return btyOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, cardsOpen: function () { try { return cardsOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, carveOpen: function () { try { return carveOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, ccOpen: function () { try { return ccOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, cgOpen: function () { try { return cgOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, cmdOpen: function () { try { return cmdOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, devOpen: function () { try { return devOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, dinOpen: function () { try { return dinOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, festOpen: function () { try { return festOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, flOpen: function () { try { return flOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, heartOpen: function () { try { return heartOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, houseOpen: function () { try { return houseOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, mailOpen: function () { try { return mailOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, merOpen: function () { try { return merOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, moltOpen: function () { try { return moltOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, museumOpen: function () { try { return museumOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, nbOpen: function () { try { return nbOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, quakeOpen: function () { try { return quakeOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, radioOpen: function () { try { return radioOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, sideOpen: function () { try { return sideOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, skillOpen: function () { try { return skillOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, smOpen: function () { try { return smOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, taleOpen: function () { try { return taleOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, terrOpen: function () { try { return terrOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, vaultOpen: function () { try { return vaultOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, wardOpen: function () { try { return wardOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, stn: function (k) { var kind = STATIONS[k].kind, id = -1; for (var i in TILES) if (TILES[i] && TILES[i].kind === kind) { id = +i; break; } if (id < 0) return "no tile"; var x = Math.floor(p.x) + 2, y = Math.floor(p.y) - 1; setT(x, y, id); openStn(k, x, y); }, cmd: function () { S.cheats = 1; cmdOpen(); }, iconKind: function (id) { var it = ITEMS[id]; if (!it) return "none"; if (it.tool) return "tool"; if (OCI[id]) return "oci"; if (it.pb || it.qb) return "crop"; if (SPR[id]) return "spr"; if (it.mat) return "mat"; if (it.frag) return "frag"; if (it.gem) return "gem"; if (it.tile != null) return "tile"; return "other"; }, items: function () { return Object.keys(ITEMS); }, camp: function () { var c = campSpots(); return { pier: c.pier, farm: c.farm, spawn: Math.floor(world.spawn.x), mine: world.holes && world.holes[0] ? world.holes[0].x : null, mail: mailSpot(), fg: S.campfg, fgTile: c.farm >= 0 ? get(c.farm, col[c.farm] - 1) === T.X_farmgate : false }; }, tp: function (x) { dmTp(x + 0.5, null, "test"); }, put: function (dx, dy, item) { var it = ITEMS[item], id = it && it.tile != null ? it.tile : T[item]; var x = Math.floor(p.x) + dx, y = Math.floor(p.y) + dy; setT(x, y, id); return id; }, probe: function (r) { var o = {}, x0 = Math.floor(p.x), y0 = Math.floor(p.y); for (var y = y0 - r; y <= y0 + 2; y++) for (var x = x0 - r; x <= x0 + r; x++) { var id = get(x, y); if (!TILES[id].solid) continue; var k = TILES[id].n + (MATF[id] ? " M" + (MATF[id].see ? "s" : "") : " -") + (smask && smask.g(y * W + x) ? " S" : "") + (walls.g(y * W + x) ? " W" : ""); o[k] = (o[k] || 0) + 1; } return o; }, structs: function () { return (world.structs || []).map(function (q) { return { k: q.kind, dx: q.dx, gy: q.gy, x0: q.mx0, x1: q.mx1 }; }); }, picDump: function (dx) { var x = p.x + (dx || 0), out = []; (world.structs || []).forEach(function (q) { var P = q.pic; if (P && x >= P.x0 && x <= P.x0 + P.w) out.push(q.kind + "|" + P.x0 + "|" + P.w + "|" + structCanvas(P).toDataURL()); }); return out; }, slopeTest: function () { for (var d = 0; d < 40; d++) for (var sg = 1; sg >= -1; sg -= 2) { var x = Math.floor(p.x) + sg * d, y = col[x] - 1; if (get(x, y) === T.LOG && TILES[get(x, y + 1)].solid) { setT(x - 1, y + 1, T.AIR); setT(x - 1, y, T.AIR); return x; } } return -1; }, findVar: function (b) { for (var d = 0; d < W; d++) for (var sg = 1; sg >= -1; sg -= 2) { var x = Math.floor(p.x) + sg * d; if (x > 5 && x < W - 5 && world.bio[x] === b && world.sub && world.sub[x] && world.sub[x + 8] && world.bio[x + 8] === b) return x + 4; } return -1; }};   // UI AUDIT: open any window from tests
   window.__sbx.cmd = { run: cmdRun, open: cmdOpen, close: cmdClose, sug: cmdSuggest, log: function () { return CMD.log; }, on: cheatsOn, worlds: openWorlds, wheel: function () { return [selSlot, sel]; } };
   window.__sbx.p8c = { sites: sites, enter: enterSite, tower: towerS, build: towerBuild, rune: runeTap, isles: function () { return p8().isl; }, islesBuild: islesBuild, balloonArt: balloonArt, broomArt: broomArt, glowDraw: glowDraw };
   window.__sbx.p8 = { S: p8, mount: mountK, mountArt: mountArt, M: MOUNTS, bugs: BUGL, BUGS: BUGS, bugTick: bugTick, catch: bugCatch, bugArt: bugArt, terr: terrOpen, sm: smOpen, smAct: smAct, smArt: smArt, smDaily: smDaily, mined: p8Mined, mus: museumOpen, musAct: museumAct, musSpot: museumSpot, altar: altarOpen, altarAct: altarAct, skill: skillOpen, skillAct: skillAct, skLv: skLv, zone: zoneScore, swr: swrTick, spirit: spiritSpot, spiritArt: spiritArt, heart: heartOpen, heartSpot: heartSpot, dream: dreamStart, D: function () { return DRM; }, cards: cardsOpen, duel: duelStart, play: duelPlay, cardArt: cardArt, give: cardGive, pack: cardPackOpen, act: p8Act, pill: p8Pill, table: tableSpot, evo: { bird: birdStage, anim: animStage }, mul: { dig: p8DigMul, dmg: p8DmgMul, hurt: p8HurtMul, spd: p8SpdMul, bite: p8BiteMul, crop: p8CropMul } };

@@ -1206,6 +1206,38 @@ batwing: { n: "Bat Wing", frag: "bat" },
     return { trees: c.trees || [], W: WW, H: H, seed: seed, t: wt, walls: wwl, top: wtop, bio: wbio, sub: wsub, bv: null, marks: [], holes: [], structs: [], feats: c.feats, aerie: null, sky: null,
       spawn: { x: SPM + OFF + 0.5, y: c.top[SPM] }, malc: 1, gx0: OFF + 3, gx1: OFF + MW - 4, hearts: hearts, mcz: mcz, zw: ZW, off: OFF };
   }
-  var api = { STRUCT_KINDS: STRUCT_KINDS, W: WORLD_W, H: H, SURF: SURF, WORLDVER: WORLDVER, B_FROST: B_FROST + EXT, B_EMBER: B_EMBER + EXT, SPAWNX: SPAWNX + EXT, EXT: EXT, CORE_W: CORE_W, genChunk: genChunk, treeGrow: treeGrow, post: POST, T: T, TILES: TILES, ITEMS: ITEMS, ITEM_ORDER: ITEM_ORDER, DECOR_FLOOR: DECOR_FLOOR, DECOR_WALL: DECOR_WALL, BIOMES: BIOMES, gen: genWide, genCore: gen, genMalc: genMalc, MALC_W: MALC_W, MALC_Z: MALC_Z, hash: hash, mulberry: mulberry };
+  // ---------- THE PAGE SYSTEM (Nov 2026) ----------
+  // The world's block grids (blocks, back walls, what you have explored...) are kept in pages 256 columns wide, top to bottom. Pages near
+  // you are plain arrays; pages far away are packed (run-length: [count, value] pairs) and unpacked the moment anything reads them, so a
+  // world can be huge and still fit in a phone's memory. The index is the same as a flat array (y * W + x): code calls g(i) to read and
+  // s(i, v) to write. A page that was never made reads as 0 (air) and costs nothing.
+  var PW = 256;
+  function Grid(w, h, C) { this.W = w; this.H = h; this.C = C; this.length = w * h; this.n = Math.ceil(w / PW); this.p = []; this.k = []; for (var i = 0; i < this.n; i++) { this.p.push(null); this.k.push(null); } this.ups = 0; this.onUp = null; }
+  Grid.prototype.g = function (i) { if (!(i >= 0 && i < this.length)) return undefined; var W = this.W, x = i % W, q = x >> 8, a = this.p[q]; if (a === null) { if (this.k[q] === null) return 0; a = this.up(q); } return a[((i / W) | 0) * PW + (x & 255)]; };
+  Grid.prototype.s = function (i, v) { if (!(i >= 0 && i < this.length)) return; var W = this.W, x = i % W, q = x >> 8, a = this.p[q]; if (a === null) a = this.up(q); a[((i / W) | 0) * PW + (x & 255)] = v; };
+  Grid.prototype.gxy = function (x, y) { if (x < 0 || y < 0 || x >= this.W || y >= this.H) return undefined; var q = x >> 8, a = this.p[q]; if (a === null) { if (this.k[q] === null) return 0; a = this.up(q); } return a[y * PW + (x & 255)]; };
+  Grid.prototype.up = function (q) {   // unpack (or make) page q
+    var a = new this.C(PW * this.H), K = this.k[q];
+    if (K) { for (var j = 0, o = 0; j < K.length; j += 2) { var n = K[j], v = K[j + 1]; if (v) a.fill(v, o, o + n); o += n; } this.k[q] = null; this.ups++; }
+    this.p[q] = a; if (this.onUp && K) this.onUp(q); return a;
+  };
+  Grid.prototype.pack = function (q) {   // pack page q (an all-zero page is simply dropped)
+    var a = this.p[q]; if (!a) return; var runs = 0, i, n = a.length, nz = false;
+    for (i = 0; i < n; i++) { if (a[i]) nz = true; if (i === 0 || a[i] !== a[i - 1]) runs++; }
+    if (!nz) { this.p[q] = null; this.k[q] = null; return; }
+    var K = new Uint32Array(runs * 2), r = -1; for (i = 0; i < n; i++) { if (i === 0 || a[i] !== a[i - 1]) { r += 2; K[r - 1] = 0; K[r] = a[i]; } K[r - 1]++; }
+    this.k[q] = K; this.p[q] = null;
+  };
+  Grid.prototype.packed = function (q) { return this.p[q] === null; };
+  Grid.prototype.slice = function () { var o = new Grid(this.W, this.H, this.C); for (var q = 0; q < this.n; q++) { o.p[q] = this.p[q] ? this.p[q].slice() : null; o.k[q] = this.k[q]; } return o; };
+  Grid.prototype.fill = function (v) { for (var q = 0; q < this.n; q++) { this.k[q] = null; this.p[q] = null; if (v) this.up(q).fill(v); } return this; };
+  Grid.prototype.blit = function (src, sw, x0) {   // copy a flat array sw wide (all H rows) into columns x0 .. x0+sw-1
+    for (var x = x0; x < x0 + sw; x += PW - ((x & 255))) { var q = x >> 8, a = this.p[q] || this.up(q), x1 = Math.min(x0 + sw, (q + 1) * PW);
+      for (var y = 0; y < this.H; y++) a.set(src.subarray(y * sw + (x - x0), y * sw + (x1 - x0)), y * PW + (x & 255)); }
+  };
+  Grid.prototype.mem = function () { var b = 0, n = 0; for (var q = 0; q < this.n; q++) { if (this.p[q]) { b += this.p[q].byteLength; n++; } else if (this.k[q]) b += this.k[q].byteLength; } return { bytes: b, open: n, pages: this.n }; };
+  Grid.from = function (flat, w, h, C) { var g = new Grid(w, h, C || flat.constructor); g.blit(flat, w, 0); return g; };
+  Grid.PW = PW;
+  var api = { Grid: Grid, STRUCT_KINDS: STRUCT_KINDS, W: WORLD_W, H: H, SURF: SURF, WORLDVER: WORLDVER, B_FROST: B_FROST + EXT, B_EMBER: B_EMBER + EXT, SPAWNX: SPAWNX + EXT, EXT: EXT, CORE_W: CORE_W, genChunk: genChunk, treeGrow: treeGrow, post: POST, T: T, TILES: TILES, ITEMS: ITEMS, ITEM_ORDER: ITEM_ORDER, DECOR_FLOOR: DECOR_FLOOR, DECOR_WALL: DECOR_WALL, BIOMES: BIOMES, gen: genWide, genCore: gen, genMalc: genMalc, MALC_W: MALC_W, MALC_Z: MALC_Z, hash: hash, mulberry: mulberry };
   if (typeof module !== "undefined" && module.exports) module.exports = api; else root.SbxWorld = api;
 })(typeof window !== "undefined" ? window : this);
