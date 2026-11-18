@@ -549,9 +549,10 @@
   // PERF: phones render at a lower pixel ratio and skip the costliest effects. If a device still struggles, the loop steps the quality down further and remembers it.
   var lowq = coarse, dprCap = coarse ? 1.5 : 2; try { if (localStorage.getItem("swamp-delve-q") === "1") dprCap = 1; } catch (e) {}
   // SETTINGS (Options and the pause menu; saved on this device): effects volume, screen shake, camera look-ahead, frame-rate cap, graphics quality
-  var OPT = { fx: 1, shake: 1, look: true, fps: 60, gq: "auto", bloom: true, chunks: true, light: "full", cb: "off", tx: 1, motion: "sys", flash: true, amb: 1, wheel: true, eglow: true, cvox: 1 };
+  var OPT = { fx: 1, shake: 1, look: true, fps: 60, gq: "auto", bloom: true, chunks: true, light: "full", lq: coarse ? "med" : "high", cb: "off", tx: 1, motion: "sys", flash: true, amb: 1, wheel: true, eglow: true, cvox: 1 };
   try { var optS = JSON.parse(localStorage.getItem("swamp-delve-opt") || "{}"); if (optS && typeof optS === "object") { if (isFinite(optS.fx)) OPT.fx = Math.max(0, Math.min(1, +optS.fx)); if (isFinite(optS.shake)) OPT.shake = Math.max(0, Math.min(1, +optS.shake)); if (optS.look === false) OPT.look = false; if (optS.bloom === false) OPT.bloom = false; if (optS.chunks === false) OPT.chunks = false; if (optS.fps === 30 || optS.fps === 60 || optS.fps === 0) OPT.fps = optS.fps; if (optS.gq === "high" || optS.gq === "low") OPT.gq = optS.gq; if (optS.light === "simple") OPT.light = "simple"; if (/^(p|d|t)$/.test(optS.cb)) OPT.cb = optS.cb; if (optS.tx === 1.15 || optS.tx === 1.3) OPT.tx = optS.tx; if (optS.motion === "on" || optS.motion === "off") OPT.motion = optS.motion; if (optS.flash === false) OPT.flash = false; if (isFinite(optS.amb)) OPT.amb = Math.max(0, Math.min(1, +optS.amb)); } } catch (e) {}
   try { var optS2 = JSON.parse(localStorage.getItem("swamp-delve-opt") || "{}"); if (optS2.wheel === false) OPT.wheel = false; if (optS2.eglow === false) OPT.eglow = false; if (optS2.pixbug === false) OPT.pixbug = false; if (optS2.cvox === 0 || optS2.cvox === 0.5) OPT.cvox = optS2.cvox; } catch (e) {}
+  try { var optS3 = JSON.parse(localStorage.getItem("swamp-delve-opt") || "{}"); if (/^(low|med|high)$/.test(optS3.lq)) OPT.lq = optS3.lq; else if (optS3.light === "simple") OPT.lq = "low"; OPT.light = OPT.lq === "low" ? "simple" : "full"; } catch (e) {}
   if (OPT.gq === "high") { lowq = false; dprCap = 2; } else if (OPT.gq === "low") { lowq = true; dprCap = 1; }
   function optSave() { try { localStorage.setItem("swamp-delve-opt", JSON.stringify(OPT)); } catch (e) {} }
   // ---------- ACCESSIBILITY: colour-blind filters (daltonized: colours shifted so reds, greens and blues stay apart), bigger text,
@@ -13088,7 +13089,7 @@
       + r("Frame rate", "30 saves battery on laptops and phones.", optSeg("fps", OPT.fps, [[30, "30"], [60, "60"], [0, "Max"]], "Frame rate limit"))
       + r("Glow", "Soft bloom around torches, lava and glowing things.", optSeg("bloom", OPT.bloom ? 1 : 0, [[1, "On"], [0, "Off"]], "Glow"))
       + r("Fast world drawing", "Paints the ground in big pieces for higher, steadier frame rates. Looks the same. Turn off if anything looks wrong.", optSeg("chunks", OPT.chunks !== false ? 1 : 0, [[1, "On"], [0, "Off"]], "Fast world drawing"))
-      + r("Lighting", "Simple skips sun shadows, light shafts, underwater ripples of light and glitter on the farm and the sea. Try it if those feel slow.", optSeg("light", OPT.light, [["full", "Full"], ["simple", "Simple"]], "Lighting"))
+      + r("Lighting", "Low keeps the classic look. Medium adds soft sun and lamp shadows and shaded corners. High adds dappled forest shade, sun beams, flickering torches and a warm sunset glow. Lower it if the game feels slow.", optSeg("lq", OPT.lq, [["low", "Low"], ["med", "Medium"], ["high", "High"]], "Lighting"))
       + r("Graphics", "Low turns off soft light blending and sharp high-DPI drawing.", optSeg("gq", OPT.gq, [["auto", "Auto"], ["high", "High"], ["low", "Low"]], "Graphics quality")); }
   function setAccess() { var r = optRow;
     return r("Colour-blind mode", "Shifts the game's colours so reds, greens and blues are easier to tell apart.", optSeg("cb", OPT.cb, [["off", "Off"], ["p", "Protan"], ["d", "Deutan"], ["t", "Tritan"]], "Colour-blind mode"))
@@ -13126,7 +13127,7 @@
     else if (k === "cvox") { OPT.cvox = +v === 0 ? 0 : +v === 0.5 ? 0.5 : 1; if (OPT.cvox) setTimeout(function () { vxPlay("pig", "i", 0, 0, 0, 0, true); }, 60); }
     else if (k === "bloom") OPT.bloom = v === "1";
     else if (k === "chunks") { OPT.chunks = v === "1"; chkClear(); }
-    else if (k === "light") OPT.light = v === "simple" ? "simple" : "full";
+    else if (k === "lq") { OPT.lq = v === "low" || v === "high" ? v : "med"; OPT.light = OPT.lq === "low" ? "simple" : "full"; LKEY = ""; }
     else if (k === "fps") OPT.fps = +v === 30 ? 30 : +v === 0 ? 0 : 60;
     else if (k === "cb") { OPT.cb = /^(p|d|t)$/.test(v) ? v : "off"; applyA11y(); }
     else if (k === "tx") { OPT.tx = +v === 1.15 || +v === 1.3 ? +v : 1; applyA11y(); }
@@ -16287,7 +16288,103 @@
     } else g.drawImage(src, bx0, by0, bw, bh, dx + bx0 * ts, dy + by0 * ts, bw * ts, bh * ts);
     g.globalCompositeOperation = "source-over";
   }
-  var LKEY = "", LPAR = 0, CRG = null, CGG = null, CBG = null, LRGB = {};
+  // ---------- LIGHTING UPGRADE (Nov 2026): soft shade, cast shadows, sun beams, golden light ----------
+  // aoPass: a second little map beside the light map. Open cells next to rock (ceilings most, walls, cave floors least) get a soft dark
+  // tinted by the swamp's own shadow colour; at High, the open ground under a tree crown gets dappled shade that drifts with the wind.
+  function aoPass(gx0, gy0, gw, gh) {
+    var lv = litLv(), n = gw * gh, i, j, c; AOG.fill(0, 0, n); if (lv < 1) return;
+    for (j = 1; j < gh - 1; j++) for (i = 1; i < gw - 1; i++) {
+      c = j * gw + i; if (OP[c] > LQ) continue;
+      var X = gx0 + i, Y = gy0 + j, sky = X >= 0 && X < W && Y < col[X], u = OP[c - gw] > LQ ? 1 : 0, l = OP[c - 1] > LQ ? 1 : 0, r = OP[c + 1] > LQ ? 1 : 0, ul = OP[c - gw - 1] > LQ ? 1 : 0, ur = OP[c - gw + 1] > LQ ? 1 : 0, w;
+      if (sky) w = 0.14 * (l + r) + 0.2 * u + 0.08 * (ul + ur);
+      else { var d = OP[c + gw] > LQ ? 1 : 0, dl = OP[c + gw - 1] > LQ ? 1 : 0, dr = OP[c + gw + 1] > LQ ? 1 : 0; w = 0.3 * u + 0.16 * (ul + ur) + 0.17 * (l + r) + 0.1 * d + 0.06 * (dl + dr); }
+      if (w > 0) AOG[c] = Math.min(0.78, w) * 185 | 0;
+    }
+    if (lv < 2) return;
+    var tn = performance.now() / 1000;
+    for (i = 0; i < gw; i++) {
+      var X2 = gx0 + i; if (X2 < 0 || X2 >= W) continue; var cs = 0, dap = 1;
+      for (j = 0; j < gh; j++) {
+        var Y2 = gy0 + j; if (Y2 < 0) continue; if (Y2 >= H || Y2 >= col[X2]) break;
+        var c2 = j * gw + i;
+        if (tiles.g(Y2 * W + X2) === T.LEAVES) { cs = Math.min(1, cs + 0.34); continue; }
+        if (cs > 0.02) { dap = 0.62 + 0.38 * Math.sin(tn * 0.8 + X2 * 1.9 + Y2 * 2.7); if (OP[c2] <= LQ) { var v = (cs * dap * 88) | 0; if (v > AOG[c2]) AOG[c2] = v; } }
+        cs = Math.max(0, cs - (OP[c2] > LQ ? 0.03 : 0.065));
+      }
+      if (cs > 0.02 && j < gh) { var cg = j * gw + i, vg = (cs * dap * 70) | 0; if (vg > AOG[cg]) AOG[cg] = vg; }   // the ground itself
+    }
+  }
+  function softAdd(g, slot, w, h, dx, dy, bb, a) {   // lay the blurred copy of a light map over the view a second time, added (a hot glowing core)
+    var C = SSB[slot]; if (!C || !BLUROK || lowq || !C.c.width || !bb || bb[2] < 0) return; var U = 4, bx0 = Math.max(0, bb[0] - 2), by0 = Math.max(0, bb[1] - 2), bx1 = Math.min(w, bb[2] + 3), by1 = Math.min(h, bb[3] + 3); if (bx1 <= bx0 || by1 <= by0) return;
+    var ga = g.globalAlpha; g.globalAlpha = ga * a; g.globalCompositeOperation = "lighter"; g.drawImage(C.c, bx0 * U, by0 * U, (bx1 - bx0) * U, (by1 - by0) * U, dx + bx0 * ts, dy + by0 * ts, (bx1 - bx0) * ts, (by1 - by0) * ts); g.globalCompositeOperation = "source-over"; g.globalAlpha = ga;
+  }
+  // CAST SHADOWS (side view): you, creatures, animals, buildings and every tree throw a soft shadow along the ground, away from the sun (long
+  // in the morning and evening, short at noon, faint under the moon). Underground they fall away from the nearest torch or lantern instead.
+  var CSS = {};
+  function csSpr(rgb) {
+    var s2 = CSS[rgb]; if (s2) return s2; var n = 0, k; for (k in CSS) n++; if (n > 10) CSS = {};
+    var c = document.createElement("canvas"); c.width = c.height = 64; var q = c.getContext("2d"), gr = q.createRadialGradient(32, 32, 0, 32, 32, 32);
+    gr.addColorStop(0, "rgba(" + rgb + ",1)"); gr.addColorStop(0.55, "rgba(" + rgb + ",.8)"); gr.addColorStop(1, "rgba(" + rgb + ",0)"); q.fillStyle = gr; q.fillRect(0, 0, 64, 64); return (CSS[rgb] = c);
+  }
+  function csGround(x, y, maxd) {   // the tile row of the ground under (x, y); -1 over water, a pit or nothing
+    for (var j = Math.max(0, Math.floor(y - 0.1)), e = j + maxd; j <= e && j < H; j++) { var id = tiles.g(j * W + x); if (id === T.WATER || id === T.LAVA) return -1; var td = TILES[id]; if (td && td.solid) return j; }
+    return -1;
+  }
+  function csSun(x, y0, y1) {   // how much of the sun reaches a standing figure: roofs and rock above block it, leaves dim it
+    var m = 1; for (var j = Math.max(0, Math.floor(y0)); j >= Math.max(0, Math.floor(y1)) && m > 0; j--) { var id = tiles.g(j * W + x); if (id === T.LEAVES) m = Math.min(m, 0.6); else { var td = TILES[id]; if (td && td.solid && !td.see) m = 0; } }
+    return m;
+  }
+  function csLamp(x, y) {   // [side the nearest lamp is on (1 left, -1 right), strength]
+    if (!WG || !LGO[2]) return [0, 0]; var i = x - LGO[0], j = y - LGO[1], gw = LGO[2]; if (i < 6 || j < 2 || i >= gw - 6 || j >= LGO[3] - 2) return [0, 0];
+    var l = 0, r = 0, k, c = j * gw + i; for (k = 1; k <= 5; k++) { var a = WG[c - k], b = WG[c + k]; if (a > l) l = a; if (b > r) r = b; }
+    var m = Math.max(l, r); if (m < 6) return [0, 0]; return [l > r ? 1 : -1, clamp(m / 30, 0, 1) * clamp(Math.abs(l - r) / (m + 1) * 1.5 + 0.2, 0, 1)];
+  }
+  function drawCastShadows(g, now) {
+    if (litLv() < 1 || inMC() || cave) return;
+    var sun = sunState(S.time), sa = clamp(sun.a / 0.27, 0, 1) * (sun.up ? 1 : 0.55), day = daylight(S.time), sc = shadowTint(biomeMix(cam.x), 1 - day, 0);
+    var rgb = Math.round(sc[0] * 2 + 4) + "," + Math.round(sc[1] * 2 + 9) + "," + Math.round(sc[2] * 2 + 16), spr = csSpr(rgb), ga = g.globalAlpha, sm = g.imageSmoothingEnabled, k;
+    g.imageSmoothingEnabled = true; var gco = g.globalCompositeOperation; g.globalCompositeOperation = "source-over";
+    var SL = Math.max(sun.len, 0.7), lean = function (sx) { return sx + (sx < 0 ? -0.3 : 0.3); };   // the sun is never quite overhead: shadows always lean a little
+    function blob(cx, gy, rx, ry, a) { if (a < 0.012 || cx + rx < 0 || cx - rx > vw) return; g.globalAlpha = Math.min(0.9, a); g.drawImage(spr, cx - rx, gy - ry * 0.9, rx * 2, ry * 2); }
+    function one(x, y, w, h, a) {   // a figure standing near (x, feet y)
+      var X = Math.floor(x); if (X < 1 || X >= W - 1 || ox + x * ts < -ts * 4 || ox + x * ts > vw + ts * 4) return; var gy = csGround(X, y, 8); if (gy < 0) return;
+      var air = clamp(1 - (gy - y) / 5, 0, 1); if (air <= 0) return;
+      var skyG = gy <= col[X] + 1, dx, st, len; if (skyG) { dx = lean(sun.sx); st = sa * csSun(X, y - h, y - h - 8); len = SL; } else { var ld = csLamp(X, gy - 1); dx = ld[0]; st = ld[1] * 0.8; len = 0.85; }
+      if (st < 0.04) return; blob(ox + (x + dx * h * len * 0.4) * ts, oy + gy * ts, (w * 0.5 + h * len * 0.5) * ts, Math.max(0.17, w * 0.3) * ts, 0.75 * st * a * air);
+    }
+    one(p.x, p.y, PW * 1.15, PH, 1);
+    enemies.forEach(function (e) { if (e.dead || !isFinite(e.x)) return; one(e.x, e.y, Math.max(0.5, e.w || 0.8), Math.max(0.5, e.h || 0.8), 0.9); });
+    allAnimals().forEach(function (a) { var sc2 = a.baby ? 0.62 : 1; one(a.x, a.y, 1.0 * (a.w || 1) * sc2, 0.9 * sc2, 0.9); });
+    if (sa > 0.03) {
+      for (k = 0; k < CANSH.length; k += 4) {   // trees: a slim trunk shadow, then a wide soft crown shadow
+        var x0 = CANSH[k], x1 = CANSH[k + 1], y0 = CANSH[k + 2], y1 = CANSH[k + 3], cx = (x0 + x1) / 2 + 0.5, X3 = Math.floor(cx), gy3 = X3 > 0 && X3 < W ? col[X3] : -1; if (gy3 <= y1 || gy3 - y1 > 20 || ox + cx * ts < -ts * 12 || ox + cx * ts > vw + ts * 12) continue;
+        var H3 = Math.max(2, gy3 - y0), W3 = x1 - x0 + 1, len3 = SL, sh = lean(sun.sx) * H3 * len3, st3 = sa * (gy3 <= col[X3] + 1 ? 1 : 0.3), gyp = oy + gy3 * ts;
+        for (var q = 0; q < 4; q++) { var tq = q / 3; blob(ox + (cx + sh * 0.42 * tq) * ts, gyp, (0.42 + tq * 0.25) * ts, 0.26 * ts, 0.5 * st3); }
+        blob(ox + (cx + sh * 0.44) * ts, gyp, (W3 * 0.42 + H3 * len3 * 0.1) * ts, clamp(W3 * 0.07, 0.32, 0.72) * ts, 0.6 * st3);
+      }
+      (world.structs || []).forEach(function (q2) { var P = q2.pic; if (!P || q2.razed || P.x0 > Math.floor((vw - ox) / ts) + 4 || P.x0 + P.w < Math.floor(-ox / ts) - 4) return; var bx = P.x0 + P.w / 2, X4 = Math.floor(bx), gy4 = csGround(X4, P.y0 + P.h - 0.5, 6); if (gy4 < 0 || gy4 > col[X4] + 1) return; blob(ox + (bx + lean(sun.sx) * P.h * SL * 0.3) * ts, oy + gy4 * ts, (P.w * 0.5 + P.h * SL * 0.25) * ts, Math.min(0.7, 0.22 + P.w * 0.04) * ts, 0.55 * sa); });
+    }
+    g.globalAlpha = ga; g.imageSmoothingEnabled = sm; g.globalCompositeOperation = gco;
+  }
+  // SKY MOOD: a low sun floods its side of the picture with gold and cools the far side; at High, slanted beams of light slip between the
+  // trees on a clear day, and sway a little.
+  function drawSkyMood(g, now, day, above) {
+    var lv = litLv(), sun = sunState(S.time), k = sun.warm * above; g.save(); g.globalAlpha = 1;
+    if (k > 0.03 && sun.up) {
+      g.globalCompositeOperation = "source-over"; var x0 = sun.sx > 0 ? 0 : vw, x1 = sun.sx > 0 ? vw : 0, wg = g.createLinearGradient(x0, 0, x1, vh * 0.4);
+      wg.addColorStop(0, "rgba(255,140,50," + (0.3 * k).toFixed(3) + ")"); wg.addColorStop(0.55, "rgba(255,165,80," + (0.1 * k).toFixed(3) + ")"); wg.addColorStop(1, "rgba(80,60,160," + (0.18 * k).toFixed(3) + ")"); g.fillStyle = wg; g.fillRect(0, 0, vw, vh);
+    }
+    if (lv >= 2 && sun.up && sun.e > 0.1 && day > 0.5 && CANSH.length) {
+      var ks = Math.min(1, CANSH.length / 16) * above * Math.min(1, sun.e * 2) * (0.5 + 0.5 * day), nB = coarse ? 4 : 6, slant = sun.sx * 0.5 * vh, b;
+      g.globalCompositeOperation = "screen";
+      for (b = 0; b < nB; b++) {
+        var bx = vw * ((b + 0.5) / nB) + Math.sin(now / 3200 + b * 1.7) * vw * 0.02 - slant * 0.2, bwd = vw * (0.035 + 0.025 * ((b * 7) % 3) / 2), a = ks * (0.11 + 0.06 * Math.sin(now / 2100 + b * 2.3)), gr = g.createLinearGradient(bx, 0, bx + slant * 0.7, vh * 0.7);
+        gr.addColorStop(0, "rgba(255,238,175," + a.toFixed(3) + ")"); gr.addColorStop(1, "rgba(255,238,175,0)"); g.fillStyle = gr; g.beginPath(); g.moveTo(bx - bwd * 0.5, 0); g.lineTo(bx + bwd * 0.5, 0); g.lineTo(bx + slant * 0.7 + bwd * 1.3, vh * 0.7); g.lineTo(bx + slant * 0.7 - bwd * 0.3, vh * 0.7); g.closePath(); g.fill();
+      }
+    }
+    g.restore();
+  }
+  var AOG = null, LGO = [0, 0, 0, 0], CANSH = [], LKEY = "", LPAR = 0, CRG = null, CGG = null, CBG = null, LRGB = {};
   // COLOURED LIGHT: every light-giving block also spreads its own colour (three extra grids, spread the same way as the light), so a torch
   // warms the rock around it, Glowcaps wash a cave in teal, crystals in ice blue and lava or embers in red-orange. Lights that are not blocks
   // (building windows, the farm gate, the mine shaft) still add plain warm light. The colour is the same one the block's halo uses.
@@ -16303,10 +16400,11 @@
     // PERF (phones): the light only changes when the view moves, the time of day steps, or something changes; reuse it on alternate frames
     var key = gx0 + "," + gy0 + "," + gw + "," + gh + "," + skyL + "," + pcx + "," + pcy + "," + editN;
     if (lowq && LG && LG.length >= n && key === LKEY && (LPAR = 1 - LPAR)) return;
-    LKEY = key; var anyLamp = false;
-    if (!LG || LG.length < n) { LG = new Uint8Array(n); OP = new Uint8Array(n); WG = new Uint8Array(n); CRG = new Uint8Array(n); CGG = new Uint8Array(n); CBG = new Uint8Array(n); }
+    LKEY = key; var anyLamp = false, FLK = litLv() >= 2, fnow = performance.now() / 1000; LGO[0] = gx0; LGO[1] = gy0; LGO[2] = gw; LGO[3] = gh;
+    if (!LG || LG.length < n) { LG = new Uint8Array(n); OP = new Uint8Array(n); WG = new Uint8Array(n); CRG = new Uint8Array(n); CGG = new Uint8Array(n); CBG = new Uint8Array(n); AOG = new Uint8Array(n); }
     for (j = 0; j < gh; j++) for (i = 0; i < gw; i++) {
       var X = gx0 + i, Y = gy0 + j, id = get(X, Y), L = TILES[id].light * LQ; c = j * gw + i; if (L && LOFN && S.loff && S.loff[Y * W + X]) L = 0;   // a lamp you turned off
+      if (FLK && L && (id === T.TORCH || id === T.CAMPFIRE || id === T.LANTERN)) L = Math.max(1, L + Math.round(Math.sin(fnow * 9 + X * 3.1) * 1.4 + Math.sin(fnow * 23 + Y * 5.3) * 0.8));   // flickering flames
       WG[c] = L; if (L) { anyLamp = true; var lrc = lightRGB(id); CRG[c] = (L * lrc[0] / 255) | 0; CGG[c] = (L * lrc[1] / 255) | 0; CBG[c] = (L * lrc[2] / 255) | 0; } else CRG[c] = CGG[c] = CBG[c] = 0;
       if (X >= 0 && X < W && Y < col[X] && skyL > L) L = skyL;
       else if (X >= 0 && X < W && Y >= col[X] && Y - col[X] < 12) { var seep = (skyL * 0.3 * (1 - (Y - col[X]) / 12)) | 0; if (seep > L) L = seep; }
@@ -16322,6 +16420,7 @@
     var MH = world.holes && world.holes[0]; if (MH && get(MH.x, MH.y) === T.HOLE) { var mli = MH.x + 1 - gx0, mlj = MH.y - 1 - gy0; if (mli >= 0 && mli < gw && mlj >= 0 && mlj < gh) { var mk = mlj * gw + mli, mv = 10 * LQ; LG[mk] = Math.max(LG[mk], mv); WG[mk] = Math.max(WG[mk], mv); anyLamp = true; } }   // THE MINE: its lantern
     if (decoLights(LG, WG, CRG, CGG, CBG, gx0, gy0, gw, gh)) anyLamp = true;   // DECORATING: candles and lamps standing on furniture
     spread(LG, gw, gh); if (anyLamp) { spread(WG, gw, gh); spread(CRG, gw, gh); spread(CGG, gw, gh); spread(CBG, gw, gh); }
+    aoPass(gx0, gy0, gw, gh);
   }
   function spread(G, gw, gh) {   // two sweeps each way; a diagonal step costs about 1.4 straight steps
     var i, j, a, v, o, od;
@@ -17570,7 +17669,7 @@
     if (CANSZ !== S) { CANSZ = S; canFree(); }
     if (!CSTAMP || CSTAMP.length !== W * H) CSTAMP = new Grid(W, H, Uint32Array); CSTN++;
     if (CSTN % 240 === 0) CANT.forEach(function (e) { if (e.up && CSTN - (e.seen || 0) > 240) { CANT_PX -= e.up.width * e.up.height; cvFree(e.up); e.up = null; } });   // crowns long off screen drop their big sharp copy (remade when seen again)
-    var sm = g.imageSmoothingEnabled; g.imageSmoothingEnabled = false;
+    CANSH.length = 0; var sm = g.imageSmoothingEnabled; g.imageSmoothingEnabled = false;
     for (j = Math.max(1, Y0 - 3); j <= Math.min(H - 2, Y1 + 3); j++) for (i = Math.max(1, X0 - 3); i <= Math.min(W - 2, X1 + 3); i++) {   // (crowns are fluffier than their leaves: look a few tiles past the screen)
       if (tiles.g(j * W + i) !== T.LEAVES || CSTAMP.g(j * W + i) === CSTN) continue;
       CANL.length = 0; CANBFS.length = 0; CANBFS.push(j * W + i); CSTAMP.s(j * W + i, CSTN);
@@ -17580,7 +17679,7 @@
         if (cx < x0) x0 = cx; if (cx > x1) x1 = cx; if (cy < y0) y0 = cy; if (cy > y1) y1 = cy;
         for (var dy = -1; dy <= 1; dy++) for (var dx = -1; dx <= 1; dx++) { if (!dx && !dy) continue; var nx = cx + dx, ny = cy + dy; if (nx < 1 || nx >= W - 1 || ny < 1 || ny >= H - 1) continue; var ni = ny * W + nx; if (CSTAMP.g(ni) !== CSTN && tiles.g(ni) === T.LEAVES) { CSTAMP.s(ni, CSTN); CANBFS.push(ni); } }
       }
-      var e = CANT.get(mn), M = 2;
+      var e = CANT.get(mn), M = 2; CANSH.push(x0, x1, y0, y1);   // (the shadow pass casts one shadow per crown)
       if (!e || e.sig !== sig || e.n !== n) {
         if (e) { CANT_PX -= e.cv.width * e.cv.height; cvFree(e.cv); if (e.up) { CANT_PX -= e.up.width * e.up.height; cvFree(e.up); } CANT.delete(mn); }
         var L = []; for (q = 0; q < CANL.length; q += 2) L.push([CANL[q], CANL[q + 1]]);
@@ -18093,7 +18192,7 @@
     if (SHQ.length) drawShapeTops(g);   // MALLET: the ramps' grass and edges, after every block, so the next block can't cover them
     mcGrade(g, now, above); mcLand(g, now);   // MALCRUOR: the land and sky stained blood red and black (creatures, you and the portal are drawn after)
     if (!cave) { drawMcGate(g, now); drawFarmGates(g, now); drawMineShaft(g, now); drawBldSigns(g); drawGates(g, X0, X1, Y0, Y1); drawStands(g, X0, X1, Y0, Y1); drawTraps(g, X0, X1, Y0, Y1); drawAmbientNear(g, now); drawMig(g); }
-    decoDrawAll(g); decoPreview(g, now); drawMailbox(g, now); drawCampMove(g); drawDinner(g, now); p4WorldDraw(g, now); drawNpc(g, now); drawVillagers(g, now); drawLogi(g, now); drawDrops(g, now); drawGraves(g, now); drawBirds(g, now); drawAnimals(g, now); drawBrawl(g, now); drawFoot(g); drawCrit(g, now); drawAmb2(g, now); drawEnemies(g, now); drawShots(g, now); drawArrows(g, false); drawBlast(g, now); drawHook(g); drawBossBar(); drawMini(); tickMusic(); tickCloud();
+    drawCastShadows(g, now); decoDrawAll(g); decoPreview(g, now); drawMailbox(g, now); drawCampMove(g); drawDinner(g, now); p4WorldDraw(g, now); drawNpc(g, now); drawVillagers(g, now); drawLogi(g, now); drawDrops(g, now); drawGraves(g, now); drawBirds(g, now); drawAnimals(g, now); drawBrawl(g, now); drawFoot(g); drawCrit(g, now); drawAmb2(g, now); drawEnemies(g, now); drawShots(g, now); drawArrows(g, false); drawBlast(g, now); drawHook(g); drawBossBar(); drawMini(); tickMusic(); tickCloud();
     drawPierGate(g, now); drawVents(g, now); drawRemotes(g, now); trailDraw(g, now); drawPlayer(g, now); if (sel === "weapon") { drawCharge(g, ox + p.x * ts, oy + (p.y - PH * 0.5) * ts); drawRecharge(g, ox + p.x * ts, oy + (p.y + 0.25) * ts); } if (sel === "bow" || (RODW && sel === "rod")) drawDraw(g, ox + p.x * ts, oy + (p.y - PH * 0.5) * ts); drawTag(g, now); drawPet(g, now); drawFishing(g, now);
     parts.forEach(function (q) { var al = clamp(q.life / q.max * 1.4, 0, 1); g.globalAlpha = al; g.fillStyle = q.c; var px = ox + q.x * ts, py = oy + q.y * ts; if (q.glw) return; if (q.conf) { var cw = q.s * 1.6, chh = Math.max(1, q.s * (q.s2 || 0.5)); g.fillRect(Math.round(px - cw / 2), Math.round(py - chh / 2), cw, chh); return; } g.fillRect(Math.round(px - q.s / 2), Math.round(py - q.s / 2), q.s, q.s); }); g.globalAlpha = 1;
     drawWaterFx(g);
@@ -18123,6 +18222,7 @@
     var wk = WID.data, warmK = clamp(1 - day * 0.75 + deep, 0, 1), anyW = false, Lmax = 15 * LQ, dbx = [vgw, vgh, -1, -1], wbx = [vgw, vgh, -1, -1];
     for (j = 0; j < vgh; j++) for (i = 0; i < vgw; i++) {
       var gi2 = (j + M) * gw + (i + M), lv = LE.a[j * vgw + i], k = (j * vgw + i) * 4, al = 1 - Math.pow(Math.min(Lmax, lv) / Lmax, 0.85);
+      if (AOG[gi2]) al += AOG[gi2] / 255 * (1 - al);   // SOFT SHADE: corners, overhangs and the ground under the trees
       var wv = warmK ? WG[gi2] / Lmax : 0, wa = wv > 0.05 ? Math.pow(wv, 1.6) * warmK : 0;   // warm light: strongest right by the lamp, fading out
       var lr = 255, lgc = 150, lb = 70;   // COLOURED LIGHT: this cell's light colour (plain warm where only non-block lights reach)
       if (wa > 0.02 && CRG) { var cr2 = CRG[gi2], cg2 = CGG[gi2], cb2 = CBG[gi2], cm = Math.max(cr2, cg2, cb2); if (cm > 0) { var ct = clamp(cm / Math.max(1, WG[gi2]) * 1.15, 0, 1); lr = Math.round(255 + (cr2 / cm * 255 - 255) * ct); lgc = Math.round(150 + (cg2 / cm * 255 - 150) * ct); lb = Math.round(70 + (cb2 / cm * 255 - 70) * ct); } }
@@ -18136,10 +18236,11 @@
     var dDirty = mapDirty("d", dk), wDirty = anyW && !lowq ? mapDirty("w", wk) : true;
     if (dDirty) LCX.putImageData(LID, 0, 0); g.imageSmoothingEnabled = true; g.imageSmoothingQuality = "low";
     if (dbx[2] >= 0) softStretch(g, LC, vgw, vgh, ox + (X0 - 1) * ts, oy + (Y0 - 1) * ts, "source-over", "d", dDirty, dbx);
-    if (anyW && !lowq) { if (wDirty) WCX.putImageData(WID, 0, 0); if (wbx[2] >= 0) { g.globalAlpha = reduce ? 1 : 0.9 + 0.06 * Math.sin(now / 83) + 0.04 * Math.sin(now / 37 + 1.3); softStretch(g, WC, vgw, vgh, ox + (X0 - 1) * ts, oy + (Y0 - 1) * ts, "soft-light", "w", wDirty, wbx); g.globalAlpha = 1; } }
+    if (anyW && !lowq) { if (wDirty) WCX.putImageData(WID, 0, 0); if (wbx[2] >= 0) { g.globalAlpha = reduce ? 1 : 0.9 + 0.06 * Math.sin(now / 83) + 0.04 * Math.sin(now / 37 + 1.3); softStretch(g, WC, vgw, vgh, ox + (X0 - 1) * ts, oy + (Y0 - 1) * ts, "soft-light", "w", wDirty, wbx); if (litLv() >= 2) softAdd(g, "w", vgw, vgh, ox + (X0 - 1) * ts, oy + (Y0 - 1) * ts, wbx, 0.45); g.globalAlpha = 1; } }
     // moonlight: a cool blue grade over the open air at night
     if (night > 0.35 && above > 0.05 && !lowq && !inMC()) { g.globalCompositeOperation = "soft-light"; var mg = g.createLinearGradient(0, 0, 0, vh), ma = ((night - 0.35) / 0.65 * 0.45 * above).toFixed(3); mg.addColorStop(0, "rgba(110,140,230," + ma + ")"); mg.addColorStop(1, "rgba(70,90,170," + (ma * 0.6).toFixed(3) + ")"); g.fillStyle = mg; g.fillRect(0, 0, vw, vh); g.globalCompositeOperation = "source-over"; }
     if (day > 0.6 && above > 0.05 && !lowq) { g.globalCompositeOperation = "soft-light"; var sg2 = g.createLinearGradient(0, 0, 0, vh); sg2.addColorStop(0, "rgba(255,226,150," + (0.2 * above * day).toFixed(3) + ")"); sg2.addColorStop(1, "rgba(255,226,150,0)"); g.fillStyle = sg2; g.fillRect(0, 0, vw, vh); g.globalCompositeOperation = "source-over"; }
+    if (litLv() >= 1 && above > 0.05 && !inMC()) drawSkyMood(g, now, day, above);
     // dusk/dawn colour grade over the open air
     if ((ph.id === "dusk" || ph.id === "dawn") && above > 0) { var dka = Math.sin(ph.k * Math.PI) * above; if (lowq) { g.fillStyle = "rgba(255,130,70," + (0.16 * dka) + ")"; g.fillRect(0, 0, vw, vh); } else { g.globalCompositeOperation = "soft-light"; var dgr = g.createLinearGradient(0, 0, 0, vh); dgr.addColorStop(0, "rgba(150,80,220," + (0.5 * dka).toFixed(3) + ")"); dgr.addColorStop(0.45, "rgba(255,120,140," + (0.42 * dka).toFixed(3) + ")"); dgr.addColorStop(1, "rgba(255,170,80," + (0.5 * dka).toFixed(3) + ")"); g.fillStyle = dgr; g.fillRect(0, 0, vw, vh); g.globalCompositeOperation = "source-over"; } }
     drawWeather(g, now, day, above);
@@ -27036,7 +27137,8 @@
   // ---------- SCENE LIGHT: one sun, colour grade, light pools and cast shadows for the homestead and the ocean ----------
   // sunState: where the sun is (u: 0 at sunrise t=440 .. 1 at sunset t=280) or, at night, the moon. sx is the light's side (+1 = it is on
   // the left, so shadows fall right), e its height (0..1), len how long the shadows are, a how dark they are.
-  function liteFx() { return OPT.light === "simple" || reduce || lowq; }   // the Lighting option (Simple), or a device that has dropped its extras
+  function litLv() { return reduce || OPT.lq === "low" ? 0 : OPT.lq === "med" ? 1 : 2; }   // LIGHTING QUALITY (Options): 0 Low (the classic look), 1 Medium (soft sun and lamp shadows, shaded corners, golden light), 2 High (dappled forest shade, sun beams, flickering lights, warm glow)
+  function liteFx() { return OPT.lq === "low" || reduce || (lowq && OPT.lq !== "high"); }   // the Lighting option (Simple), or a device that has dropped its extras
   function sunState(t) {
     var u = ((t - 440 + CYCLE) % CYCLE) / 320, up = u <= 1, e, sx;
     if (up) { e = Math.sin(u * Math.PI); sx = Math.cos(u * Math.PI); } else { var mu = (u * 320 - 320) / 160; e = Math.sin(mu * Math.PI) * 0.6; sx = Math.cos(mu * Math.PI); }
@@ -29552,6 +29654,12 @@ var ATK = { on: false, mine: false };
       ["Malcruor: reset visits and warning", function () { var M = malcS(); M.v = inMC() ? 1 : 0; M.warned = 0; toast("Malcruor visits reset.", "#ff8a8a"); }],
       ["Make it day", function () { S.time = 120; }],
       ["Make it night", function () { S.time = 320; }],
+      ["Golden hour (low evening sun)", function () { S.time = 252; }],
+      ["Dawn light", function () { S.time = 452; }],
+      ["Lighting: Low", function () { OPT.lq = "low"; OPT.light = "simple"; LKEY = ""; optSave(); toast("Lighting: Low", "#cfd6ff"); }],
+      ["Lighting: Medium", function () { OPT.lq = "med"; OPT.light = "full"; LKEY = ""; optSave(); toast("Lighting: Medium", "#cfd6ff"); }],
+      ["Lighting: High", function () { OPT.lq = "high"; OPT.light = "full"; LKEY = ""; optSave(); toast("Lighting: High", "#cfd6ff"); }],
+      ["Lighting demo: lit tunnel below you", function () { var x = Math.floor(p.x), c = col[x]; for (var dx = -6; dx <= 6; dx++) for (var y = c + 4; y <= c + 8; y++) setT(x + dx, y, y === c + 4 || y === c + 8 ? T.STONE : T.AIR); setT(x - 4, c + 6, T.TORCH); setT(x + 4, c + 6, T.LANTERN); p.x = x + 0.5; p.y = c + 8; p.vy = 0; S.time = 330; toast("A torch and a lantern light a tunnel below you.", "#cfd6ff"); }],
       ["Skip to tomorrow", function () { S.days = (S.days | 0) + 1; S.time = 120; }],
       ["Max all skill levels", function () { S.st.mined = Math.max(S.st.mined || 0, 4000); S.st.fish = Math.max(S.st.fish || 0, 500); S.st.harvests = Math.max(S.st.harvests || 0, 1400); S.st.ckills = Math.max(S.st.ckills || 0, 700); toast("Skill points ready: pause > Skills.", "#ffd23f"); }],
       ["Bird: Golden form", function () { S.st.fetched = Math.max(S.st.fetched || 0, 200); }],
