@@ -17592,10 +17592,10 @@
       var isFoot = TILES[dn].solid && dn !== T.LOG && dn !== T.LEAVES, hgt = foot - top + 1;
       var rL = isFoot && get(i - 1, j) === T.LOG && get(i - 1, j - 1) === T.AIR, rR = isFoot && get(i + 1, j) === T.LOG && get(i + 1, j - 1) === T.AIR;
       for (y = 0; y < (slopeF && TILES[dn].solid && dn !== T.LOG && dn !== T.LEAVES ? 27 : dn === T.LOG ? 17 : 16); y++) {   // (one art pixel into the block below, so no sliver of sky shows between trunk blocks)
-        var tv = (j - top + Math.min(16, y) / 16) / Math.max(1, hgt), w = st === 2 ? 7 : st === 4 ? 6 + tv * 3 : 7 + tv * 3, c = 8 + bb * 8 * (1 - y / 16) + bd * 8 * (y / 16);
+        var tv = (j - top + Math.min(16, y) / 16) / Math.max(1, hgt), w = st === 2 ? 7 : st === 4 ? 7 : 9, c = 8 + bb * 8 * (1 - y / 16) + bd * 8 * (y / 16);
         if (st === 3 && (get(i - 1, j + 1) === T.LOG || get(i + 1, j + 1) === T.LOG) && up !== T.AIR && !twinL && !twinR) w = 13 + tv * 2;   // the dark oak's trunk stays thick into the crown
         if (isFoot && y >= (slopeF ? 15 : 9)) w += Math.pow(y - (slopeF ? 14 : 8), 1.35) * (slopeF ? 0.75 : 0.9);   // the foot flares out (lower down, into the slope, when it stands on one)
-        var Lx = Math.round(c - w / 2 + 0.25), Rx = Math.round(c + w / 2 + 0.25) - 1, inkL = true, inkR = true;   // (the two sides step out at different heights: no ring round the trunk where it widens)
+        var Lx = Math.round(c - w / 2 + 0.25), Rx = Math.round(c + w / 2 + 0.25) - 1, inkL = true, inkR = true;   // STRAIGHT TRUNKS (Nov 2026): one width from the crown down (a taper's pixel steps showed as notches); only the foot flares
         if (twinL) { Lx = Math.round(2 + (1 - tv) * 2); Rx = 16; inkR = false; }   // the dark oak's two-wide trunk: one thick trunk over both blocks
         if (twinR) { Lx = -1; Rx = Math.round(13 - (1 - tv) * 2); inkL = false; }
         if (rL && y > 3) inkL = false; if (rR && y > 3) inkR = false;
