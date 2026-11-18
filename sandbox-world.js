@@ -1098,7 +1098,7 @@ batwing: { n: "Bat Wing", frag: "bat" },
   }
   function genWide(seed, bv) {
     seed = (seed | 0) || 1; bv = bv || { c: 1, L: 0, R: 0 };   // bv: which land gets biome variants (c: the core map; L / R: segments from this index on)
-    var WW = WORLD_W, wt = new Uint16Array(WW * H), wwl = new Uint16Array(WW * H), wtop = new Int16Array(WW), wbio = new Uint8Array(WW), wsub = new Uint8Array(WW), x, y;
+    var WW = WORLD_W, wt = new Grid(WW, H, Uint16Array), wwl = new Grid(WW, H, Uint16Array), wtop = new Int16Array(WW), wbio = new Uint8Array(WW), wsub = new Uint8Array(WW), x, y;
     for (x = 0; x < WW; x++) { wtop[x] = H; wbio[x] = 0; }
     // BIGGER LANDS (sp 3, worlds from Nov 2026): Frostfen, Murkwater and Ember Bog are each 30% wider. The middle map is made CW wide and
     // centred on the same column, so camp sits where it always did and the world (and every save index) keeps its size.
@@ -1108,7 +1108,7 @@ batwing: { n: "Bat Wing", frag: "bat" },
     var SPL = SPAWNX;
     try { core = gen(seed); } finally { GEN_VAR = 0; GEN_SPARSE = 0; W = keep0[0]; B_FROST = keep0[1]; B_EMBER = keep0[2]; SPAWNX = keep0[3]; }   // (older worlds: exactly the original map, W = CORE_W, so old saves line up)
     POST.forEach(function (f) { f(core); });
-    for (y = 0; y < H; y++) { wt.set(core.t.subarray(y * CW, (y + 1) * CW), y * WW + OFF); wwl.set(core.walls.subarray(y * CW, (y + 1) * CW), y * WW + OFF); }
+    wt.blit(core.t, CW, OFF); wwl.blit(core.walls, CW, OFF);   // THE PAGE SYSTEM: the core goes straight into pages
     wtop.set(core.top, OFF); wbio.set(core.bio, OFF); wsub.set(core.sub, OFF);
     shiftX(core, OFF);
     var lay = { "-1": [], "1": [] };   // the segments on each side, nearest first: [x0, x1, biome]
@@ -1137,7 +1137,7 @@ batwing: { n: "Bat Wing", frag: "bat" },
     try { c = gen((wd.seed * 31 + (sd < 0 ? 7001 : 9001) + n * 131) | 0); }
     finally { W = keep[0]; B_FROST = keep[1]; B_EMBER = keep[2]; SPAWNX = keep[3]; GEN_EDGE = keep[4]; GEN_AERIE = keep[5]; GEN_VAR = keep[6]; GEN_SPARSE = keep[7]; }
     POST.forEach(function (f) { f(c); });
-    for (y = 0; y < H; y++) { wd.t.set(c.t.subarray(y * w, (y + 1) * w), y * WW + a); wd.walls.set(c.walls.subarray(y * w, (y + 1) * w), y * WW + a); }
+    wd.t.blit(c.t, w, a); wd.walls.blit(c.walls, w, a);
     wd.top.set(c.top, a); wd.bio.set(c.bio, a); if (wd.sub) wd.sub.set(c.sub, a);
     shiftX(c, a);
     var base = (sd < 0 ? 100000 : 200000) + n * 100;   // building ids that never collide and stay the same every time this segment is made
@@ -1157,7 +1157,7 @@ batwing: { n: "Bat Wing", frag: "bat" },
   var MALC_Z = 8;   // Malcruor is cleansed in 8 areas, one Corrupted Heart in each
   function genMalc(seed, rz) {
     seed = (seed | 0) || 1;
-    var WW = WORLD_W, MW = MALC_W, OFF = EXT + (CORE_W - MW) / 2, wt = new Uint16Array(WW * H), wwl = new Uint16Array(WW * H), wtop = new Int16Array(WW), wbio = new Uint8Array(WW), wsub = new Uint8Array(WW), x, y, c, i;
+    var WW = WORLD_W, MW = MALC_W, OFF = EXT + (CORE_W - MW) / 2, wt = new Grid(WW, H, Uint16Array), wwl = new Grid(WW, H, Uint16Array), wtop = new Int16Array(WW), wbio = new Uint8Array(WW), wsub = new Uint8Array(WW), x, y, c, i;
     var keep = [W, B_FROST, B_EMBER, SPAWNX, GEN_EDGE, GEN_AERIE, GEN_VAR, GEN_SPARSE], SPM = 560;
     W = MW; B_FROST = -400; B_EMBER = 700; SPAWNX = SPM; GEN_EDGE = null; GEN_AERIE = false; GEN_VAR = 0; GEN_SPARSE = 3; GEN_MALC = 1;
     try { c = gen(seed); } finally { W = keep[0]; B_FROST = keep[1]; B_EMBER = keep[2]; SPAWNX = keep[3]; GEN_EDGE = keep[4]; GEN_AERIE = keep[5]; GEN_VAR = keep[6]; GEN_SPARSE = keep[7]; GEN_MALC = 0; }
@@ -1198,8 +1198,8 @@ batwing: { n: "Bat Wing", frag: "bat" },
       for (x = 0; x < MW; x++) { if (!done[Math.min(MALC_Z - 1, Math.floor(x / ZW))]) continue; mcz[x + OFF] = 1; for (y = 0; y < H; y++) { var a2 = AU[c.t[y * MW + x]]; if (a2 !== undefined) c.t[y * MW + x] = a2; } }
     }
     for (x = 0; x < WW; x++) { wtop[x] = 0; wbio[x] = 1; }
-    for (y = 0; y < H; y++) { var row = y * WW; wt.fill(T.BEDROCK, row, row + WW); wt.set(c.t.subarray(y * MW, (y + 1) * MW), row + OFF); wwl.set(c.walls.subarray(y * MW, (y + 1) * MW), row + OFF); }   // bedrock past both ends
-    for (x = 0; x < 3; x++) for (y = 0; y < H; y++) { wt[y * WW + OFF + x] = T.BEDROCK; wt[y * WW + OFF + MW - 1 - x] = T.BEDROCK; }
+    wt.fill(T.BEDROCK); for (var mq = 0; mq < wt.n; mq++) wt.pack(mq); wt.blit(c.t, MW, OFF); wwl.blit(c.walls, MW, OFF);   // bedrock past both ends (packed: a page of bedrock is a few bytes)
+    for (x = 0; x < 3; x++) for (y = 0; y < H; y++) { wt.s(y * WW + OFF + x, T.BEDROCK); wt.s(y * WW + OFF + MW - 1 - x, T.BEDROCK); }
     wtop.set(c.top, OFF); wbio.set(c.bio, OFF); wsub.set(c.sub, OFF);
     for (x = 0; x < 3; x++) { wtop[OFF + x] = 0; wtop[OFF + MW - 1 - x] = 0; }
     shiftX(c, OFF);
@@ -1214,7 +1214,7 @@ batwing: { n: "Bat Wing", frag: "bat" },
   var PW = 256;
   function Grid(w, h, C) { this.W = w; this.H = h; this.C = C; this.length = w * h; this.n = Math.ceil(w / PW); this.p = []; this.k = []; for (var i = 0; i < this.n; i++) { this.p.push(null); this.k.push(null); } this.ups = 0; this.onUp = null; }
   Grid.prototype.g = function (i) { if (!(i >= 0 && i < this.length)) return undefined; var W = this.W, x = i % W, q = x >> 8, a = this.p[q]; if (a === null) { if (this.k[q] === null) return 0; a = this.up(q); } return a[((i / W) | 0) * PW + (x & 255)]; };
-  Grid.prototype.s = function (i, v) { if (!(i >= 0 && i < this.length)) return; var W = this.W, x = i % W, q = x >> 8, a = this.p[q]; if (a === null) a = this.up(q); a[((i / W) | 0) * PW + (x & 255)] = v; };
+  Grid.prototype.s = function (i, v) { if (!(i >= 0 && i < this.length)) return; var W = this.W, x = i % W, q = x >> 8, a = this.p[q]; if (a === null) a = this.up(q); a[((i / W) | 0) * PW + (x & 255)] = v; return v; };
   Grid.prototype.gxy = function (x, y) { if (x < 0 || y < 0 || x >= this.W || y >= this.H) return undefined; var q = x >> 8, a = this.p[q]; if (a === null) { if (this.k[q] === null) return 0; a = this.up(q); } return a[y * PW + (x & 255)]; };
   Grid.prototype.up = function (q) {   // unpack (or make) page q
     var a = new this.C(PW * this.H), K = this.k[q];

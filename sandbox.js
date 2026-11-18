@@ -999,7 +999,7 @@
     buildN++;
     world = state.dim === "malc" && SW.genMalc ? SW.genMalc(mcSeed(state.seed), state.malc && state.malc.rz) : SW.gen(state.seed, state.bvar); PICT = null;   // MALCRUOR: its own land, from its own seed MAPB = null; if (typeof M !== "undefined" && M) M.img = null;
     if (SW.genChunk && world.lay) { for (var gl = 0; gl < (state.genL | 0); gl++) if (!SW.genChunk(world, -1)) break; for (var gr = 0; gr < (state.genR | 0); gr++) if (!SW.genChunk(world, 1)) break; }   // ENDLESS WORLD: the land you have already explored
-    liftStructs(world.t, world.walls); tiles = Grid.from(world.t, W, H); orig = tiles.slice(); edits = {}; flInit();   // THE PAGE SYSTEM: the grids live in pages (SbxWorld.Grid)
+    liftStructs(world.t, world.walls); tiles = world.t; orig = tiles.slice(); edits = {}; flInit();   // THE PAGE SYSTEM: the grids live in pages (SbxWorld.Grid)
     state.e.split(",").forEach(function (s) { var a = s.split(":"), i = parseInt(a[0], 10), id = parseInt(a[1], 10); if (i >= 0 && i < tiles.length && TILES[id]) { tiles.s(i, id); if (id !== orig.g(i)) edits[i] = id; } });
     if ((state.trv | 0) < 3) { treesMigrate(); state.trv = 3; }
     if (state.minepos && world.holes && world.holes[0] && !state.dim) { world.holes[0].x = state.minepos[0]; world.holes[0].y = state.minepos[1]; }   // MOVING CAMP: the Mine where you put it   // (3: CAMP TREES, the short ones round camp, Nov 2026)   // TALL TREES: an older save's trees grow to the new heights (a tree you had chopped or built into is cleared, never left as half a tree)
@@ -1007,7 +1007,7 @@
     rzLoad(state);
     col = new Int16Array(W); for (var x = 0; x < W; x++) recalc(x);
     flLoad(state.fl); ex = new Grid(W, H, Uint8Array); unrle(state.ex, ex);
-    walls = world.walls ? Grid.from(world.walls, W, H) : new Grid(W, H, Uint16Array); worigW = walls.slice(); wedits = {};   // back walls: world-made ones plus only the ones you changed (S.we, "index:wallId" pairs, 0 = removed)
+    walls = world.walls || new Grid(W, H, Uint16Array); worigW = walls.slice(); wedits = {};   // back walls: world-made ones plus only the ones you changed (S.we, "index:wallId" pairs, 0 = removed)
     (typeof state.we === "string" ? state.we : "").split(",").forEach(function (q) { var a = q.split(":"), wi = parseInt(a[0], 10), wd = parseInt(a[1], 10); if (wi >= 0 && wi < walls.length && (wd === 0 || (TILES[wd] && TILES[wd].kind === "wall"))) { walls.s(wi, wd); if (wd !== worigW.g(wi)) wedits[wi] = wd; } });
     decoInit(state);   // DECORATING: this world's decorations (S.deco), checked against the furniture now in place
   }
@@ -13188,7 +13188,7 @@
     var r = SW.genChunk(world, sd); if (!r) return false;
     liftStructs(world.t, world.walls, r.structs);
     var x, y, i;
-    for (y = 0; y < H; y++) for (x = r.x0; x <= r.x1; x++) { i = y * W + x; tiles.s(i, world.t[i]); orig.s(i, tiles.g(i)); walls.s(i, worigW.s(i, world.walls[i])); }
+    for (y = 0; y < H; y++) for (x = r.x0; x <= r.x1; x++) { i = y * W + x; orig.s(i, tiles.g(i)); worigW.s(i, walls.g(i)); }   // (the new land was made straight into tiles and walls)
     editN++; wallN++; exVer++;
     Object.keys(edits).forEach(function (k) { var ii = +k, xx = ii % W; if (xx >= r.x0 && xx <= r.x1) { tiles.s(ii, edits[k]); if (edits[k] === orig.g(ii)) delete edits[k]; } });   // anything already changed there (e.g. by a friend) stays changed
     Object.keys(wedits).forEach(function (k) { var ii = +k, xx = ii % W; if (xx >= r.x0 && xx <= r.x1) { walls.s(ii, wedits[k]); if (wedits[k] === worigW.g(ii)) delete wedits[k]; } });
@@ -14650,11 +14650,11 @@
       x0 = clamp(x0, 0, W - 1); x1 = clamp(x1, 0, W - 1); y0 = clamp(y0, 0, H - 1); y1 = clamp(y1, 0, H - 1);
       var w = x1 - x0 + 1, h = y1 - y0 + 1, P = { x0: x0, y0: y0, w: w, h: h, t: new Uint16Array(w * h), wl: new Uint16Array(w * h), lt: [], win: [], cv: null, cts: 0, gl: [], used: 0 }, any = false;
       for (var yy = 0; yy < h; yy++) for (var xx = 0; xx < w; xx++) {
-        var gi = (y0 + yy) * W + x0 + xx, k = yy * w + xx, id = t[gi], wv = wl ? wl[gi] : 0;
+        var gi = (y0 + yy) * W + x0 + xx, k = yy * w + xx, id = t.g(gi), wv = wl ? wl.g(gi) : 0;
         if (id === T.WATER || id === T.LAVA) id = T.AIR;
         if (q.sky && (x0 + xx < q.x0 || x0 + xx > q.x1) && y0 + yy >= q.gy - q.bh && !(x0 + xx === q.outX && y0 + yy === q.gy - 3)) continue;   // a sky house's wide roof must not swallow the market stall or lamp beside its walls
-        if (id !== T.AIR) { P.t[k] = id; PICT.s(gi, id); t[gi] = T.AIR; any = true; if (TILES[id].light > 0) P.lt.push([x0 + xx, y0 + yy, TILES[id].light]); if (TILES[id].kind === "glass" || /^stained/.test(TILES[id].kind || "")) P.win.push([x0 + xx, y0 + yy]); }
-        if (wv) { P.wl[k] = wv; wl[gi] = 0; any = true; }
+        if (id !== T.AIR) { P.t[k] = id; PICT.s(gi, id); t.s(gi, T.AIR); any = true; if (TILES[id].light > 0) P.lt.push([x0 + xx, y0 + yy, TILES[id].light]); if (TILES[id].kind === "glass" || /^stained/.test(TILES[id].kind || "")) P.win.push([x0 + xx, y0 + yy]); }
+        if (wv) { P.wl[k] = wv; wl.s(gi, 0); any = true; }
       }
       if (P.win.length) {   // panes that touch make one window: they light up and go out together (keyed by the window's first pane)
         var wk = {}; P.win.forEach(function (c) { wk[c[0] + "," + c[1]] = c; });
