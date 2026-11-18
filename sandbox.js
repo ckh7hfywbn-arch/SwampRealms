@@ -769,7 +769,7 @@
     S.animal = charPick; try { localStorage.setItem("swamp-delve-char", charPick); } catch (e) {} mkSprite(); hbDirty = true; save(); closeStory(); if (titleOpen) renderTitle();
     toast("You are playing as " + charName(charPick) + ".", "#4ee6b4"); if (MP.on) mpMe();
   }
-  function fresh(seed) { return { v: 2, wv: SW.WORLDVER, trv: 3, seed: seed, e: "", ex: "", we: "", p: null, animal: defaultAnimal(), inv: {}, slots: emptySlots(0), extra: {}, bag: 0, can: 0, water: 0, mru: [], tier: 0, wpn: 0, arm: 0, bow: 0, bl: 1, trail: 0, hp: MAXHP, bed: null, shovel: 0, dur: { pick: 0, shovel: 0, wpn: 0, arm: 0 }, chests: {}, wp: [], time: 60, days: 0, ms: {}, st: { fmreads: 0, fmpaid: 0, croakamet: 0, orders: 0, croakaf: 0, hbuilt: 0, hsprk: 0, sprktip: 0, preserves: 0, seedsmade: 0, petted: 0, aprod: 0, hanimals: 0, hups: 0, shipped: 0, homevisit: 0, ditches: 0, hometip: 0, canaltip: 0, paddies: 0, paddytip: 0, moontip: 0, composted: 0, prize: 0, paddyharv: 0, moonharv: 0, giants: 0, giantharv: 0, legfish: 0, croako: 0, fbreads: 0, volc: 0, volcDeep: 0, volctip: 0, implodes: 0, seafish: 0, ocvisit: 0, ocdeep: 0, dives: 0, divetip: 0, ockills: 0, occhests: 0, clams: 0, pirates: 0, captain: 0, oboops: 0, sails: 0, sailtip: 0, piratetip: 0, pships: 0, islands: 0, sitedives: 0, boatParts: 0, boatDone: 0, boatLook: 0, lilies: 0, imps: 0, brutes: 0, crawlers: 0, birds: 0, fetched: 0, felled: 0, lorepages: 0, lorethreads: 0, vmet: 0, vtrades: 0, vchats: 0, landmarks: 0, blessings: 0, wishes: 0, signs: 0, bchests: 0, templeLoot: 0, mwork: 0, fine: 0, perfbrew: 0, discs: 0, forged: 0, brewed: 0, mixes: 0, nexus: 0, bloodmoons: 0, bmkills: 0, rainbows: 0, pots_gold: 0, bounces: 0, confetti: 0, grapples: 0, maps: 0, dug: 0, waystones: 0, warps: 0, songs: 0, starfell: 0, starsmined: 0, booms: 0, blasted: 0, thrown: 0, fireworks: 0, kegs: 0, deaths: 0, mined: 0, placed: 0, torches: 0, wood: 0, maxDepth: 0, swim: 0, stick: 0, fiber: 0, pebble: 0, spore: 0, benches: 0, swings: 0, bugs: 0, frogs: 0, bats: 0, wolves: 0, gators: 0, witches: 0, spiders: 0, slimes: 0, wasps: 0, seen: 0, cchests: 0, pots: 0, ckills: 0, cclear: 0, heart: 0, fish: 0, rarefish: 0, fishloot: 0, boots: 0, lavafish: 0, tamed: 0, collected: 0, babies: 0, talks: 0, realm: 0, stained: 0, wchests: 0, glided: 0, drunk: 0, socketed: 0, saplings: 0, treesgrown: 0, shots: 0, arrowhits: 0, trapped: 0, homes: 0, gatepl: 0, gatewake: 0, gatein: 0, scooped: 0, fireflies: 0, baited: 0, stands: 0, tilled: 0, hoeharv: 0, charmswap: 0, boss: 0, bossk: 0, summons: 0, bounties: 0, shopbuys: 0, eaten: 0, planted: 0, harvests: 0, cooked: 0, cropbits: 0, htip: 0, beds: 0, sleeps: 0, warned: 0, doors: 0, ladders: 0, chests: 0, stashed: 0, caves: 0, cmined: 0, caveDeep: 0, rigOre: 0, rigs: 0, mineLift: 0, mineIntro: 0, campfires: 0, sleepbags: 0, decor: 0, dbenches: 0, dcraft: 0, watered: 0, grown: 0, walls: 0 }, zoom: 1, tv: 2, qv: 6, rod: 0, hoe: 0, bucket: 0, bkt: "", net: 0, cg: 0, diff: 1, lossPct: null, keepInv: 0, graves: [], graveMin: 5, wings: 0, stain: {}, wstain: {}, shape: {}, dflip: {}, whut: {}, wloot: {}, genL: 0, genR: 0, stands: {}, traps: {}, gates: {}, saps: {}, pity: {}, fx: {}, gems: { wpn: "", arm: "", pick: "", bow: "" }, done: 0, gv: 1, bossOn: "", wx: null, charms: { own: {}, on: [] }, stor: {}, belt: {}, gear: { back: "", lamp: "", mount: "", ride: 1 }, bty: { day: -1, wk: -1, d: [], w: null, rr: 0, full: 0 }, pets: [], fdex: {}, fn: {}, fbig: {}, fpay: {}, hb: {}, hq: {}, hbpay: {}, qi: 0, qch: -1, mk: {}, mw: {}, disc: {}, bvar: { c: 1, L: 0, R: 0, sp: 3 }, stars: [], starRoll: -1, blessDay: -1, vf: {}, vg: {}, lore: {}, lorew: {}, gdrop: [], pleaf: {}, bird: null, ways: [], tmap: null, pot: null, bmNext: -1, gmet: 0, vis: {}, food: 100, nohunger: 0, farm: {}, ate: {} }; }
+  function fresh(seed) { return { v: 2, wv: SW.WORLDVER, trv: 3, seed: seed, e: "", ex: "", we: "", p: null, animal: defaultAnimal(), inv: {}, slots: emptySlots(0), extra: {}, bag: 0, can: 0, water: 0, mru: [], tier: 0, wpn: 0, arm: 0, bow: 0, bl: 1, trail: 0, hp: MAXHP, bed: null, shovel: 0, dur: { pick: 0, shovel: 0, wpn: 0, arm: 0 }, chests: {}, wp: [], time: 60, days: 0, ms: {}, st: { fmreads: 0, fmpaid: 0, croakamet: 0, orders: 0, croakaf: 0, hbuilt: 0, hsprk: 0, sprktip: 0, preserves: 0, seedsmade: 0, petted: 0, aprod: 0, hanimals: 0, hups: 0, shipped: 0, homevisit: 0, ditches: 0, hometip: 0, canaltip: 0, paddies: 0, paddytip: 0, moontip: 0, composted: 0, prize: 0, paddyharv: 0, moonharv: 0, giants: 0, giantharv: 0, legfish: 0, croako: 0, fbreads: 0, volc: 0, volcDeep: 0, volctip: 0, implodes: 0, seafish: 0, ocvisit: 0, ocdeep: 0, dives: 0, divetip: 0, ockills: 0, occhests: 0, clams: 0, pirates: 0, captain: 0, oboops: 0, sails: 0, sailtip: 0, piratetip: 0, pships: 0, islands: 0, sitedives: 0, boatParts: 0, boatDone: 0, boatLook: 0, lilies: 0, imps: 0, brutes: 0, crawlers: 0, birds: 0, fetched: 0, felled: 0, lorepages: 0, lorethreads: 0, vmet: 0, vtrades: 0, vchats: 0, landmarks: 0, blessings: 0, wishes: 0, signs: 0, bchests: 0, templeLoot: 0, mwork: 0, fine: 0, perfbrew: 0, discs: 0, forged: 0, brewed: 0, mixes: 0, nexus: 0, bloodmoons: 0, bmkills: 0, rainbows: 0, pots_gold: 0, bounces: 0, confetti: 0, grapples: 0, maps: 0, dug: 0, waystones: 0, warps: 0, songs: 0, starfell: 0, starsmined: 0, booms: 0, blasted: 0, thrown: 0, fireworks: 0, kegs: 0, deaths: 0, mined: 0, placed: 0, torches: 0, wood: 0, maxDepth: 0, swim: 0, stick: 0, fiber: 0, pebble: 0, spore: 0, benches: 0, swings: 0, bugs: 0, frogs: 0, bats: 0, wolves: 0, gators: 0, witches: 0, spiders: 0, slimes: 0, wasps: 0, seen: 0, cchests: 0, pots: 0, ckills: 0, cclear: 0, heart: 0, fish: 0, rarefish: 0, fishloot: 0, boots: 0, lavafish: 0, tamed: 0, collected: 0, babies: 0, talks: 0, realm: 0, stained: 0, wchests: 0, glided: 0, drunk: 0, socketed: 0, saplings: 0, treesgrown: 0, shots: 0, arrowhits: 0, trapped: 0, homes: 0, gatepl: 0, gatewake: 0, gatein: 0, scooped: 0, fireflies: 0, baited: 0, stands: 0, tilled: 0, hoeharv: 0, charmswap: 0, boss: 0, bossk: 0, summons: 0, bounties: 0, shopbuys: 0, eaten: 0, planted: 0, harvests: 0, cooked: 0, cropbits: 0, htip: 0, beds: 0, sleeps: 0, warned: 0, doors: 0, ladders: 0, chests: 0, stashed: 0, caves: 0, cmined: 0, caveDeep: 0, rigOre: 0, rigs: 0, mineLift: 0, mineIntro: 0, campfires: 0, sleepbags: 0, decor: 0, dbenches: 0, dcraft: 0, watered: 0, grown: 0, walls: 0 }, zoom: 1, tv: 2, qv: 6, rod: 0, hoe: 0, bucket: 0, bkt: "", net: 0, cg: 0, diff: 1, lossPct: null, keepInv: 0, graves: [], graveMin: 5, wings: 0, stain: {}, wstain: {}, shape: {}, dflip: {}, whut: {}, wloot: {}, genL: 0, genR: 0, stands: {}, traps: {}, gates: {}, saps: {}, pity: {}, fx: {}, gems: { wpn: "", arm: "", pick: "", bow: "" }, done: 0, gv: 1, bossOn: "", wx: null, charms: { own: {}, on: [] }, stor: {}, belt: {}, gear: { back: "", lamp: "", mount: "", ride: 1 }, bty: { day: -1, wk: -1, d: [], w: null, rr: 0, full: 0 }, pets: [], fdex: {}, fn: {}, fbig: {}, fpay: {}, hb: {}, hq: {}, hbpay: {}, qi: 0, qch: -1, mk: {}, mw: {}, disc: {}, bvar: { c: 1, L: 0, R: 0, sp: 4 }, stars: [], starRoll: -1, blessDay: -1, vf: {}, vg: {}, lore: {}, lorew: {}, gdrop: [], pleaf: {}, bird: null, ways: [], tmap: null, pot: null, bmNext: -1, gmet: 0, vis: {}, food: 100, nohunger: 0, farm: {}, ate: {} }; }
   // KEEP WHAT THIS VERSION DOESN'T KNOW. The live game and the test version share saves. When the cleaner meets an item, a setting or a
   // piece of the boat this version doesn't understand, it is kept aside in S.xk instead of being thrown away, and put back the next time a
   // version that knows it loads the save. Without this, playing the test version and then the live one wiped the newer things.
@@ -809,7 +809,7 @@
     var d = fresh(o.seed | 0 || 1); d.genL = gLR[0]; d.genR = gLR[1];
     if (o.wv === SW.WORLDVER) {   // BIOME VARIANTS: a save from before them keeps its land exactly; only land made from now on can be a variant
       var bvo = o.bvar && typeof o.bvar === "object" ? o.bvar : null;
-      d.bvar = bvo ? { c: bvo.c ? 1 : 0, L: clamp(Math.floor(+bvo.L) || 0, 0, 99), R: clamp(Math.floor(+bvo.R) || 0, 0, 99), sp: clamp(bvo.sp | 0, 0, 3) } : { c: 0, L: gLR[0], R: gLR[1], sp: 0 };   // sp: made with fewer buildings (worlds from late 2026 on)
+      d.bvar = bvo ? { c: bvo.c ? 1 : 0, L: clamp(Math.floor(+bvo.L) || 0, 0, 99), R: clamp(Math.floor(+bvo.R) || 0, 0, 99), sp: clamp(bvo.sp | 0, 0, 4) } : { c: 0, L: gLR[0], R: gLR[1], sp: 0 };   // sp: made with fewer buildings (worlds from late 2026 on)
     }
     d.e = typeof o.e === "string" ? o.e : ""; d.ex = typeof o.ex === "string" ? o.ex : "";
     if (o.wv !== SW.WORLDVER) { d.e = ""; d.ex = ""; o = Object.assign({}, o, { p: null }); d.grown = true; }   // the world was rebuilt bigger: keep your items and progress, but old digging and map no longer line up
@@ -997,7 +997,7 @@
   }
   function build(state) {
     buildN++;
-    world = state.dim === "malc" && SW.genMalc ? SW.genMalc(mcSeed(state.seed), state.malc && state.malc.rz) : SW.gen(state.seed, state.bvar); PICT = null;   // MALCRUOR: its own land, from its own seed MAPB = null; if (typeof M !== "undefined" && M) M.img = null;
+    world = state.dim === "malc" && SW.genMalc ? SW.genMalc(mcSeed(state.seed), state.malc && state.malc.rz) : SW.gen(state.seed, state.bvar); PICT = null; W = world.W; H = world.H; LIVEQ = -999; PGL = {};   // HUGE WORLDS: the size is the world's own (old worlds 12,240 x 200; new ones 36,720 x 400)   // MALCRUOR: its own land, from its own seed MAPB = null; if (typeof M !== "undefined" && M) M.img = null;
     if (SW.genChunk && world.lay) { for (var gl = 0; gl < (state.genL | 0); gl++) if (!SW.genChunk(world, -1)) break; for (var gr = 0; gr < (state.genR | 0); gr++) if (!SW.genChunk(world, 1)) break; }   // ENDLESS WORLD: the land you have already explored
     liftStructs(world.t, world.walls); tiles = world.t; orig = tiles.slice(); edits = {}; flInit();   // THE PAGE SYSTEM: the grids live in pages (SbxWorld.Grid)
     state.e.split(",").forEach(function (s) { var a = s.split(":"), i = parseInt(a[0], 10), id = parseInt(a[1], 10); if (i >= 0 && i < tiles.length && TILES[id]) { tiles.s(i, id); if (id !== orig.g(i)) edits[i] = id; } });
@@ -1006,7 +1006,7 @@
     smask = null;   // buildings are pictures now (see BUILDING PICTURES), so nothing in the grid is scenery
     rzLoad(state);
     col = new Int16Array(W); for (var x = 0; x < W; x++) recalc(x);
-    flLoad(state.fl); ex = new Grid(W, H, Uint8Array); unrle(state.ex, ex);
+    flLoad(state.fl); ex = new Grid(W, H, Uint8Array); if (typeof state.ex === "string" && state.ex.charAt(0) === "P") ex.undump(state.ex); else unrle(state.ex, ex);
     walls = world.walls || new Grid(W, H, Uint16Array); worigW = walls.slice(); wedits = {};   // back walls: world-made ones plus only the ones you changed (S.we, "index:wallId" pairs, 0 = removed)
     (typeof state.we === "string" ? state.we : "").split(",").forEach(function (q) { var a = q.split(":"), wi = parseInt(a[0], 10), wd = parseInt(a[1], 10); if (wi >= 0 && wi < walls.length && (wd === 0 || (TILES[wd] && TILES[wd].kind === "wall"))) { walls.s(wi, wd); if (wd !== worigW.g(wi)) wedits[wi] = wd; } });
     decoInit(state);   // DECORATING: this world's decorations (S.deco), checked against the furniture now in place
@@ -1035,7 +1035,7 @@
       S.p = { x: +p.x.toFixed(2), y: +p.y.toFixed(2), f: p.face };
       var ek = buildN + ":" + editN, xk = buildN + ":" + exVer, wk2 = buildN + ":" + wallN;
       if (SVC.ek !== ek) { SVC.ek = ek; SVC.e = Object.keys(edits).map(function (k) { return k + ":" + edits[k]; }).join(","); SVC.fl = flSave(); }
-      if (SVC.xk !== xk) { SVC.xk = xk; SVC.ex = rle(ex); }
+      if (SVC.xk !== xk) { SVC.xk = xk; SVC.ex = ex.dump ? ex.dump() : rle(ex); }   // (THE PAGE SYSTEM: saved page by page, packed pages as they are)
       if (SVC.wk !== wk2) { SVC.wk = wk2; SVC.we = Object.keys(wedits).map(function (k) { return k + ":" + wedits[k]; }).join(","); }
       S.e = SVC.e; S.fl = SVC.fl; S.ex = SVC.ex; S.we = SVC.we; dropsSave();
       localStorage.setItem(wkey(curId), JSON.stringify(S)); cloudDirty(); touchIdx(); saveFail = false;
@@ -6089,10 +6089,11 @@
   function soilKind(x, y) { var k = TILES[get(x, y)].kind; return k === "farmland" || k === "farmwet"; }
   function setSoil(x, y, wet) { var k = TILES[get(x, y)].kind; if (k === "farmland" && wet) setT(x, y, T.X_farmwet); else if (k === "farmwet" && !wet) setT(x, y, T.X_farmland); }
   function plantCrop(x, y, seedItem) { S.farm[x + "," + y] = { c: ITEMS[seedItem].seed, g: 0, w: 0 }; if (MP.on && MP.role === "guest") mpSend({ t: "farm", k: x + "," + y, c: ITEMS[seedItem].seed }); S.st.planted++; checkTrail(); checkGoals(); }
-  function farmStep(sec) {
-    tickTraps(sec); tickSaps(sec);
+  function farmStep(sec, only) {
+    tickTraps(sec, only); tickSaps(sec, only);
     Object.keys(S.farm).forEach(function (key) {
-      var e = S.farm[key], q = key.split(","), x = +q[0], y = +q[1], td = cropAt(x, y), C = td && CROPS[td.crop];
+      var e = S.farm[key], q = key.split(","), x = +q[0], y = +q[1]; if (only !== undefined ? pageOf(x) !== only : !liveX(x)) return;   // (far away: it catches up when you return)
+      var td = cropAt(x, y), C = td && CROPS[td.crop];
       if (!C || td.crop !== e.c) { delete S.farm[key]; return; }
       if (e.w < 20 && sprinkled(x, y)) { e.w = WET_S; setSoil(x, y + 1, true); }   // a Sprinkler nearby
       var rate = (e.w > 0 ? 2 : 1) * (world.bio[x] === C.b ? 1.4 : 1) * (hasCharm("thumb") ? 1.25 : 1) * (fx("grow") ? 1.5 : 1);
@@ -8500,9 +8501,9 @@
   function sprinkled(x, y) { for (var yy = y - 1; yy <= y + 1; yy++) for (var xx = x - 3; xx <= x + 3; xx++) if (get(xx, yy) === T.X_sprinkler) return true; return false; }
   function isTrap(x, y) { var td = TILES[get(x, y)]; return !!td && td.kind === "fishtrap"; }
   function trapWet(x, y) { return get(x - 1, y) === T.WATER || get(x + 1, y) === T.WATER || get(x, y - 1) === T.WATER; }
-  function tickTraps(sec) {
+  function tickTraps(sec, only) {
     Object.keys(S.traps).forEach(function (key) {
-      var q = key.split(","), x = +q[0], y = +q[1], tr = S.traps[key];
+      var q = key.split(","), x = +q[0], y = +q[1], tr = S.traps[key]; if (only !== undefined ? pageOf(x) !== only : !liveX(x)) return;
       if (!isTrap(x, y)) { delete S.traps[key]; return; }
       if (tr.f.length >= TRAP_MAX || !trapWet(x, y)) return;
       tr.t += sec; if (tr.t < TRAP_T) return; tr.t = 0;
@@ -12214,10 +12215,10 @@
     if (!b) return false;
     chips(x + 0.5, y - 3, "#7fd06a", 20, 6); S.st.treesgrown++; return true;
   }
-  function tickSaps(sec) {
+  function tickSaps(sec, only) {
     if (inMC() && !MC.rany) return;
     Object.keys(S.saps).forEach(function (key) {
-      var q = key.split(","), x = +q[0], y = +q[1];
+      var q = key.split(","), x = +q[0], y = +q[1]; if (only !== undefined ? pageOf(x) !== only : !liveX(x)) return;
       if (get(x, y) !== T.X_sapling) { delete S.saps[key]; return; }
       S.saps[key] -= sec; if (S.saps[key] > 0) return;
       if (growTree(x, y)) { delete S.saps[key]; if (Math.abs(x - p.x) < 30 && !cave) toast("A sapling grew into a tree!", "#7fd06a"); }
@@ -13200,10 +13201,22 @@
   // the moment anything reads them. (A page unpacked in the last 8 seconds is left alone, so nothing packs and unpacks over and over.)
   var PAGE_R = 3, pageT = 0;
   function pageGrids() { return [tiles, orig, walls, worigW, ex, FL, FLM, PICT, CSTAMP, DBK, rmask, smask].filter(function (g2) { return g2 && g2.sweep; }); }
+  // CATCH UP WHEN YOU RETURN: crops, saplings, fish traps, belts, hoppers and vacuum chests only run on the pages near you (LIVEQ +- PAGE_R).
+  // When a page comes back into range, it gets the time it missed (PGL[q] = the sim clock when it left), all at once.
+  var LIVEQ = -999, SIMT = 0, PGL = {};
+  function pageOf(x) { return Math.floor(x / Grid.PW); }
+  function liveX(x) { return LIVEQ < -900 || Math.abs(pageOf(x) - LIVEQ) <= PAGE_R; }
   function tickPages(dt) {
-    pageT -= dt; if (pageT > 0 || !tiles || !tiles.sweep) return; pageT = 2;
+    SIMT += dt; pageT -= dt; if (pageT > 0 || !tiles || !tiles.sweep) return; pageT = 2;
     var cx = cave && cave.hole ? cave.hole.x : OCS || HOME ? (S.p ? S.p.x : p.x) : p.x, q = Math.floor(clamp(cx, 0, W - 1) / Grid.PW);
+    if (q !== LIVEQ) { var old = LIVEQ; LIVEQ = q;
+      if (old > -900) { for (var a = old - PAGE_R; a <= old + PAGE_R; a++) if (Math.abs(a - q) > PAGE_R) PGL[a] = SIMT;   // pages that just went out of range
+        for (var b = q - PAGE_R; b <= q + PAGE_R; b++) if (PGL[b] !== undefined) { var gone = SIMT - PGL[b]; delete PGL[b]; if (gone > 1) catchUp(b, gone); } } }
     pageGrids().forEach(function (g2) { g2.sweep(q - PAGE_R, q + PAGE_R, 8000); });
+  }
+  function catchUp(q, sec) {   // a page back in range: everything on it runs for the time it missed (belts and hoppers up to 10 minutes)
+    try { farmStep(sec, q); } catch (e) {}
+    try { var n = Math.min(Math.ceil(Math.min(sec, 600) / 0.5), 1200); for (var k = 0; k < n; k++) logiTick(0.5, q); } catch (e) {}
   }
   function pageStats() { var b = 0, open = 0, all = 0; pageGrids().forEach(function (g2) { var m = g2.mem(); b += m.bytes; open += m.open; all += m.pages; }); return { mb: +(b / 1048576).toFixed(1), open: open, pages: all }; }
   var growT = 0;
@@ -13403,12 +13416,13 @@
     if (isChest(nid)) return storPut(nx, ny, k, 1) > 0;
     return false;
   }
-  function logiTick(dt) {
-    if (cave || HOME || OCS || (MP.on && MP.role === "guest")) return; S.stor = S.stor || {}; S.belt = S.belt || {};
+  function logiTick(dt, only) {
+    if (only === undefined && (cave || HOME || OCS) || (MP.on && MP.role === "guest")) return; S.stor = S.stor || {}; S.belt = S.belt || {};
+    var far = function (x) { return only !== undefined ? pageOf(x) !== only : !liveX(x); };
     // BELTS: riders slide along (1.8 blocks a second), keep a little gap, and hop to whatever is at the end
     var v = 1.8 * dt, k, i;
     for (k in S.belt) {
-      var L = S.belt[k], q = k.split(","), x = +q[0], y = +q[1], td = TILES[get(x, y)]; if (!td || td.store !== "belt") { delete S.belt[k]; continue; }
+      var L = S.belt[k], q = k.split(","), x = +q[0], y = +q[1]; if (far(x)) continue; var td = TILES[get(x, y)]; if (!td || td.store !== "belt") { delete S.belt[k]; continue; }
       var d = (S.stor[k] && S.stor[k].d) | 0; L.sort(function (a, b) { return b.p - a.p; });
       for (i = 0; i < L.length; i++) { var lim = i === 0 ? 1 : L[i - 1].p - 0.34; L[i].p = Math.min(lim, L[i].p + v);
         if (i === 0 && L[0].p >= 1) { var nx = x + LDX[d], ny = y + LDY[d], ok = handOff(nx, ny, L[0].k);
@@ -13418,10 +13432,10 @@
         if (storPut(x, y + 1, L[i].k, 1)) { if (onScreen(x + 0.5, y)) chips(x + 0.5, y + 0.6, "#9fe8ff", 3, 2); L.splice(i, 1); } }
       if (!L.length) delete S.belt[k];
     }
-    LOGI.acc += dt; if (LOGI.acc < 0.25) return; var step = LOGI.acc; LOGI.acc = 0;
+    if (only === undefined) { LOGI.acc += dt; if (LOGI.acc < 0.25) return; LOGI.acc = 0; }
     // HOPPERS: four things a second: hand on what it holds, then pull one from the chest on top (or catch a dropped item sitting on it)
     for (k in S.stor) {
-      var o = S.stor[k], q2 = k.split(","), hx = +q2[0], hy = +q2[1], ht = TILES[get(hx, hy)]; if (!ht || ht.store !== "hopper") continue;
+      var o = S.stor[k], q2 = k.split(","), hx = +q2[0], hy = +q2[1]; if (far(hx)) continue; var ht = TILES[get(hx, hy)]; if (!ht || ht.store !== "hopper") continue;
       var hd = o.d === undefined ? 3 : o.d, ox2 = hx + (hd === 3 ? 0 : LDX[hd]), oy2 = hy + (hd === 3 ? 1 : 0);
       if (o.b && handOff(ox2, oy2, o.b.k)) { o.b.n--; if (o.b.n <= 0) delete o.b; }
       if (!o.b) { var got = storTakeOne(hx, hy - 1, function (it) { var tdo = TILES[get(ox2, oy2)]; return tdo.store === "belt" ? beltFree(ox2 + "," + oy2) : tdo.store === "hopper" ? true : isChest(get(ox2, oy2)) ? storFits(ox2, oy2, it) : false; });
@@ -13432,7 +13446,7 @@
     for (var j2 = drops.length - 1; j2 >= 0; j2--) { var dp = drops[j2]; if (dp.t < 0.3) continue; var bx = Math.floor(dp.x), by = Math.floor(dp.y + 0.45), bk = bx + "," + by;
       if (TILES[get(bx, by)] && TILES[get(bx, by)].store === "belt" && beltFree(bk)) { (S.belt[bk] = S.belt[bk] || []).push({ k: dp.k, p: 0.15 }); dp.n--; if (dp.n <= 0) drops.splice(j2, 1); } }
     // VACUUM CHESTS: pull dropped items within 6 blocks
-    for (k in S.stor) { var q3 = k.split(","), vx = +q3[0], vy = +q3[1]; if (!TILES[get(vx, vy)] || TILES[get(vx, vy)].store !== "vacchest") continue;
+    for (k in S.stor) { var q3 = k.split(","), vx = +q3[0], vy = +q3[1]; if (far(vx) || only !== undefined) continue; if (!TILES[get(vx, vy)] || TILES[get(vx, vy)].store !== "vacchest") continue;
       for (var j3 = drops.length - 1; j3 >= 0; j3--) { var dv = drops[j3]; if (dv.t < 0.6) continue; var ddx = dv.x - vx - 0.5, ddy = dv.y - vy - 0.5; if (ddx * ddx + ddy * ddy > 36) continue;
         var put = storPut(vx, vy, dv.k, dv.n); if (put > 0) { if (onScreen(dv.x, dv.y)) chips(dv.x, dv.y, "#7af0b0", 3, 2); dv.n -= put; if (dv.n <= 0) drops.splice(j3, 1); } } }
     if (LOGI.dirty && panelOpen && tab === "chest" && chestKey) { LOGI.dirty = 0; if (/^term:/.test(chestKey)) { var tl = $("stTermList"); if (tl) tl.innerHTML = termList(); } else renderPanel(); } else LOGI.dirty = 0;
@@ -29518,6 +29532,8 @@ var ATK = { on: false, mine: false };
       ["Turn world cheats on (commands)", function () { S.cheats = 1; toast("Cheats on for this world: press / for commands.", "#ffd23f"); }]
     ],
     open: [
+      ["Page system: show memory and pages", function () { var st = pageStats(); toast("World pages: " + st.open + " open of " + st.pages + " \u00b7 " + st.mb + " MB \u00b7 world " + W + " x " + H + (world && world.huge ? " (huge)" : ""), "#7af0d0"); }],
+      ["Page system: pack every far page now", function () { var q = pageOf(clamp(p.x, 0, W - 1)), n = 0; pageGrids().forEach(function (g2) { n += g2.sweep(q - PAGE_R, q + PAGE_R, 0); }); toast(n + " pages packed.", "#7af0d0"); }],
       ["Storage demo: build a hopper + belt + Filter Chest line here, then open the Terminal", function () { devStorDemo(); }],
       ["Map of this place (caves, homestead, pier, Malcruor...)", function () { if (panelOpen) closePanel(); setTimeout(openMap, 50); }],
       ["Codex", function () { cxOpen(); }],
@@ -29873,7 +29889,7 @@ var ATK = { on: false, mine: false };
   window.__sbx.bld = function (kind) { var h = (world.structs || []).filter(function (q) { return q.kind === kind && !q.razed; })[0]; if (h) { p.x = (h.dx || h.x) + 0.5; enterBuilding(h); } return !!h; };
   window.__sbx.contAny = function () { var F = cave && cave.F; if (!F) return 0; for (var y = 0; y < F.h; y++) for (var x = 0; x < F.w; x++) { var c = contAtCell(x, y); if (c && c.kind === "deco") { openCont(c); return 1; } } return 0; };
   window.__sbxIcon = icon; window.__sbx.cc = function (f) { ccOpen(!!f); }; window.__sbx.ccTab = function (t) { CC.tab = t; ccRender(); }; window.__sbx.ccSet = function (k, v) { CC.d[k] = v; ccRender(); }; window.__sbx.ccDone = function () { ccClose(true); };
-  window.__sbx.dev = { on: DEVON, open: devOpen, act: dmAct, A: DEVA, L: devTabList, tp: function (x, y) { devTp(x, y); }, pages: function () { var u = 0; pageGrids().forEach(function (g2) { u += g2.ups; }); var st = pageStats(); st.ups = u; return st; }, mineInfo: function () { if (!cave || !cave.F) return null; var F = cave.F, n = 0, first = -1; for (var i = 0; i < F.node.length; i++) if (F.node[i]) { n++; if (first < 0) first = i; } return { f: cave.f, run: cave.run, n: n, first: first, bottom: !!F.bottom, hoard: F.hoard, down: F.down }; }, mineZap: function (i) { cave.F.node[i] = 0; }, leave: function () { leaveCaveNow(); }, camp: function () { return campPieces(); }, campFits: function (k, x) { var q = campPieces().find(function (o) { return o.k === k; }); return q ? campFits(q, x) : false; } };
+  window.__sbx.dev = { on: DEVON, open: devOpen, act: dmAct, A: DEVA, L: devTabList, tp: function (x, y) { devTp(x, y); }, exInfo: function () { return { saved: (S.ex || "").slice(0, 3), len: (S.ex || "").length, now: ex.dump().length }; }, pages: function () { var u = 0; pageGrids().forEach(function (g2) { u += g2.ups; }); var st = pageStats(); st.ups = u; return st; }, mineInfo: function () { if (!cave || !cave.F) return null; var F = cave.F, n = 0, first = -1; for (var i = 0; i < F.node.length; i++) if (F.node[i]) { n++; if (first < 0) first = i; } return { f: cave.f, run: cave.run, n: n, first: first, bottom: !!F.bottom, hoard: F.hoard, down: F.down }; }, mineZap: function (i) { cave.F.node[i] = 0; }, leave: function () { leaveCaveNow(); }, camp: function () { return campPieces(); }, campFits: function (k, x) { var q = campPieces().find(function (o) { return o.k === k; }); return q ? campFits(q, x) : false; } };
   window.__sbx.ess = { get v() { return S.ess | 0; }, drop: function (x, y, n) { essDrop(x, y, n); }, orbs: function () { return ORBS.length; }, lv: function () { return essLevel(S.ess | 0); }, tgt: function () { return essTgt(); }, vox: function (k, ev) { return vxPlay(k, ev || "i", 0, 0, 0, 0, true); }, kinds: function () { return Object.keys(KVOX); }, cx: function (s2, sel) { cxOpen(s2, sel); }, cxData: function () { return cxBuild(); }, cxAct: function (a) { cxAct(a); }, spr: function (i) { return orbSprite(i); } };
   window.__sbx.ui = {hold: function (k, a, ph) { sel = k; bare = false; heldAmt = a; heldPh = ph; }, joy: function (x, y) { joy.x = x; joy.y = y; }, aiOpen: function () { try { return aiOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, altarOpen: function () { try { return altarOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, banOpen: function () { try { return banOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, bankOpen: function () { try { return bankOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, bpOpen: function () { try { return bpOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, btyOpen: function () { try { return btyOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, cardsOpen: function () { try { return cardsOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, carveOpen: function () { try { return carveOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, ccOpen: function () { try { return ccOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, cgOpen: function () { try { return cgOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, cmdOpen: function () { try { return cmdOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, devOpen: function () { try { return devOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, dinOpen: function () { try { return dinOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, festOpen: function () { try { return festOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, flOpen: function () { try { return flOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, heartOpen: function () { try { return heartOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, houseOpen: function () { try { return houseOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, mailOpen: function () { try { return mailOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, merOpen: function () { try { return merOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, moltOpen: function () { try { return moltOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, museumOpen: function () { try { return museumOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, nbOpen: function () { try { return nbOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, quakeOpen: function () { try { return quakeOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, radioOpen: function () { try { return radioOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, sideOpen: function () { try { return sideOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, skillOpen: function () { try { return skillOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, smOpen: function () { try { return smOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, taleOpen: function () { try { return taleOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, terrOpen: function () { try { return terrOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, vaultOpen: function () { try { return vaultOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, wardOpen: function () { try { return wardOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, stn: function (k) { var kind = STATIONS[k].kind, id = -1; for (var i in TILES) if (TILES[i] && TILES[i].kind === kind) { id = +i; break; } if (id < 0) return "no tile"; var x = Math.floor(p.x) + 2, y = Math.floor(p.y) - 1; setT(x, y, id); openStn(k, x, y); }, cmd: function () { S.cheats = 1; cmdOpen(); }, iconKind: function (id) { var it = ITEMS[id]; if (!it) return "none"; if (it.tool) return "tool"; if (OCI[id]) return "oci"; if (it.pb || it.qb) return "crop"; if (SPR[id]) return "spr"; if (it.mat) return "mat"; if (it.frag) return "frag"; if (it.gem) return "gem"; if (it.tile != null) return "tile"; return "other"; }, items: function () { return Object.keys(ITEMS); }, camp: function () { var c = campSpots(); return { pier: c.pier, farm: c.farm, spawn: Math.floor(world.spawn.x), mine: world.holes && world.holes[0] ? world.holes[0].x : null, mail: mailSpot(), fg: S.campfg, fgTile: c.farm >= 0 ? get(c.farm, col[c.farm] - 1) === T.X_farmgate : false }; }, tp: function (x) { dmTp(x + 0.5, null, "test"); }, put: function (dx, dy, item) { var it = ITEMS[item], id = it && it.tile != null ? it.tile : T[item]; var x = Math.floor(p.x) + dx, y = Math.floor(p.y) + dy; setT(x, y, id); return id; }, probe: function (r) { var o = {}, x0 = Math.floor(p.x), y0 = Math.floor(p.y); for (var y = y0 - r; y <= y0 + 2; y++) for (var x = x0 - r; x <= x0 + r; x++) { var id = get(x, y); if (!TILES[id].solid) continue; var k = TILES[id].n + (MATF[id] ? " M" + (MATF[id].see ? "s" : "") : " -") + (smask && smask.g(y * W + x) ? " S" : "") + (walls.g(y * W + x) ? " W" : ""); o[k] = (o[k] || 0) + 1; } return o; }, structs: function () { return (world.structs || []).map(function (q) { return { k: q.kind, dx: q.dx, gy: q.gy, x0: q.mx0, x1: q.mx1 }; }); }, picDump: function (dx) { var x = p.x + (dx || 0), out = []; (world.structs || []).forEach(function (q) { var P = q.pic; if (P && x >= P.x0 && x <= P.x0 + P.w) out.push(q.kind + "|" + P.x0 + "|" + P.w + "|" + structCanvas(P).toDataURL()); }); return out; }, slopeTest: function () { for (var d = 0; d < 40; d++) for (var sg = 1; sg >= -1; sg -= 2) { var x = Math.floor(p.x) + sg * d, y = col[x] - 1; if (get(x, y) === T.LOG && TILES[get(x, y + 1)].solid) { setT(x - 1, y + 1, T.AIR); setT(x - 1, y, T.AIR); return x; } } return -1; }, findVar: function (b) { for (var d = 0; d < W; d++) for (var sg = 1; sg >= -1; sg -= 2) { var x = Math.floor(p.x) + sg * d; if (x > 5 && x < W - 5 && world.bio[x] === b && world.sub && world.sub[x] && world.sub[x + 8] && world.bio[x + 8] === b) return x + 4; } return -1; }};   // UI AUDIT: open any window from tests
   window.__sbx.cmd = { run: cmdRun, open: cmdOpen, close: cmdClose, sug: cmdSuggest, log: function () { return CMD.log; }, on: cheatsOn, worlds: openWorlds, wheel: function () { return [selSlot, sel]; } };

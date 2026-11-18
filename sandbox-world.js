@@ -1096,8 +1096,14 @@ batwing: { n: "Bat Wing", frag: "bat" },
     if (o.aerie) ["x0", "x1", "cx", "vx"].forEach(function (k) { o.aerie[k] += dx; });
     if (o.sky) ["a", "z", "m0", "m1", "i0", "i1", "vx"].forEach(function (k) { o.sky[k] += dx; });
   }
+  // HUGE WORLDS (sp 4, worlds made from Nov 18, 2026, thanks to THE PAGE SYSTEM): 3x wider and 2x deeper (400 rows; the sky stays the
+  // same, the underground doubles). The middle map is only Murkwater (camp); Frostfen is the first land to the west and Ember Bog the
+  // first to the east, each made the first time you head that way. Every land is 3x wider and is made in three parts, one at a time, so
+  // no single step takes long. Older worlds keep their size exactly (every save index lines up).
+  var HUGE_H = 400, HUGE_X = 3;
   function genWide(seed, bv) {
     seed = (seed | 0) || 1; bv = bv || { c: 1, L: 0, R: 0 };   // bv: which land gets biome variants (c: the core map; L / R: segments from this index on)
+    if ((bv.sp | 0) >= 4) { var H0 = H; H = HUGE_H; try { return genHuge(seed, bv); } finally { H = H0; } }
     var WW = WORLD_W, wt = new Grid(WW, H, Uint16Array), wwl = new Grid(WW, H, Uint16Array), wtop = new Int16Array(WW), wbio = new Uint8Array(WW), wsub = new Uint8Array(WW), x, y;
     for (x = 0; x < WW; x++) { wtop[x] = H; wbio[x] = 0; }
     // BIGGER LANDS (sp 3, worlds from Nov 2026): Frostfen, Murkwater and Ember Bog are each 30% wider. The middle map is made CW wide and
@@ -1125,12 +1131,38 @@ batwing: { n: "Bat Wing", frag: "bat" },
     return { trees: core.trees || [], W: WW, H: H, seed: seed, t: wt, walls: wwl, top: wtop, bio: wbio, sub: wsub, bv: bv, marks: core.marks || [], holes: core.holes, structs: core.structs, feats: core.feats, aerie: core.aerie, sky: core.sky,
       spawn: { x: SPL + OFF + 0.5, y: core.top[SPL] }, lay: lay, done: { "-1": 0, "1": 0 }, gx0: OFF, gx1: OFF + CW - 1 };
   }
+  function genHuge(seed, bv) {
+    var WW = WORLD_W * HUGE_X, wt = new Grid(WW, H, Uint16Array), wwl = new Grid(WW, H, Uint16Array), wtop = new Int16Array(WW), wbio = new Uint8Array(WW), wsub = new Uint8Array(WW), x;
+    for (x = 0; x < WW; x++) { wtop[x] = H; wbio[x] = 0; }
+    var CW = Math.round(936 * HUGE_X / 2) * 2, OFF = (WW - CW) / 2, keep0 = [W, B_FROST, B_EMBER, SPAWNX], core;
+    GEN_VAR = bv.c ? 1 : 0; GEN_SPARSE = bv.sp | 0; W = CW; B_FROST = -400; B_EMBER = CW + 400; SPAWNX = CW / 2;
+    var SPL = SPAWNX;
+    try { core = gen(seed); } finally { GEN_VAR = 0; GEN_SPARSE = 0; W = keep0[0]; B_FROST = keep0[1]; B_EMBER = keep0[2]; SPAWNX = keep0[3]; }
+    POST.forEach(function (f) { f(core); });
+    wt.blit(core.t, CW, OFF); wwl.blit(core.walls, CW, OFF); wtop.set(core.top, OFF); wbio.set(core.bio, OFF); wsub.set(core.sub, OFF); shiftX(core, OFF);
+    var lay = { "-1": [], "1": [] };
+    [-1, 1].forEach(function (sd) {
+      var prev = 0, edge = sd < 0 ? OFF : OFF + CW, n = 0;
+      while (sd < 0 ? edge > 0 : edge < WW) {
+        var w = (990 + Math.floor(hash(n, sd * 977, seed) * 521)) * HUGE_X, b = n === 0 ? (sd < 0 ? 2 : 1) : (prev + 1 + Math.floor(hash(n, sd * 978, seed) * 2)) % 3;   // Frostfen west of camp, Ember Bog east
+        var a = sd < 0 ? Math.max(0, edge - w) : edge, z = sd < 0 ? edge : Math.min(WW, edge + w);
+        if (z - a < 480) { if (lay[sd].length) { var L = lay[sd][lay[sd].length - 1]; if (sd < 0) L[0] = 0; else L[1] = WW; } break; }
+        var pw = Math.round((z - a) / 3);   // three parts, made one at a time
+        for (var k = 0; k < 3; k++) { var pa = sd < 0 ? (k === 2 ? a : z - pw * (k + 1)) : a + pw * k, pz = sd < 0 ? z - pw * k : (k === 2 ? z : a + pw * (k + 1)); lay[sd].push([pa, pz, b, n]); }
+        prev = b; edge = sd < 0 ? a : z; n++;
+      }
+    });
+    return { trees: core.trees || [], W: WW, H: H, seed: seed, t: wt, walls: wwl, top: wtop, bio: wbio, sub: wsub, bv: bv, marks: core.marks || [], holes: core.holes, structs: core.structs, feats: core.feats, aerie: core.aerie, sky: core.sky,
+      spawn: { x: SPL + OFF + 0.5, y: core.top[SPL] }, lay: lay, done: { "-1": 0, "1": 0 }, gx0: OFF, gx1: OFF + CW - 1, huge: 1 };
+  }
   function genChunk(wd, sd) {   // make the next segment on side sd (-1 left, 1 right); returns its [x0, x1] and what it added, or null at the world's end
+    if (wd.huge && H !== wd.H) { var H1 = H; H = wd.H; try { return genChunk(wd, sd); } finally { H = H1; } }
     var n = wd.done[sd], seg = wd.lay[sd][n]; if (!seg) return null;
     var a = seg[0], z = seg[1], w = z - a, b = seg[2], WW = wd.W, y, k;
     var keep = [W, B_FROST, B_EMBER, SPAWNX, GEN_EDGE, GEN_AERIE, GEN_VAR, GEN_SPARSE], bv = wd.bv || { L: 99, R: 99 }; GEN_SPARSE = bv.sp | 0;
     W = w; SPAWNX = -100000; GEN_AERIE = false;
-    GEN_VAR = n >= (sd < 0 ? bv.L : bv.R) ? (hash(n, sd * 979, wd.seed) < 0.4 ? 2 : 1) : 0;   // newer segments: some are all variant land, the rest get patches
+    var ln = seg[3] !== undefined ? seg[3] : n;   // (HUGE WORLDS: the three parts of one land share its variant)
+    GEN_VAR = ln >= (sd < 0 ? bv.L : bv.R) ? (hash(ln, sd * 979, wd.seed) < 0.4 ? 2 : 1) : 0;   // newer segments: some are all variant land, the rest get patches
     if (b === 2) { B_FROST = w + 200; B_EMBER = w + 400; } else if (b === 0) { B_FROST = -200; B_EMBER = w + 200; } else { B_FROST = -400; B_EMBER = -200; }
     GEN_EDGE = { side: sd, h: wd.top[sd < 0 ? z : a - 1] };   // the column right next to it, on the side it grows from
     var c;
@@ -1239,6 +1271,16 @@ batwing: { n: "Bat Wing", frag: "bat" },
       for (var y = 0; y < this.H; y++) a.set(src.subarray(y * sw + (x - x0), y * sw + (x1 - x0)), y * PW + (x & 255)); }
   };
   Grid.prototype.mem = function () { var b = 0, n = 0; for (var q = 0; q < this.n; q++) { if (this.p[q]) { b += this.p[q].byteLength; n++; } else if (this.k[q]) b += this.k[q].byteLength; } return { bytes: b, open: n, pages: this.n }; };
+  Grid.prototype.dump = function () {   // the whole grid as text, page by page ("P" then "count,value,..." per page, "|" between; "" = empty page)
+    var out = []; for (var q = 0; q < this.n; q++) { var a = this.p[q], K = this.k[q];
+      if (a) { var r = [], v = a[0], n = 0; for (var i = 0; i < a.length; i++) { if (a[i] === v) n++; else { r.push(n, v); v = a[i]; n = 1; } } r.push(n, v); out.push(r.length === 2 && !v ? "" : r.join(",")); }
+      else out.push(K ? Array.prototype.join.call(K, ",") : ""); }
+    return "P" + out.join("|");
+  };
+  Grid.prototype.undump = function (str) {   // the reverse: pages arrive packed (they unpack when read)
+    var parts = str.slice(1).split("|"); for (var q = 0; q < this.n && q < parts.length; q++) { this.p[q] = null; this.k[q] = null; if (!parts[q]) continue;
+      var L = parts[q].split(","), K = new Uint32Array(L.length), tot = 0; for (var j = 0; j < L.length; j++) { K[j] = +L[j] || 0; if (!(j & 1)) tot += K[j]; } if (tot === PW * this.H && L.length % 2 === 0) this.k[q] = K; }
+  };
   Grid.from = function (flat, w, h, C) { var g = new Grid(w, h, C || flat.constructor); g.blit(flat, w, 0); return g; };
   Grid.PW = PW;
   var api = { Grid: Grid, STRUCT_KINDS: STRUCT_KINDS, W: WORLD_W, H: H, SURF: SURF, WORLDVER: WORLDVER, B_FROST: B_FROST + EXT, B_EMBER: B_EMBER + EXT, SPAWNX: SPAWNX + EXT, EXT: EXT, CORE_W: CORE_W, genChunk: genChunk, treeGrow: treeGrow, post: POST, T: T, TILES: TILES, ITEMS: ITEMS, ITEM_ORDER: ITEM_ORDER, DECOR_FLOOR: DECOR_FLOOR, DECOR_WALL: DECOR_WALL, BIOMES: BIOMES, gen: genWide, genCore: gen, genMalc: genMalc, MALC_W: MALC_W, MALC_Z: MALC_Z, hash: hash, mulberry: mulberry };
