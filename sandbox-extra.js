@@ -2006,6 +2006,15 @@
     rect(1, 6, 4, 4, "#5a606c"); rect(11, 6, 4, 4, "#5a606c"); rect(2, 7, 2, 2, "#f2c14e"); rect(12, 7, 2, 2, "#f2c14e"); rect(0, 11, 16, 5, "#34363c"); rect(0, 11, 16, 1, "#4a4e56"); rect(0, 15, 16, 1, "#141518"); };
   item("conveyor", "Conveyor Belt", { tile: BELT });
   mat("lcore", "Logistics Core", "#7af0d0");
+  // PIER KIT (Nov 2026): build your own Croaker's Pier gate on any sand beside water. The block itself is drawn as the big pier gate (sandbox.js PIER GATES).
+  var PGATE = tile("X_piergate", "Pier Kit", "#000", "#8a5a32", 0.8, 0, "piergate", false, 0, "piergate", { store: "piergate" });
+  ART.piergate = function (rect) {
+    rect(2, 3, 2, 13, "#4a2e18"); rect(12, 3, 2, 13, "#4a2e18"); rect(2, 3, 1, 13, "#6a4426"); rect(12, 3, 1, 13, "#6a4426");
+    rect(1, 4, 14, 4, "#3a2412"); rect(2, 4, 12, 3, "#c28a52"); rect(2, 4, 12, 1, "#e0b07a"); rect(4, 5, 8, 1, "#f6eedb");
+    rect(1, 13, 14, 2, "#8a5a32"); rect(1, 13, 14, 1, "#b07a46"); rect(1, 15, 14, 1, "#3a2412");
+    rect(13, 9, 2, 2, "#ffd25a"); rect(6, 9, 4, 3, "#4fd0e8"); rect(6, 9, 4, 1, "#9be8ff");
+  };
+  item("piergate", "Pier Kit", { tile: PGATE });
   var api = { HOMEFARM: HOMEFARM, HCROPS: HCROPS, FISH2: FISH2, OCEAN: OCEAN, MOTO: MOTO, GQ: GQ, CONT: CONT, contLoot: contLoot, CONTK: CONTK, CONTOF: CONTOF, VALUE: VALUE, LOOTI: LOOTI, FURN2: FURN2, DISC: DISC, SECRETS: SECRETS, FUN: FUN, INTERIOR: INTERIOR, TREATS: TREATS, BPACK: BPACK, NEW: NEW, ART: ART, WALL_ART: WALL_ART, RECIPES: RECIPES, DECOR: DECOR, GOALS: GOALS, STN: STN, STNTILE: STNTILE, populate: populate, loot: loot, CROPS: CROPS, SEEDS: SEEDS, tileCount: nid };
   if (typeof module !== "undefined" && module.exports) module.exports = api; else root.SbxExtra = api;
 })(typeof window !== "undefined" ? window : this);

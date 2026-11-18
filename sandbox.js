@@ -109,6 +109,7 @@
     { id: "door", n: "Swamp Door", out: { door: 1 }, cost: { planks: 6, fiber: 2 }, d: "A two-tall wooden door. Place it on the ground in a doorway. Walk into it to open it (it shuts behind you), tap it or press F to open or close it by hand, and hold on it to break it. Closed doors stop bugs, frogs and bats." },
     { id: "ladder", n: "Ladder (4)", out: { ladder: 4 }, cost: { planks: 3 }, d: "Stick it to a wall or stack it up or down. Hold Jump to climb up, S or Down to climb down (on a phone you slowly slide down when not climbing)." },
     { id: "chest", n: "Wooden Chest", out: { chest: 1 }, cost: { planks: 8, fiber: 2 }, d: "Place it at camp on solid ground. Tap it (or press F nearby) to open it and stash up to 30 kinds of items. Empty it before you pick it up." },
+    { id: "piergate", n: "Pier Kit", out: { piergate: 1 }, bench: true, bl: 2, cost: { planks: 24, fiber: 12, queenchitin: 1 }, d: "Builds a Croaker's Pier gate on any sand beside water (a lagoon, lake or the sea), so you can head out onto the pier from there. Needs Queen's Chitin from your first boss. The pier also stands on the nearest Sunbaked Shores beach." },
     // STORAGE UPDATE: late-game logistics. Every piece needs a Logistics Core (one of each boss trophy plus deep-cave loot), so it waits until you've beaten the bosses; after that it's an easy grind.
     { id: "lcore", n: "Logistics Core (4)", out: { lcore: 4 }, bench: true, bl: 4, cost: { queenchitin: 1, wyrmscale: 1, alphamane: 1, ironingot: 2, amethyst: 1 }, d: "The heart of every storage block. Made from one of each boss trophy (re-fight a boss with its lure for more) plus Iron and an Amethyst. Makes 4." },
     { id: "bigchest", n: "Big Chest", out: { bigchest: 1 }, bench: true, bl: 4, cost: { chest: 2, lcore: 1, ironingot: 2 }, d: "An iron-banded chest that holds 60 kinds of items, double a Wooden Chest." },
@@ -485,7 +486,7 @@
     sq("volc1", "Delver", 3, "Old Flame", "Climb an Ember Bog volcano and go down the vent in its cold crater.", 1, st("volc"), { torch: 6 }),
     sq("volc5", "Delver", 3, "Heart of the Mountain", "Reach floor 5 of the Old Volcano.", 5, st("volcDeep"), { cinder: 6, ironingot: 3 }),
     // ocean update: Croaker's Pier, diving, the boat and the sea
-    sq("oc_pier", "Sailor", 0, "Sea Breeze", "Find the Croaker's Pier gate at camp, by the Mine, and walk out onto the pier.", 1, st("ocvisit"), { kelpwrap: 2 }),
+    sq("oc_pier", "Sailor", 0, "Sea Breeze", "Find the Croaker's Pier gate on the Sunbaked Shores beach (the sandy side of the Ember Bog), or build one with a Pier Kit, and walk out onto the pier.", 1, st("ocvisit"), { kelpwrap: 2 }),
     sq("oc_dive", "Sailor", 0, "Cannonball!", "Dive off Croaker's Pier (halfway along the dock).", 1, st("dives"), { kelp: 4 }),
     sq("oc_suit", "Sailor", 0, "Frogskin", "Craft the Frogskin Diving Suit at a Workbench (Gear: Diving).", 1, function () { return inv("scubasuit") ? 1 : 0; }, { pearl: 1 }),
     sq("oc_d30", "Sailor", 0, "Reef Diver", "Dive 30 m below the surface.", 30, st("ocdeep"), { seaglass: 3 }),
@@ -976,7 +977,8 @@
     ["dcarry", "dcarryD"].forEach(function (f) { var c = o[f]; if (c && typeof c === "object" && typeof c.k === "string" && ITEMS[c.k]) d[f] = c; });
     ["loff", "dvar"].forEach(function (f) { var src = o[f]; if (src && typeof src === "object" && o.wv === SW.WORLDVER) { d[f] = {}; Object.keys(src).forEach(function (k) { var v = Math.floor(+src[k]); if (/^\d+$/.test(k) && v >= 1 && v <= 9) d[f][k] = v; }); } });
     if (typeof o.molt === "string" && /^[a-z_]{1,20}$/.test(o.molt)) d.molt = o.molt;
-    d.cheats = +o.cheats ? 1 : 0; ["mineflat", "campfg"].forEach(function (f) { var v = +o[f]; if (isFinite(v) && v) d[f] = v; });
+    d.cheats = +o.cheats ? 1 : 0; ["mineflat", "campfg", "campfix"].forEach(function (f) { var v = +o[f]; if (isFinite(v) && v) d[f] = v; });
+    if (Array.isArray(o.pgates)) d.pgates = o.pgates.filter(function (k) { return typeof k === "string" && /^\d+,\d+$/.test(k); }).slice(0, 24); if (isFinite(+o.pgx) && o.pgx !== null && o.pgx !== undefined) d.pgx = Math.floor(+o.pgx); if (typeof o.shoreflat === "string" && o.shoreflat.length < 40) d.shoreflat = o.shoreflat;   // PIER GATES
     keepOut(o, d);   // keep aside what this version does not know
     return d;
   }
@@ -13356,11 +13358,18 @@
     else if (td.store === "filterchest") { o.f = []; toast("Filter Chest placed. Open it and tap Edit filter to choose what it takes.", "#7af0d0"); }
     else if (td.store === "linkchest") { o.ch = 0; toast("Linked Chest placed on the Red rune. Every Linked Chest on the same rune shares one inventory, anywhere.", "#c890ff"); }
     else if (td.store === "vacchest") toast("Vacuum Chest placed. It pulls in dropped items within 6 blocks.", "#7af0d0");
+    else if (td.store === "piergate") {   // PIER KIT: on sand, with water close by
+      var sandN = function (xx) { var id2 = get(xx, y + 1); return id2 === T.X_sand || (TILES[id2] && /sand/i.test(TILES[id2].n || "")); }, wetN = false;
+      for (var wx = x - 20; wx <= x + 20 && !wetN; wx++) for (var wy = y - 4; wy <= y + 14 && !wetN; wy++) if (isLiq(get(wx, wy))) wetN = true;
+      if (!sandN(x) || !wetN) { setT(x, y, T.AIR); addInv("piergate", 1); reslot(); delete S.stor[x + "," + y]; nag(!sandN(x) ? "A Pier Kit goes on sand: find a beach." : "Build the pier gate near water (a lagoon, lake or the sea) so it has somewhere to go."); return; }
+      delete S.stor[x + "," + y]; S.pgates = (S.pgates || []).filter(function (k) { return k !== x + "," + y; }); S.pgates.push(x + "," + y); S.st.piers = (S.st.piers || 0) + 1;
+      toast("Croaker's Pier gate built! Walk up to it to head out onto the pier.", "#4fd0e8"); return; }
     else if (td.store === "terminal") toast("Storage Terminal placed. Open it to see and use every chest within 32 blocks.", "#7af0d0");
     S.st.logi = (S.st.logi || 0) + 1;
   }
   function stBroken(x, y, td) {
     var key = x + "," + y, o = S.stor && S.stor[key];
+    if (td.store === "piergate") { S.pgates = (S.pgates || []).filter(function (k) { return k !== key; }); if (S.pgx === x) delete S.pgx; }
     if (S.belt && S.belt[key]) { S.belt[key].forEach(function (q) { spawnDrop(q.k, 1, x, y - 1); }); delete S.belt[key]; }
     if (o && o.b) spawnDrop(o.b.k, o.b.n, x, y); if (S.stor) delete S.stor[key];
   }
@@ -14536,7 +14545,8 @@
   }
   function dust(n) { var id = get(Math.floor(p.x), Math.floor(p.y + 0.2)), c = TILES[id] && TILES[id].solid ? TILES[id].c : "#8a8a80"; chips(p.x - p.face * 0.15, p.y - 0.05, c, n, 3); }
   function update(dt) {
-    if (S && (!S.campfg || !S.mineflat) && world && !cave && !HOME && !OCS && !titleOpen) { mineFlat(); campFarmGate(); }   // CAMP: a level Mine, then the Homestead's gate
+    if (S && (!S.campfg || !S.mineflat || !S.campfix) && world && !cave && !HOME && !OCS && !titleOpen) { mineFlat(); campFarmGate(); campFix(); }   // CAMP: a level Mine, then the Homestead's gate (older worlds: its ground levelled)
+    if (S && world && !cave && !HOME && !OCS && !titleOpen && S.shoreflat !== world.seed + ":" + OPG.x) shoreFlat();   // CAMP: a level Mine, then the Homestead's gate
     if (sleepT > 0) {   // asleep: the world holds still while the screen fades; floating Z's keep drifting
       tickSleep(dt); for (var zi = texts.length - 1; zi >= 0; zi--) { texts[zi].life -= dt; texts[zi].y -= dt * 0.9; if (texts[zi].life <= 0) texts.splice(zi, 1); }
       if (sleepT > 0 && Math.random() < dt * 3) text(p.x + 0.4, p.y - PH - 0.1, "z", "#cfd6ff"); return;
@@ -15237,7 +15247,8 @@
   // ---------- ONE CELL OF THE WORLD: its back wall and its tile, drawn at (sx3, sy). Used by the main view and to paint building pictures. ----------
   var CELL = { wob: 0, edge: 1, sw: 0 };
   function drawCell(g, i, j, sx3, sy, now) {
-    if (!cave && T.X_farmgate !== undefined && tiles[j * W + i] === T.X_farmgate && sx3 === ox + i * ts) { FGVIS.push(i, j); return; }   // FARM GATE: drawn big by drawFarmGates
+    if (!cave && T.X_farmgate !== undefined && tiles[j * W + i] === T.X_farmgate && sx3 === ox + i * ts) { FGVIS.push(i, j); return; }
+    if (!cave && T.X_piergate !== undefined && tiles[j * W + i] === T.X_piergate) return;   // PIER KIT: drawn as the big pier gate by drawPierGate   // FARM GATE: drawn big by drawFarmGates
     var shp = SHAPEN && !cave ? shapeAt(j * W + i) : 0;
     if (shp) { shapeDraw(g, i, j, sx3, sy, now, shp); return; }   // MALLET: a half-block or ramp
     if (SHAPEN && !cave && j < H - 1 && tiles[j * W + i] !== T.AIR && !TILES[tiles[j * W + i]].solid) { var bs = shapeAt((j + 1) * W + i); if (bs === 1 || bs === 2 || bs === 3) { g.save(); g.translate(0, Math.round(ts * 0.5)); drawCell0(g, i, j, sx3, sy, now); g.restore(); return; } }   // AUTO RAMPS: a plant on a slope settles onto it
@@ -19005,7 +19016,7 @@
     P4ACT = null; if (p4Pill(g, now)) return;   // PHASE 4: the mailbox, the family dinner, the notice board, the radio, the rival
     var vnt = ventNear(); if (vnt) { drawPill(g, now, coarse ? "Enter the Old Volcano" : "Enter the Old Volcano (F)", ox + vnt.x * ts, oy + (vnt.y - 2.6) * ts, false, function () { enterVolcano(vnt); }); return; }
     var fgn = farmGateNear(); if (fgn) { drawPill(g, now, coarse ? "Enter your homestead" : "Enter your homestead (F)", ox + (fgn.x + 0.5) * ts, oy + (fgn.y - 2.9) * ts, false, function () { enterHome(fgn); }); return; }
-    var pgn = pierGateNear(); if (pgn) { drawPill(g, now, coarse ? "Walk to Croaker's Pier" : "Walk to Croaker's Pier (F)", ox + pgn.x * ts, oy + (col[Math.floor(pgn.x)] - 3.8) * ts, false, ocEnterPier); return; }
+    var pgn = pierGateNear(); if (pgn) { drawPill(g, now, coarse ? "Walk to Croaker's Pier" : "Walk to Croaker's Pier (F)", ox + pgn.x * ts, oy + (pierGateY(pgn.gx) - 3.8) * ts, false, ocEnterPier); return; }
     var h = SC ? holeNear() : null; if (!h && !structNear() && !doorNear() && !chestNear() && (vilPill(g, now) || markPill(g, now))) return; if (!h) { var sn = SC ? structNear() : null; if (sn) { drawPill(g, now, (coarse ? "Enter " : "Enter ") + sn.name + (coarse ? "" : " (F)"), ox + (sn.dx + 0.5) * ts, oy + (sn.gy - 3.4) * ts, false, function () { enterBuilding(sn); }); return; }
       return; }   // STATIONS (Nov 2026): no big "Open Workbench" button any more: click or tap the station itself (or press F beside it)
     var fis = S.quake && S.quake.x === h.x && S.quake.y === h.y; drawPill(g, now, (fis ? "Drop into the fissure: floor " + S.quake.f : "Enter the Mine") + (coarse ? "" : " (F)"), ox + (h.x + 0.5) * ts, oy + h.y * ts - ts * (fis ? 1.9 : 4.9), false, function () { enterCave(h.x, h.y); });
@@ -19616,7 +19627,7 @@
     ["Materials|Smelted & Fired", "x_charcoal x_ingot x_claybrick x_mortar x_starsteel x_mc_bloodingot x_au_sunsteel"],
     ["Materials|Silk", "x_silkrope"],
     ["Building|Basics", "planks ladder door x_trapdoor x_mc_rotplanks x_au_dawnplanks"],
-    ["Stations|Travel", "x_waystone x_realmgate"],
+    ["Stations|Travel", "x_waystone x_realmgate piergate"],
     ["Building|Stone & Brick", "x_mc_blackbrick x_au_dawnbrick d_brick x_cobble x_redbrick x_mossbrick x_plaster d_bbrick d_ibrick x_permabrick x_obsbrick x_moonbrick x_quartzblock x_quartzpillar x_rimeblock x_impbrick x_geodeblock x_bloomstone"],
     ["Building|Glass & Lamp Blocks", "d_glass x_stainedred x_stainedblue x_stainedgreen d_clamp d_crlamp x_rubylamp x_sapphirelamp x_amberblock x_amethystblock x_starglass x_rainbowglass x_sandglass"],
     ["Building|Metal", "x_ironblock x_bars"],
@@ -22043,9 +22054,9 @@
     if (CAMPS.w === world) return CAMPS; CAMPS = { w: world, pier: -1, farm: -1 }; if (!world || !col) return CAMPS;
     var sx = Math.floor(world.spawn.x), M0 = world.holes && world.holes[0], mx = M0 ? M0.x : -99, ml = mailSpot(), busy = [[mx - 4, mx + 6], [ml - 2, ml + 2], [sx - 1, sx + 1]];
     var free = function (a, z) { for (var q = 0; q < busy.length; q++) if (a <= busy[q][1] && z >= busy[q][0]) return false; return true; };
-    var flat = function (a, z) { var y = col[a]; for (var x = a; x <= z; x++) { if (x < 3 || x >= W - 3 || Math.abs(col[x] - y) > 1 || isLiq(get(x, col[x] - 1)) || isLiq(get(x, col[x]))) return false; } return true; };
-    var pick = function (a0, a1, need) { for (var d = 4; d < 34; d++) for (var sg = 1; sg >= -1; sg -= 2) { var x = sx + sg * d, a = x + a0, z = x + a1; if (free(a, z) && flat(a, z)) { busy.push([a - need, z + need]); return x; } } return -1; };
-    CAMPS.pier = pick(-2, 9, 1); CAMPS.farm = pick(-2, 2, 1); return CAMPS;
+    var flat = function (a, z, tol) { var y = col[a]; for (var x = a; x <= z; x++) { if (x < 3 || x >= W - 3 || Math.abs(col[x] - y) > tol || isLiq(get(x, col[x] - 1)) || isLiq(get(x, col[x]))) return false; } return true; };
+    var pick = function (a0, a1, need) { for (var tol = 0; tol <= 1; tol++) for (var d = 4; d < 34; d++) for (var sg = 1; sg >= -1; sg -= 2) { var x = sx + sg * d, a = x + a0, z = x + a1; if (free(a, z) && flat(a, z, tol)) { busy.push([a - need, z + need]); return x; } } return -1; };   // (dead level ground first; one block of slope only if there is none, and then it is levelled)
+    CAMPS.farm = pick(-3, 3, 1); return CAMPS;   // (Croaker's Pier moved to the Sunbaked Shores, Nov 2026: see PIER GATES)
   }
   function mineFlat() { if (inMC()) return null;   // CAMP: level the ground under the Mine's headframe, rails, cart and sign once per world, so no part of it ever floats or sinks
     if (!S || S.mineflat || cave || HOME || OCS || !world || !col) return; var M0 = world.holes && world.holes[0]; S.mineflat = 1; if (!M0 || get(M0.x, M0.y) !== T.HOLE) return;
@@ -22059,22 +22070,40 @@
     }
     hbDirty = true; save();
   }
+  function campFix() {   // CAMP (Nov 2026): an older world's Homestead gate may stand on a step; level the ground under it once
+    if (!S || S.campfix || inMC() || cave || HOME || OCS || !world || !col || T.X_farmgate === undefined) return; S.campfix = 1; var sx = Math.floor(world.spawn.x);
+    for (var x = sx - 40; x <= sx + 40; x++) { if (x < 2 || x >= W - 2) continue; for (var y = col[x] - 3; y <= col[x] + 1; y++) if (get(x, y) === T.X_farmgate) { levelUnder(x - 2, x + 2, y + 1, T.MUD); hbDirty = true; return; } }
+  }
   function campFarmGate() { if (inMC()) return null;   // the camp Farm Gate: placed once per world (flattening a 3-wide patch if it has to)
     if (!S || S.campfg || cave || HOME || OCS || T.X_farmgate === undefined || !world || !col) return; var fx = campSpots().farm; if (fx < 0) { S.campfg = -1; return; }
-    var gy = col[fx] - 1, x, y; for (x = fx - 1; x <= fx + 1; x++) { for (y = gy - 3; y <= gy; y++) if (get(x, y) !== T.AIR) setT(x, y, T.AIR); if (!TILES[get(x, gy + 1)].solid) setT(x, gy + 1, T.MUD); }
-    setT(fx, gy, T.X_farmgate); S.campfg = 1; hbDirty = true; save();
+    var gy = col[fx] - 1; levelUnder(fx - 2, fx + 2, gy + 1, T.MUD);
+    setT(fx, gy, T.X_farmgate); S.campfg = 1; S.campfix = 1; hbDirty = true; save();
   }
-  function pierGateX() {
-    var cs = campSpots(); if (cs.pier >= 0) return cs.pier;   // CAMP: the pier gate stands at camp now
-    if (OPG.w === world) return OPG.x; OPG.w = world; var b = world.bio, sx = Math.floor(world.spawn.x), x, best = -1;
-    for (x = sx; x < W - 2 && best < 0; x++) if (b[x] === 0 && b[x + 1] === 1) best = x;   // east of camp first (the Ember Bog side)
-    for (x = sx; x > 2 && best < 0; x--) if (b[x] === 1 && b[x - 1] === 0) best = x - 1;
-    OPG.x = best >= 0 ? best : sx + 22; return OPG.x;
+  // ---------- PIER GATES (Nov 2026): Croaker's Pier is a later find now. Its gate stands on the nearest Sunbaked Shores beach (sand by the
+  // lagoons, the sandy side of the Ember Bog), and a Pier Kit (crafted after your first boss) builds another gate on any sand beside water. ----------
+  function levelUnder(a, z, gy, fillId) {   // make the ground dead level at row gy from column a to z: clear what pokes up above it, fill any dip under it
+    for (var x = a; x <= z; x++) { if (x < 1 || x >= W - 1) continue;
+      for (var y = gy - 6; y < gy; y++) { var id = get(x, y), td = TILES[id]; if (id !== T.AIR && td && (td.solid || td.kind === "plant") && id !== T.LOG && td.kind !== "leaves" && !isChest(id) && !td.store && id !== T.X_farmgate) setT(x, y, T.AIR); }
+      if (!TILES[get(x, gy)].solid) setT(x, gy, fillId); for (var y2 = gy + 1; y2 < gy + 8; y2++) { if (TILES[get(x, y2)].solid) break; setT(x, y2, fillId); } }
   }
-  function pierGateNear() { if (inMC()) return null; if (cave || OCS || HOME || !SO) return null; var gx = pierGateX() + 0.5; return Math.abs(p.x - gx) < 3.2 && Math.abs(p.y - col[clamp(Math.floor(gx), 0, W - 1)]) < 6 ? { x: gx } : null; }
+  function shoreSpot() {   // the Shores pier: the flattest stretch of beach sand nearest camp, close to a lagoon if there is one (-1: no Shores in this world yet)
+    if (OPG.w === world) return OPG.x; OPG.w = world; OPG.x = -1; if (!world || !world.sub || !col) return -1;
+    var sx = Math.floor(world.spawn.x), best = -1, bs = 1e9, x, a;
+    for (x = 6; x < W - 6; x++) { if (world.bio[x] !== 1 || !world.sub[x]) continue; var y = col[x], bad = 0;
+      for (a = x - 3; a <= x + 3 && !bad; a++) if (world.bio[a] !== 1 || !world.sub[a] || Math.abs(col[a] - y) > 1 || isLiq(get(a, col[a] - 1)) || isLiq(get(a, col[a])) || !TILES[get(a, col[a])].solid) bad = 1;
+      if (bad) continue; var wet = 0; for (a = x - 16; a <= x + 16 && !wet; a++) if (a > 0 && a < W && (isLiq(get(a, col[a])) || isLiq(get(a, col[a] - 1)))) wet = 1;
+      var sc = Math.abs(x - sx) + (wet ? 0 : 400) + Math.abs(col[x - 3] - y) * 40 + Math.abs(col[x + 3] - y) * 40; if (sc < bs) { bs = sc; best = x; } }
+    OPG.x = best; return best;
+  }
+  function pierGates() { var L = [], s0 = shoreSpot(); if (s0 >= 0) L.push(s0); (S.pgates || []).forEach(function (k) { var q = k.split(","); if (get(+q[0], +q[1]) === T.X_piergate && L.indexOf(+q[0]) < 0) L.push(+q[0]); }); return L; }
+  function pierGateX() { var L = pierGates(); if (S.pgx !== undefined && L.indexOf(S.pgx) >= 0) return S.pgx; if (!L.length) return -1; var b = L[0]; L.forEach(function (x) { if (Math.abs(x - p.x) < Math.abs(b - p.x)) b = x; }); return b; }   // the gate you came in by (or the nearest)
+  function pierGateY(gx) { var k = (S.pgates || []).find(function (q) { return +q.split(",")[0] === gx; }); return k ? +k.split(",")[1] + 1 : col[clamp(gx, 0, W - 1)]; }
+  function shoreFlat() { if (!S || S.shoreflat === world.seed + ":" + OPG.x || cave || HOME || OCS || !world || !col) return; var x = shoreSpot(); if (x < 0) return; levelUnder(x - 3, x + 3, col[x], get(x, col[x])); S.shoreflat = world.seed + ":" + x; hbDirty = true; }   // the beach under the gate: dead level, once
+  function pierGateNear() { if (inMC()) return null; if (cave || OCS || HOME || !SO) return null; var L = pierGates(); for (var n = 0; n < L.length; n++) { var gx = L[n] + 0.5; if (Math.abs(p.x - gx) < 3.2 && Math.abs(p.y - pierGateY(L[n])) < 6) return { x: gx, gx: L[n] }; } return null; }
   function ocEnterPier() {
     if (!SO || cave || OCS || trans || sleepT > 0 || hp <= 0) return;
     if (MP.on) { nag("Croaker's Pier is closed while you play together. It opens in single player."); return; }
+    var pgN = pierGateNear(); if (pgN) S.pgx = pgN.gx;   // (you come back out by this gate)
     if (activeBoss()) { nag("You can't slip away in the middle of a boss fight!"); return; }
     stopInput(); thud(190, 0.08);
     trans = { t: 0, done: false, mid: function () { ocBuild(null, true); } };
@@ -24735,8 +24764,9 @@
     });
     if (nt > 0.05) { var gx2 = sx + lx * 1.2, gy2 = sy + ly * 1.2, gr = G0.createRadialGradient(gx2, gy2, 0, gx2, gy2, k * 3); gr.addColorStop(0, "rgba(255,214,110," + (0.3 * nt * fl).toFixed(3) + ")"); gr.addColorStop(1, "rgba(255,214,110,0)"); G0.fillStyle = gr; G0.fillRect(gx2 - k * 3, gy2 - k * 3, k * 6, k * 6); }
   }
-  function drawPierGate(g, now) { if (inMC()) return null;
-    if (!SO || cave) return; var gx = pierGateX(), gy = col[clamp(gx, 0, W - 1)]; if (gy === undefined) return;
+  function drawPierGate(g, now) { if (inMC()) return null; if (!SO || cave) return; pierGates().forEach(function (gx) { drawPierGate1(g, now, gx, pierGateY(gx)); }); }
+  function drawPierGate1(g, now, gx, gy) {
+    if (gy === undefined) return;
     var sx = ox + (gx + 0.5) * ts, sy = oy + gy * ts; if (sx < -ts * 4 || sx > vw + ts * 4 || sy < -ts * 6 || sy > vh + ts * 6) return;
     var k = ts, sw = reduce ? 0 : Math.sin(now / 900) * 0.05;
     g.save(); g.translate(sx, sy);
@@ -29146,7 +29176,7 @@ var ATK = { on: false, mine: false };
       if (w === "west") { devTp((world.gx0 || 0) + 12); return "The west edge"; } if (w === "east") { devTp((world.gx1 !== undefined ? world.gx1 : W - 1) - 12); return "The east edge"; }
       if (w === "tower" && t.built) { devTp(t.x - 1.5, t.gy); return "The Witch's Tower"; } if (w === "towertop" && t.built) { devTp(t.x + 4.5, t.gy - 24); return "The top of the Witch's Tower"; }
       if (w === "glow" && s && s.glow) { devTp(s.glow.x + 4.5); return "The Glow Hollow"; } if (w === "maze" && s && s.maze) { devTp(s.maze.x + 5.5); return "The Mangrove Maze"; }
-      if (w === "museum" && museumSpot()) { var M = museumSpot(); devTp(M.x + 1.5, M.y); return "The Swamp Museum"; } if (w === "pier") { devTp(pierGateX() + 2.5); return "The pier"; }
+      if (w === "museum" && museumSpot()) { var M = museumSpot(); devTp(M.x + 1.5, M.y); return "The Swamp Museum"; } if (w === "pier") { var pgx0 = pierGateX(); if (pgx0 < 0) return "No Sunbaked Shores in this world yet (explore further, or use a Pier Kit)"; devTp(pgx0 + 2.5); return "The pier"; }
       var im = w.match(/^island(\d)$/); if (im && I[+im[1] - 1]) { var q = I[+im[1] - 1]; devTp(q.x - 3.5, q.y); return "Sky island " + im[1]; }
       for (var b = 0; b < BIOMES.length; b++) if (BIOMES[b].n.toLowerCase().replace(/[^a-z]+/g, "") === w) { devBiome(b); return BIOMES[b].n; }
       return "Unknown place. Places: " + Object.keys(cmdPlaces()).join(", "); } },
@@ -29266,6 +29296,7 @@ var ATK = { on: false, mine: false };
       ["The SwampRealms", function () { devAct("tp:realm"); }],
       ["Homestead (your farm)", function () { if (cave || OCS) { nag("Go to the surface first."); return; } enterHome({ x: Math.floor(p.x), y: Math.floor(p.y) }); }],
       ["Croaker's Pier", function () { if (cave) leaveCaveNow(); setTimeout(function () { ocEnterPier(); }, cave ? 700 : 0); }],
+      ["Croaker's Pier gate on the Sunbaked Shores", function () { if (cave || OCS || HOME) { nag("Go to the surface first."); return; } var gx = shoreSpot(); if (gx < 0) { nag("No Sunbaked Shores in this world yet: explore further, or use a Pier Kit."); return; } dmTp(gx - 1.5, null, "The Shores pier gate"); }],
       ["Open sea (on the boat)", function () { if (cave || HOME) { nag("Go to the surface first."); return; } try { ocS().boat.done = 1; } catch (e) {} if (!OCS) { ocEnterPier(); setTimeout(function () { try { ocSetSail(); } catch (e) {} }, 1400); } else ocSetSail(); }],
       ["Raid island (land on one)", function () { var land = function () { try { var Q = seaIslands().filter(function (q) { return !q.port && !q.pier && !q.castaway && !q.lh; })[0]; if (Q && OCS && OCS.sea) isleLand(Q); else toast("No raid island found.", "#ff8a8a"); } catch (e) { toast("Could not land: " + e.message, "#ff8a8a"); } }; if (OCS && OCS.sea) land(); else { DEVA.go.filter(function (q) { return q[0] === "Open sea (on the boat)"; })[0][1](); setTimeout(land, 2600); } }],
       ["Mine: floor 1", function () { devMine(1); }],
@@ -29319,6 +29350,7 @@ var ATK = { on: false, mine: false };
       ["Every potion", function () { var o = {}; ORDER.forEach(function (k) { if (/^tonic_/.test(k)) o[k] = 3; }); devGive(o); }],
       ["Every spare tool", function () { var o = {}; ORDER.forEach(function (k) { if (/^sp_/.test(k)) o[k] = 1; }); devGive(o); }],
       ["Every motorbike part", function () { var o = {}; ORDER.forEach(function (k) { if (/^moto_/.test(k)) o[k] = 1; }); devGive(o); }],
+      ["Pier Kit (build Croaker's Pier on any sand by water)", function () { devGive({ piergate: 2 }); }],
       ["Storage kit (every chest type, Terminal, 8 hoppers, 32 belts, 8 Logistics Cores)", function () { devGive({ bigchest: 4, filterchest: 4, linkchest: 4, vacchest: 2, terminal: 1, hopper: 8, conveyor: 32, lcore: 8, chest: 4 }); }],
       ["Logistics Core materials (boss trophies + deep loot x4)", function () { devGive({ queenchitin: 4, wyrmscale: 4, alphamane: 4, ironingot: 20, amethyst: 6, moonstone: 2, sapphire: 1, ruby: 1, crystal: 20, cinder: 16, chest: 6 }); }],
       ["Every real-size furniture piece", function () { var o = {}; Object.keys(FSZK).forEach(function (k) { if (ITEMS[k]) o[k] = 1; }); devGive(o); }],
