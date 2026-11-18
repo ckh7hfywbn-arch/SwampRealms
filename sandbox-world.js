@@ -1008,9 +1008,9 @@ batwing: { n: "Bat Wing", frag: "bat" },
         for (var dy = -1; dy <= 1; dy++) for (var dx = -1; dx <= 1; dx++) { var nx = cx + dx, ny = cy + dy, ni = ny * W + nx; if (nx < 1 || nx >= W - 1 || ny < 1 || Math.abs(nx - x0) > 9 || ny < base - 26 || ny >= top[nx] || seen[ni] || walls[ni]) continue; var id = t[ni]; if (id === T.LOG || id === T.LEAVES || id === T.VINE) { seen[ni] = 1; q.push(ni); } } }
     });
     TREC.forEach(function (r, n) {   // 2. grow each one back in its new shape
-      if (!tok[n]) return; var x0 = r.x, by = top[x0] - 1;
+      if (!tok[n]) return; var x0 = r.x, by = top[x0] - 1, cd = Math.abs(x0 - SPAWNX), cap = cd < 50 ? 4 + Math.floor(hash(x0, 501, seed) * 2) : cd < 75 ? 7 : 0;   // CAMP TREES (Nov 2026): short round the homestead and the mine, growing back to full height out in the wild
       var b = treeGrow(r.k, x0, by, function (a) { return hash(x0, 500 + a, seed); }, function (px, py) { return px > 0 && px < W - 1 && py > 0 && py < H && t[py * W + px] === T.AIR && !walls[py * W + px]; },
-        function (px, py, id) { if (px > 0 && px < W - 1 && py > 0 && t[py * W + px] === T.AIR) t[py * W + px] = id; }, function (px, py) { return px >= 0 && px < W && py >= 0 && py < H && TILES[t[py * W + px]].solid; });
+        function (px, py, id) { if (px > 0 && px < W - 1 && py > 0 && t[py * W + px] === T.AIR) t[py * W + px] = id; }, function (px, py) { return px >= 0 && px < W && py >= 0 && py < H && TILES[t[py * W + px]].solid; }, cap);
       if (b) TREES.push({ x: x0, k: r.k, b: b });
     });
     (function settle() {   // WATER SETTLES: a lake or lagoon whose rim is lower than its surface (a column of water with open air beside or under it,
@@ -1062,8 +1062,9 @@ batwing: { n: "Bat Wing", frag: "bat" },
     }
     return c;
   }
-  function treeGrow(k, x, by, hs, can, put, solid) {
+  function treeGrow(k, x, by, hs, can, put, solid, cap) {
     var R = { swamp: [8, 4], pine: [12, 5], cherry: [7, 3], palm: [10, 3], oak: [9, 4], snag: [7, 3] }[k] || [8, 4], want = R[0] + Math.floor(hs(1) * R[1]);   // TALL TREES (Nov 2026): about a third taller, so more logs per tree
+    if (cap) want = Math.min(want, cap);   // CAMP TREES: kept short enough that the whole tree fits on a sideways phone screen
     for (var h = want; h >= Math.max(4, want - 7); h--) {   // (shorter ones where something is in the way)
       var c = treeShape(k, x, by, h, hs), ok = true, lv = 0, lf = 0, q;
       for (q = 0; q < c.length && ok; q++) { var e = c[q]; if (e[3] === "root") continue; if (e[2] === T.LOG) { if (!can(e[0], e[1])) ok = false; } else { lv++; if (can(e[0], e[1])) lf++; } }
