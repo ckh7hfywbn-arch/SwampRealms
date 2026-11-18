@@ -977,7 +977,10 @@
     ["dcarry", "dcarryD"].forEach(function (f) { var c = o[f]; if (c && typeof c === "object" && typeof c.k === "string" && ITEMS[c.k]) d[f] = c; });
     ["loff", "dvar"].forEach(function (f) { var src = o[f]; if (src && typeof src === "object" && o.wv === SW.WORLDVER) { d[f] = {}; Object.keys(src).forEach(function (k) { var v = Math.floor(+src[k]); if (/^\d+$/.test(k) && v >= 1 && v <= 9) d[f][k] = v; }); } });
     if (typeof o.molt === "string" && /^[a-z_]{1,20}$/.test(o.molt)) d.molt = o.molt;
-    d.cheats = +o.cheats ? 1 : 0; ["mineflat", "campfg", "campfix"].forEach(function (f) { var v = +o[f]; if (isFinite(v) && v) d[f] = v; });
+    d.cheats = +o.cheats ? 1 : 0; if (o.mfl && typeof o.mfl === "object") { d.mfl = {}; Object.keys(o.mfl).forEach(function (f) { if (/^\d+$/.test(f) && +f <= 40 && typeof o.mfl[f] === "string" && o.mfl[f].length < 90000) d.mfl[f] = o.mfl[f]; }); }   // THE MINE: what changed on each floor
+    if (o.mfc && typeof o.mfc === "object") { d.mfc = {}; Object.keys(o.mfc).forEach(function (f) { var c = o.mfc[f]; if (!/^\d+$/.test(f) || +f > 40 || !c || typeof c !== "object") return; var q = {}; Object.keys(c).slice(0, 80).forEach(function (i) { var L = c[i]; if (!/^\d+$/.test(i) || !L || typeof L !== "object") return; var l2 = {}; Object.keys(L).forEach(function (k) { if (ITEMS[k] && L[k] > 0) l2[k] = Math.min(9999, Math.floor(+L[k])); }); q[i] = l2; }); d.mfc[f] = q; }); }
+    ["mineflat", "campfg", "campfix"].forEach(function (f) { var v = +o[f]; if (isFinite(v) && v) d[f] = v; });
+    if (Array.isArray(o.minepos) && o.minepos.length === 2 && isFinite(+o.minepos[0]) && isFinite(+o.minepos[1])) d.minepos = [Math.floor(+o.minepos[0]), Math.floor(+o.minepos[1])]; if (isFinite(+o.mailx) && o.mailx !== null && o.mailx !== undefined) d.mailx = Math.floor(+o.mailx);   // MOVING CAMP
     if (Array.isArray(o.pgates)) d.pgates = o.pgates.filter(function (k) { return typeof k === "string" && /^\d+,\d+$/.test(k); }).slice(0, 24); if (isFinite(+o.pgx) && o.pgx !== null && o.pgx !== undefined) d.pgx = Math.floor(+o.pgx); if (typeof o.shoreflat === "string" && o.shoreflat.length < 40) d.shoreflat = o.shoreflat;   // PIER GATES
     keepOut(o, d);   // keep aside what this version does not know
     return d;
@@ -998,7 +1001,8 @@
     if (SW.genChunk && world.lay) { for (var gl = 0; gl < (state.genL | 0); gl++) if (!SW.genChunk(world, -1)) break; for (var gr = 0; gr < (state.genR | 0); gr++) if (!SW.genChunk(world, 1)) break; }   // ENDLESS WORLD: the land you have already explored
     tiles = world.t; liftStructs(tiles, world.walls); orig = tiles.slice(); edits = {}; flInit();
     state.e.split(",").forEach(function (s) { var a = s.split(":"), i = parseInt(a[0], 10), id = parseInt(a[1], 10); if (i >= 0 && i < tiles.length && TILES[id]) { tiles[i] = id; if (id !== orig[i]) edits[i] = id; } });
-    if ((state.trv | 0) < 3) { treesMigrate(); state.trv = 3; }   // (3: CAMP TREES, the short ones round camp, Nov 2026)   // TALL TREES: an older save's trees grow to the new heights (a tree you had chopped or built into is cleared, never left as half a tree)
+    if ((state.trv | 0) < 3) { treesMigrate(); state.trv = 3; }
+    if (state.minepos && world.holes && world.holes[0] && !state.dim) { world.holes[0].x = state.minepos[0]; world.holes[0].y = state.minepos[1]; }   // MOVING CAMP: the Mine where you put it   // (3: CAMP TREES, the short ones round camp, Nov 2026)   // TALL TREES: an older save's trees grow to the new heights (a tree you had chopped or built into is cleared, never left as half a tree)
     smask = null;   // buildings are pictures now (see BUILDING PICTURES), so nothing in the grid is scenery
     rzLoad(state);
     col = new Int16Array(W); for (var x = 0; x < W; x++) recalc(x);
@@ -1022,6 +1026,7 @@
   }
   function save() {
     if (MP.on && MP.role === "guest") { mpSaveChar(); cloudDirty(); return; }
+    try { mflSave(); } catch (e) {}
     if (!curId) return;   // the menu's scenery world is never saved
     try {
       rzSaveAll();
@@ -2581,7 +2586,7 @@
     } else if (id === "shovel") {
       drawShovelIcon(g);
     } else if (id === "weapon") {
-      drawWeaponIcon(g, S.wpn);
+      drawWeaponIcon(g, Math.max(1, S.wpn));   // (no sword yet: show the first one, not an empty square)
     } else if (id === "can") {
       drawCanIcon(g);
     } else if (id === "bucket") {
@@ -18036,7 +18041,7 @@
     if (SHQ.length) drawShapeTops(g);   // MALLET: the ramps' grass and edges, after every block, so the next block can't cover them
     mcGrade(g, now, above); mcLand(g, now);   // MALCRUOR: the land and sky stained blood red and black (creatures, you and the portal are drawn after)
     if (!cave) { drawMcGate(g, now); drawFarmGates(g, now); drawMineShaft(g, now); drawBldSigns(g); drawGates(g, X0, X1, Y0, Y1); drawStands(g, X0, X1, Y0, Y1); drawTraps(g, X0, X1, Y0, Y1); drawAmbientNear(g, now); drawMig(g); }
-    decoDrawAll(g); decoPreview(g, now); drawMailbox(g, now); drawDinner(g, now); p4WorldDraw(g, now); drawNpc(g, now); drawVillagers(g, now); drawLogi(g, now); drawDrops(g, now); drawGraves(g, now); drawBirds(g, now); drawAnimals(g, now); drawBrawl(g, now); drawFoot(g); drawCrit(g, now); drawAmb2(g, now); drawEnemies(g, now); drawShots(g, now); drawArrows(g, false); drawBlast(g, now); drawHook(g); drawBossBar(); drawMini(); tickMusic(); tickCloud();
+    decoDrawAll(g); decoPreview(g, now); drawMailbox(g, now); drawCampMove(g); drawDinner(g, now); p4WorldDraw(g, now); drawNpc(g, now); drawVillagers(g, now); drawLogi(g, now); drawDrops(g, now); drawGraves(g, now); drawBirds(g, now); drawAnimals(g, now); drawBrawl(g, now); drawFoot(g); drawCrit(g, now); drawAmb2(g, now); drawEnemies(g, now); drawShots(g, now); drawArrows(g, false); drawBlast(g, now); drawHook(g); drawBossBar(); drawMini(); tickMusic(); tickCloud();
     drawPierGate(g, now); drawVents(g, now); drawRemotes(g, now); trailDraw(g, now); drawPlayer(g, now); if (sel === "weapon") drawCharge(g, ox + p.x * ts, oy + (p.y - PH * 0.5) * ts); drawTag(g, now); drawPet(g, now); drawFishing(g, now);
     parts.forEach(function (q) { var al = clamp(q.life / q.max * 1.4, 0, 1); g.globalAlpha = al; g.fillStyle = q.c; var px = ox + q.x * ts, py = oy + q.y * ts; if (q.glw) return; if (q.conf) { var cw = q.s * 1.6, chh = Math.max(1, q.s * (q.s2 || 0.5)); g.fillRect(Math.round(px - cw / 2), Math.round(py - chh / 2), cw, chh); return; } g.fillRect(Math.round(px - q.s / 2), Math.round(py - q.s / 2), q.s, q.s); }); g.globalAlpha = 1;
     drawWaterFx(g);
@@ -18498,13 +18503,39 @@
     var hb = world.bio[clamp(hx, 0, W - 1)];
     stopInput(); thud(150, 0.08);
     trans = { t: 0, done: false, mid: function () {
-      cave = { hole: { x: hx, y: hy, b: hb }, run: ((Math.random() * 2e9) | 0) || 1, floors: {}, f: 0, F: null };
+      cave = { hole: { x: hx, y: hy, b: hb }, run: mineRun(), mine: 1, floors: {}, f: 0, F: null };   // THE MINE (Nov 2026): one fixed set of floors per world
       S.st.caves++; enemies.length = 0; stageEl.classList.add("cave"); $("sbxHint").classList.remove("on");
       setFloor(f0 > 1 ? f0 : 1, "down"); save();
     } };
   }
+  // THE MINE IS ONE PLACE (Nov 2026): every world's Mine is built from the world's seed, so its 30 floors are the same caves every visit, and
+  // what you dig, build or open stays that way (S.mfl[floor] = the blocks that changed, S.mfc[floor] = its chests). Floor 31 is the bottom:
+  // no ladder down, and the Heart Hoard waits there for the first time you reach it.
+  var MINE_BOTTOM = 31;
+  function mineRun() { return (Math.imul((S.seed | 0) ^ 0x4d494e45, 2654435761) | 0) || 1; }
+  function mflSave() {
+    if (!cave || !cave.mine || !cave.F || !cave.F.n0) return; var F = cave.F, out = [], i; S.mfl = S.mfl || {}; S.mfc = S.mfc || {};
+    for (i = 0; i < F.node.length && out.length < 6000; i++) if (F.node[i] !== F.n0[i]) out.push(i + ":" + F.node[i]);
+    if (out.length) S.mfl[cave.f] = out.join(","); else delete S.mfl[cave.f];
+    if (F.cont && Object.keys(F.cont).length) S.mfc[cave.f] = F.cont; else delete S.mfc[cave.f];
+  }
+  function mflLoad(f, F) {
+    F.n0 = F.node.slice(); var e = S.mfl && S.mfl[f]; if (e) e.split(",").forEach(function (q) { var a = q.split(":"), i = +a[0], id = +a[1]; if (i >= 0 && i < F.node.length && (id === 0 || TILES[id])) F.node[i] = id; });
+    if (S.mfc && S.mfc[f]) F.cont = JSON.parse(JSON.stringify(S.mfc[f]));
+    if (f === MINE_BOTTOM) mineBottomSetup(F);
+  }
+  function mineBottomSetup(F) {   // floor 31: the way down is gone, and the Heart Hoard sits near where you arrive
+    F.down = { x: -60, y: -60 }; F.bottom = 1; if (T.X_lootchest === undefined) return;
+    var best = -1, bd = 1e9, sx = Math.floor(F.spawn.x), sy = Math.floor(F.spawn.y);
+    for (var y = sy - 4; y <= sy + 3; y++) for (var x = sx - 8; x <= sx + 8; x++) { if (x < 1 || y < 1 || x >= F.w - 1 || y >= F.h - 1) continue; var i = y * F.w + x;
+      if (F.wall[i] || F.node[i] || !(F.wall[i + F.w] || F.node[i + F.w]) || Math.abs(x - sx) < 2) continue; var d = Math.abs(x - sx - 3) + Math.abs(y - sy); if (d < bd) { bd = d; best = i; } }
+    if (best < 0) return; F.hoard = best;
+    if (!S.st.mineBottom) { F.node[best] = T.X_lootchest; F.cont = F.cont || {}; if (!F.cont[best]) F.cont[best] = { goldcoin: 12, ruby: 2, sapphire: 2, moonstone: 2, amethyst: 2, crystal: 24, ironingot: 10, silvercoin: 60 }; }
+  }
   function setFloor(f, from) {
+    if (cave.mine && cave.F && cave.F.n0) mflSave();
     var F = cave.floors[f] || (cave.floors[f] = cave.bld ? SC.interior(cave.bld.kind, cave.bld.b, cave.bld.id, cave.run) : cave.volc && SC.genVolcano ? SC.genVolcano(cave.run, f) : cave.glowm && SC.genGlow ? SC.genGlow(cave.run) : cave.maze && SC.genMaze ? SC.genMaze(cave.run) : SC.genLair && f === SC.LAIR_F ? SC.genLair(S.seed | 0) : SC.gen(cave.run, f, mineBio(f)));
+    if (cave.mine && !F.n0 && !F.lair) mflLoad(f, F);
     var bandNew = !cave.bld && !cave.volc && cave.F && cave.F.biome !== F.biome;
     if (cave.volc && f > (S.st.volcDeep || 0)) S.st.volcDeep = f;
     cave.f = f; cave.F = F;
@@ -18517,12 +18548,13 @@
       var o = [[0, 1], [0, -1], [-1, 0], [1, 0], [1, 1], [-1, 1], [1, -1], [-1, -1]], k, nx, ny; cp.x = F.down.x + 0.5; cp.y = F.down.y + 0.9;
       for (k = 0; k < o.length; k++) { nx = F.down.x + o[k][0]; ny = F.down.y + o[k][1]; if (!SC.solid(F, nx, ny)) { cp.x = nx + 0.5; cp.y = ny + 0.85; break; } }
     } else { cp.x = F.spawn.x; cp.y = F.spawn.y; }
-    resize(); cp.vx = cp.vy = 0; cam.x = cp.x; cam.y = cp.y - 0.8; mine = null; parts.length = 0; texts.length = 0; hbDirty = true; speedStart(F, f, from);
+    resize(); cp.vx = cp.vy = 0; cam.x = cp.x; cam.y = cp.y - 0.8; mine = null; parts.length = 0; texts.length = 0; hbDirty = true; if (!F.bottom) speedStart(F, f, from);
     if (!F.bld && f > S.st.caveDeep) S.st.caveDeep = f;
     if (liftFloor(f) && f > (S.st.mineLift | 0)) { S.st.mineLift = f; setTimeout(function () { toast("Lift stop unlocked: floor " + f + ". Ride the lift up from here, and next time ride it straight down.", "#f2c14e"); }, 900); }
-    var el = $("sbxBCard"); el.style.setProperty("--bc", BIOMES[F.biome].c); el.querySelector("b").textContent = F.bld || F.glowm || F.maze ? F.theme.n : "Floor " + f; el.querySelector("small").textContent = F.bld || F.glowm || F.maze ? F.theme.sub : F.theme.n;
+    var el = $("sbxBCard"); el.style.setProperty("--bc", BIOMES[F.biome].c); el.querySelector("b").textContent = F.bld || F.glowm || F.maze ? F.theme.n : F.bottom ? "The Bottom" : "Floor " + f; el.querySelector("small").textContent = F.bld || F.glowm || F.maze ? F.theme.sub : F.theme.n;
     if (F.isle && cave.Q) { el.style.setProperty("--bc", cave.port ? "#ffd23f" : TIER_C[cave.tier]); el.querySelector("b").textContent = cave.Q.n; el.querySelector("small").textContent = cave.port ? "The trading port" : skulls(cave.tier) + " " + TIER_N[cave.tier] + " island"; }
     el.classList.remove("on"); void el.offsetWidth; el.classList.add("on");
+    if (F.bottom) setTimeout(function () { if (!S.st.mineBottom) { S.st.mineBottom = 1; popup("The bottom of the Mine!", "Floor 31: as deep as it goes. The Heart Hoard is close by.", "#ffd23f"); save(); } else toast("The bottom of the Mine. Floor 31.", "#ffd23f"); }, 900);
     if (F.lair && !lairOwned()) setTimeout(function () { toast("A secret swamp under the Mine... and someone has made it their hideout.", LAIRB.c); }, 900);
     else if (F.lair) setTimeout(function () { toast("Home sweet hollow. Your Rig Bay is on the west shore.", LAIRB.c); }, 900);
     else if (bandNew) toast(F.biome === 1 ? "The tunnels turn hot. You have reached the Cinder Hollow." : F.biome === 2 ? "The air bites cold. You have reached the Frostvault." : "Back up in the mossy Mudhollow.", BIOMES[F.biome].c);
@@ -18595,7 +18627,7 @@
   function caveB() { return !cave ? 0 : cave.bld || cave.volc || cave.glowm || cave.maze ? (cave.hole ? cave.hole.b : 0) : cave.F ? cave.F.biome : mineBio(cave.f); }
   function leaveCaveNow() {
     if (CBK.c) { cvFree(CBK.c); CBK.c = null; CBK.F = null; }   // (the Mine floor's painting is let go)
-    if (!cave) return; var h = cave.hole; cave = null; setTimeout(function () { if (S.quake && S.quake.used && S.quake.x === h.x && S.quake.y === h.y) quakeSeal("The fissure rumbles shut behind you."); }, 900); resize(); stageEl.classList.remove("cave"); stopInput();
+    if (!cave) return; mflSave(); var h = cave.hole; cave = null; setTimeout(function () { if (S.quake && S.quake.used && S.quake.x === h.x && S.quake.y === h.y) quakeSeal("The fissure rumbles shut behind you."); }, 900); resize(); stageEl.classList.remove("cave"); stopInput();
     p.x = h.x + 0.5; p.y = h.y + 1; p.vx = p.vy = 0; p.on = false; var guard = 0; while (boxHit(p.x, p.y) && guard++ < 8) p.y -= 1;
     enemies.length = 0; spawnT = 6; batT = 8; cam.x = p.x; cam.y = p.y - 1.1; parts.length = 0; texts.length = 0; lastBio = -1; hbDirty = true; hud(); save();
   }
@@ -18637,6 +18669,7 @@
   function useLadder(k) {
     if (trans || !cave) return;
     if (cave.isle) { if (k === "up") isleLeave(); return; }   // ISLAND RAIDS: the way back is the boat
+    if (k === "down" && cave.mine && cave.f >= MINE_BOTTOM) { nag("This is the bottom of the Mine. There is no deeper."); return; }
     if (k === "down") speedWin();
     if (cave.F && cave.F.lair && k === "down" && !lairOwned()) { nag("Saltjaw's crew has chained the way down. Beat the Captain first."); return; }
     if (caveBoss()) { nag("The Captain blocks your way. Beat him first!"); return; } stopInput(); thud(k === "up" ? 330 : 200, 0.07);
@@ -21616,13 +21649,16 @@
   // switches back to the jump button. Saved per device.
   var UPJ = true; try { UPJ = localStorage.getItem("swamp-delve-upjump") !== "0"; } catch (e) {}
   var JUMP_SVG = null;
-  function upjApply() {
-    stageEl.classList.toggle("upj", UPJ); CTLN.j = UPJ ? "Attack" : "Jump";
-    [].forEach.call(document.querySelectorAll(".sbx-stage .jump"), function (b) {
-      if (JUMP_SVG === null) JUMP_SVG = b.innerHTML;
-      b.setAttribute("data-k", UPJ ? "a" : "j"); b.classList.toggle("atk", UPJ); b.setAttribute("aria-label", UPJ ? "Attack" : "Jump"); if (b.hasAttribute("data-lk")) b.setAttribute("data-ln", CTLN.j);
-      b.innerHTML = UPJ ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.5 3.5L19.8 7 11 15.8 8.2 13 17 4.2z" fill="currentColor" fill-opacity=".25"/><path d="M5.6 11.6l6.8 6.8"/><path d="M8.6 15.4l-4 4"/><circle cx="3.9" cy="20.1" r="1.2" fill="currentColor"/></svg>' : JUMP_SVG;
-    });
+  var ATK_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.5 3.5L19.8 7 11 15.8 8.2 13 17 4.2z" fill="currentColor" fill-opacity=".25"/><path d="M5.6 11.6l6.8 6.8"/><path d="M8.6 15.4l-4 4"/><circle cx="3.9" cy="20.1" r="1.2" fill="currentColor"/></svg>';
+  function jbWantAtk() { return (sel === "weapon" || sel === "bow") && !(typeof OCS !== "undefined" && OCS && OCS.sea); }
+  function jbMode(b, atk) {   // the big right button: JUMP, or ATTACK while you hold a weapon (sword or bow)
+    if (JUMP_SVG === null) JUMP_SVG = b.innerHTML;
+    b.setAttribute("data-k", atk ? "a" : "j"); b.classList.toggle("atk", atk); b.setAttribute("aria-label", atk ? "Attack" : "Jump"); if (b.hasAttribute("data-lk")) b.setAttribute("data-ln", atk ? "Attack" : "Jump");
+    b.innerHTML = atk ? ATK_SVG : JUMP_SVG; tk.a = 0; tk.j = 0;
+  }
+  function upjApply() {   // (Nov 2026) the button jumps again and turns into Attack only while a weapon is in your paws; up on the arrows jumps too
+    stageEl.classList.toggle("upj", UPJ); CTLN.j = "Jump";
+    [].forEach.call(document.querySelectorAll(".sbx-stage .jump"), function (b) { jbMode(b, UPJ && jbWantAtk()); });
     var dp = $("sbxDpad"); if (dp) dp.setAttribute("aria-label", UPJ ? "Direction pad: left, right, up to jump and climb, down to drop" : "Direction pad: left, right, up to climb, down to drop");
   }
   function setUpJump(on) { UPJ = !!on; stopInput(); upjApply(); try { localStorage.setItem("swamp-delve-upjump", UPJ ? "1" : "0"); } catch (e) {} }
@@ -22054,7 +22090,7 @@
     if (CAMPS.w === world) return CAMPS; CAMPS = { w: world, pier: -1, farm: -1 }; if (!world || !col) return CAMPS;
     var sx = Math.floor(world.spawn.x), M0 = world.holes && world.holes[0], mx = M0 ? M0.x : -99, ml = mailSpot(), busy = [[mx - 4, mx + 6], [ml - 2, ml + 2], [sx - 1, sx + 1]];
     var free = function (a, z) { for (var q = 0; q < busy.length; q++) if (a <= busy[q][1] && z >= busy[q][0]) return false; return true; };
-    var flat = function (a, z, tol) { var y = col[a]; for (var x = a; x <= z; x++) { if (x < 3 || x >= W - 3 || Math.abs(col[x] - y) > tol || isLiq(get(x, col[x] - 1)) || isLiq(get(x, col[x]))) return false; } return true; };
+    var flat = function (a, z, tol) { var y = col[a]; for (var x = a; x <= z; x++) { if (x < 3 || x >= W - 3 || Math.abs(col[x] - y) > tol || isLiq(get(x, col[x] - 1)) || isLiq(get(x, col[x]))) return false; for (var ty = col[x] - 6; ty < col[x]; ty++) { var tt = get(x, ty); if (tt === T.LOG || tt === T.LEAVES) return false; } } return true; };   // (and clear of trees, so no trunk or branch is ever cut for it)
     var pick = function (a0, a1, need) { for (var tol = 0; tol <= 1; tol++) for (var d = 4; d < 34; d++) for (var sg = 1; sg >= -1; sg -= 2) { var x = sx + sg * d, a = x + a0, z = x + a1; if (free(a, z) && flat(a, z, tol)) { busy.push([a - need, z + need]); return x; } } return -1; };   // (dead level ground first; one block of slope only if there is none, and then it is levelled)
     CAMPS.farm = pick(-3, 3, 1); return CAMPS;   // (Croaker's Pier moved to the Sunbaked Shores, Nov 2026: see PIER GATES)
   }
@@ -22069,6 +22105,49 @@
       if (!TILES[get(x, gy)].solid) setT(x, gy, top); for (y = gy + 1; y < gy + 8; y++) { if (TILES[get(x, y)].solid) break; setT(x, y, T.MUD); }   // a dip under the art: fill it in
     }
     hbDirty = true; save();
+  }
+  // ---------- MOVING CAMP (Nov 2026): in Build mode, hold the Mine, the Homestead gate or the mailbox and drag it to new flat ground ----------
+  var CMOVE = null;
+  function campPieces() {   // [{ k, x, gy (ground row), a, z (columns it covers), h (blocks tall), n }]
+    var L = [], M0 = world && world.holes && world.holes[0];
+    if (M0 && get(M0.x, M0.y) === T.HOLE) L.push({ k: "mine", x: M0.x, gy: M0.y + 1, a: M0.x - 4, z: M0.x + 5, h: 6, n: "The Mine" });
+    if (T.X_farmgate !== undefined) { var sx = Math.floor(world.spawn.x); for (var x = sx - 60; x <= sx + 60; x++) { if (x < 2 || x >= W - 2) continue; var gy = col[x]; if (get(x, gy - 1) === T.X_farmgate) { L.push({ k: "gate", x: x, gy: gy, a: x - 2, z: x + 2, h: 5, n: "The Homestead gate" }); break; } } }
+    var ml = mailSpot(); if (ml >= 0) L.push({ k: "mail", x: ml, gy: col[ml], a: ml, z: ml, h: 2, n: "The mailbox" });
+    return L;
+  }
+  function campPieceAt(tx, ty) { if (cave || HOME || OCS || inMC() || !world || !col) return null; var L = campPieces(); for (var n = 0; n < L.length; n++) { var q = L[n]; if (tx >= q.a && tx <= q.z && ty >= q.gy - q.h && ty < q.gy) return q; } return null; }
+  function campFits(q, nx) {   // could q stand with its middle at column nx? dead level ground, no water, nothing in the way, not on another camp piece
+    var a = nx - (q.x - q.a), z = nx + (q.z - q.x), gy = col[clamp(nx, 0, W - 1)], x, y; if (a < 3 || z >= W - 3) return false;
+    for (x = a; x <= z; x++) { if (col[x] !== gy || isLiq(get(x, gy)) || isLiq(get(x, gy - 1)) || !TILES[get(x, gy)].solid) return false;
+      for (y = gy - q.h; y < gy; y++) { var id = get(x, y), td = TILES[id]; if (picStructAt(x, y)) return false; if (id !== T.AIR && !(q.k === "gate" && id === T.X_farmgate && x === q.x) && !(q.k === "mine" && id === T.HOLE) && (td.solid || isChest(id) || td.store || td.kind === "door")) return false; } }
+    var others = campPieces().filter(function (o) { return o.k !== q.k; }); for (var n = 0; n < others.length; n++) if (a <= others[n].z + 1 && z >= others[n].a - 1) return false;
+    return true;
+  }
+  function campMoveTo(q, nx) {
+    var gy = col[nx];
+    if (q.k === "gate") { setT(q.x, q.gy - 1, T.AIR); setT(nx, gy - 1, T.X_farmgate); }
+    else if (q.k === "mine") { var M0 = world.holes[0]; setT(M0.x, M0.y, T.AIR); setT(nx, gy - 1, T.HOLE); M0.x = nx; M0.y = gy - 1; S.minepos = [nx, gy - 1]; }
+    else if (q.k === "mail") { S.mailx = nx; MAILX = null; }
+    CAMPS.w = null; hbDirty = true; S.st.campmoves = (S.st.campmoves || 0) + 1; save(); snd("coin"); toast(q.n + " moved.", "#7af0d0");
+  }
+  function campDrag(e, phase) {   // pointer events on the world while Build mode is on
+    if (!BUILDM || panelOpen) return false; var r = cv.getBoundingClientRect(), tx = Math.floor((e.clientX - r.left - ox) / ts), ty = Math.floor((e.clientY - r.top - oy) / ts);
+    if (phase === "down") { var q = campPieceAt(tx, ty); if (!q) return false; var dx = q.x + 0.5 - p.x, dy = q.gy - 1 - (p.y - PH / 2); if (dx * dx + dy * dy > 14 * 14) { nag("Walk closer to move " + q.n.toLowerCase() + "."); return true; } CMOVE = { q: q, id: e.pointerId, t0: performance.now(), x: q.x, held: false }; return true; }
+    if (!CMOVE || e.pointerId !== CMOVE.id) return false;
+    if (phase === "move") { CMOVE.x = tx - Math.round((CMOVE.q.z - CMOVE.q.a) / 2) + (CMOVE.q.x - CMOVE.q.a); if (performance.now() - CMOVE.t0 > 250) CMOVE.held = true; return true; }
+    if (phase === "up") { var C = CMOVE; CMOVE = null; if (!C.held && performance.now() - C.t0 < 250) { nag("Hold " + C.q.n.toLowerCase() + " a moment, then drag it to new flat ground."); return true; }
+      if (C.x === C.q.x) return true; if (!campFits(C.q, C.x)) { nag("It needs flat, dry ground with nothing in the way."); uiSnd("error", 0.3); return true; } campMoveTo(C.q, C.x); return true; }
+    return false;
+  }
+  cv.addEventListener("pointerdown", function (e) { if (campDrag(e, "down")) { e.preventDefault(); e.stopImmediatePropagation(); try { cv.setPointerCapture(e.pointerId); } catch (er) {} } }, true);
+  cv.addEventListener("pointermove", function (e) { if (CMOVE && campDrag(e, "move")) { e.stopImmediatePropagation(); } }, true);
+  ["pointerup", "pointercancel"].forEach(function (ev) { cv.addEventListener(ev, function (e) { if (CMOVE && campDrag(e, "up")) e.stopImmediatePropagation(); }, true); });
+  function drawCampMove(g) {   // Build mode: soft outlines on the pieces you can move, and the ghost while you drag one
+    if (!BUILDM || cave || HOME || OCS) return; var u = ts;
+    campPieces().forEach(function (q) { if (CMOVE && CMOVE.q.k === q.k) return; g.save(); g.strokeStyle = "rgba(122,240,208,.55)"; g.setLineDash([u * 0.25, u * 0.18]); g.lineWidth = Math.max(1.5, u * 0.06); g.strokeRect(ox + q.a * u, oy + (q.gy - q.h) * u, (q.z - q.a + 1) * u, q.h * u); g.restore(); });
+    if (!CMOVE || !CMOVE.held) return; var q2 = CMOVE.q, nx = clamp(CMOVE.x, 4, W - 5), gy = col[nx], a = nx - (q2.x - q2.a), w = q2.z - q2.a + 1, ok = campFits(q2, nx);
+    g.save(); g.fillStyle = ok ? "rgba(122,240,208,.22)" : "rgba(255,106,90,.22)"; g.strokeStyle = ok ? "#7af0d0" : "#ff6a5a"; g.lineWidth = Math.max(2, u * 0.08); g.fillRect(ox + a * u, oy + (gy - q2.h) * u, w * u, q2.h * u); g.strokeRect(ox + a * u, oy + (gy - q2.h) * u, w * u, q2.h * u);
+    g.font = "800 " + Math.max(11, Math.round(u * 0.42)) + "px Nunito,system-ui,sans-serif"; g.textAlign = "center"; g.fillStyle = "#fff"; g.fillText(ok ? q2.n : "Needs flat ground", ox + (a + w / 2) * u, oy + (gy - q2.h - 0.3) * u); g.restore();
   }
   function campFix() {   // CAMP (Nov 2026): an older world's Homestead gate may stand on a step; level the ground under it once
     if (!S || S.campfix || inMC() || cave || HOME || OCS || !world || !col || T.X_farmgate === undefined) return; S.campfix = 1; var sx = Math.floor(world.spawn.x);
@@ -22602,6 +22681,35 @@
   // ---------- ocean art, drawn in code ----------
   // ITEM ICONS (32 x 32): OCI[id](g) paints into a canvas; icon() calls it for any of these ids.
   var OCI = {};
+  // OWN ICONS (Nov 2026): every item has its own picture. These used to share another item's icon (the block they are placed as, or a
+  // potion of the same colour). Drawn on the 16 px grid at 2x, outlined in a dark tint of their own colour, lit from the top left.
+  // (When you add an item, give it its own art: SPR, OCI or ART in sandbox-extra. The icon audit in the dev menu lists any that share.)
+  (function () {
+    var P = function (g) { return function (x, y, w, h, c) { g.fillStyle = c; g.fillRect(x * 2, y * 2, w * 2, h * 2); }; };
+    var badge = function (g, draw) { draw(P(g)); };
+    var potion = function (id, em) { OCI[id] = function (g) { drawSpr(g, id); badge(g, em); }; };
+    potion("tonic_sunrun", function (R) { R(10, 9, 6, 6, "#7a4a00"); R(11, 10, 4, 4, "#ffd23f"); R(11, 10, 2, 1, "#fff3a0"); R(12, 8, 2, 1, "#ffd23f"); R(12, 15, 2, 1, "#ffd23f"); R(9, 11, 1, 2, "#ffd23f"); R(16, 11, 1, 2, "#ffd23f"); R(14, 12, 1, 1, "#c88a00"); });   // a little sun
+    potion("tonic_lotus", function (R) { R(10, 10, 6, 5, "#6a1a40"); R(11, 11, 4, 3, "#ff9ad0"); R(12, 9, 2, 2, "#6a1a40"); R(12, 10, 2, 2, "#ffc8e4"); R(10, 12, 2, 2, "#ffc8e4"); R(14, 12, 2, 2, "#ffc8e4"); R(12, 13, 2, 1, "#ffd23f"); });   // a lotus flower
+    potion("tonic_glow", function (R) { R(12, 8, 2, 8, "#1a3a5a"); R(9, 11, 8, 2, "#1a3a5a"); R(12, 9, 2, 6, "#c8f4ff"); R(10, 11, 6, 2, "#c8f4ff"); R(12, 11, 2, 2, "#ffffff"); });   // a bright twinkle
+    OCI.lcore = function (g) { var R = P(g);   // LOGISTICS CORE: a brass-framed hexagon with a turning teal core
+      R(5, 2, 6, 1, "#3a2a08"); R(3, 3, 10, 1, "#3a2a08"); R(2, 4, 12, 8, "#3a2a08"); R(3, 12, 10, 1, "#3a2a08"); R(5, 13, 6, 1, "#3a2a08");
+      R(5, 3, 6, 1, "#f2c14e"); R(3, 4, 10, 1, "#f2c14e"); R(3, 5, 1, 6, "#c8901a"); R(12, 5, 1, 6, "#8a5a10"); R(3, 11, 10, 1, "#8a5a10"); R(5, 12, 6, 1, "#8a5a10"); R(3, 4, 4, 1, "#fff2b0");
+      R(4, 5, 8, 6, "#0a2a24"); R(5, 6, 6, 4, "#1a8a70"); R(6, 6, 4, 4, "#4ee6b4"); R(7, 7, 2, 2, "#c8fff0"); R(6, 6, 1, 1, "#ffffff"); R(5, 8, 1, 1, "#7af0d0"); R(10, 7, 1, 1, "#7af0d0"); };
+    OCI.seedmaker = function (g) { var R = P(g);   // SEED MAKER: a clay crock with a funnel lid and seeds spilling out
+      R(4, 5, 8, 1, "#3a1a0a"); R(3, 6, 10, 8, "#3a1a0a"); R(4, 14, 8, 1, "#3a1a0a"); R(4, 6, 8, 8, "#b8643a"); R(4, 6, 3, 7, "#d8845a"); R(10, 7, 2, 7, "#8a4422"); R(4, 9, 8, 1, "#8a4422");
+      R(5, 2, 6, 1, "#3a2a1a"); R(6, 3, 4, 2, "#3a2a1a"); R(6, 2, 4, 1, "#9aa0a8"); R(7, 3, 2, 2, "#6a7078");
+      R(12, 12, 2, 2, "#2a1a0a"); R(12, 12, 1, 1, "#e8c070"); R(13, 14, 2, 1, "#2a1a0a"); R(13, 14, 1, 1, "#9ae07a"); R(1, 13, 2, 1, "#2a1a0a"); R(1, 13, 1, 1, "#e8c070"); };
+    OCI.picklekeg = function (g) { var R = P(g);   // PICKLE KEG: an iron-banded keg with a jar of pickles on top
+      R(3, 6, 10, 9, "#2a1606"); R(4, 6, 8, 9, "#8a5a32"); R(4, 6, 2, 9, "#b07a46"); R(10, 6, 2, 9, "#6a4426"); R(3, 8, 10, 1, "#4a4e56"); R(3, 12, 10, 1, "#4a4e56"); R(4, 8, 3, 1, "#9aa0a8");
+      R(6, 1, 5, 6, "#1a3a2a"); R(7, 2, 3, 4, "#c8eef0"); R(7, 3, 3, 3, "#5aa83a"); R(7, 3, 1, 3, "#8ad85a"); R(6, 1, 5, 1, "#c84a3a"); };
+    OCI.compostbin = function (g) { var R = P(g);   // COMPOST BIN: a slatted wooden bin heaped with dark compost and a leaf
+      R(2, 7, 12, 8, "#2a1606"); R(3, 7, 10, 7, "#6a4426"); R(3, 7, 10, 1, "#a87a4a"); R(3, 10, 10, 1, "#4a2e18"); R(6, 7, 1, 7, "#4a2e18"); R(9, 7, 1, 7, "#4a2e18"); R(3, 8, 2, 2, "#8a5c34");
+      R(3, 4, 10, 3, "#1a0e06"); R(4, 4, 8, 2, "#4a3020"); R(5, 3, 5, 1, "#1a0e06"); R(6, 4, 2, 1, "#6a4a30"); R(10, 2, 3, 3, "#1a4a20"); R(10, 2, 2, 2, "#6ac04a"); R(11, 3, 1, 1, "#9ae07a"); };
+    OCI.duckcoop = function (g) { var R = P(g);   // DUCK COOP: a thatched hut with a round door and a duck peeking out
+      R(1, 5, 14, 2, "#5a4010"); R(2, 3, 12, 2, "#5a4010"); R(4, 1, 8, 2, "#5a4010"); R(2, 4, 12, 2, "#d8b048"); R(4, 2, 8, 2, "#e8c868"); R(2, 6, 12, 1, "#b08a30");
+      R(2, 7, 12, 8, "#3a2410"); R(3, 7, 10, 7, "#8a5a32"); R(3, 7, 2, 7, "#a87a4a"); R(6, 9, 4, 5, "#1a0e06");
+      R(7, 10, 3, 3, "#f6eedb"); R(9, 11, 2, 1, "#ff9a2a"); R(8, 10, 1, 1, "#1a1206"); };
+  })();
   (function () {
     var E = function (g, x, y, rx, ry, c, rot) { g.fillStyle = c; g.beginPath(); g.ellipse(x, y, rx, ry, rot || 0, 0, 6.2832); g.fill(); };
     var RC = function (g, x, y, w, h, c) { g.fillStyle = c; g.fillRect(x, y, w, h); };
@@ -25324,6 +25432,7 @@
   var MAILX = null;
   function mailSpot() {
     if (MAILX && MAILX.w === world) return MAILX.x; var sx = Math.floor(world.spawn.x); MAILX = { w: world, x: -1 };
+    if (S && S.mailx !== undefined && col && col[S.mailx]) { MAILX.x = S.mailx; return MAILX.x; }   // (moved in Build mode)
     for (var d = 2; d < 14; d++) for (var sg = 1; sg >= -1; sg -= 2) { var x = sx + sg * d; if (x < 2 || x >= W - 2 || MAILX.x >= 0) continue; var gy = col[x]; if (gy && !TILES[get(x, gy - 1)].solid && !TILES[get(x, gy - 2)].solid && TILES[get(x, gy)].solid) MAILX.x = x; }
     return MAILX.x;
   }
@@ -27653,7 +27762,7 @@ var ATK = { on: false, mine: false };
       try { tickVoices(dt); } catch (er) {}
       try { if (!titleOpen) overTick(dt); } catch (er) {}
       try { mapSeenTick(); } catch (er) {}
-      try { atkTick(); if (!(OCS && OCS.sea)) devChipReset(); var jb = JBT || (JBT = document.querySelector("#sbxPad .jump")); if (jb) { var cn = !!(OCS && OCS.sea), mn = !cn && jb.classList.contains("atk") && atkMineOk(); if (jb.classList.contains("cann") !== cn) jb.classList.toggle("cann", cn); if (mn) { var mic = icon(sel === "shovel" ? "shovel" : "pick"); if (jb.__mic !== mic) { jb.__mic = mic; jb.style.setProperty("--mineic", "url(" + mic + ")"); } }   // the Mine button shows the tool you hold (its own pixel icon)
+      try { atkTick(); if (!(OCS && OCS.sea)) devChipReset(); var jb = JBT || (JBT = document.querySelector("#sbxPad .jump")); if (jb) { var wA = UPJ && jbWantAtk(); if (jb.classList.contains("atk") !== wA) jbMode(jb, wA); var cn = !!(OCS && OCS.sea), mn = !cn && jb.classList.contains("atk") && atkMineOk(); if (jb.classList.contains("cann") !== cn) jb.classList.toggle("cann", cn); if (mn) { var mic = icon(sel === "shovel" ? "shovel" : "pick"); if (jb.__mic !== mic) { jb.__mic = mic; jb.style.setProperty("--mineic", "url(" + mic + ")"); } }   // the Mine button shows the tool you hold (its own pixel icon)
           if (jb.classList.contains("mine") !== mn) { jb.classList.toggle("mine", mn); jb.setAttribute("aria-label", mn ? "Mine" : jb.classList.contains("atk") ? "Attack" : "Jump"); } } } catch (er) {}
       try { if (trans) tickTrans(dt); if ((MP.on || live || (!panelOpen && !menuOpen && !deadUI)) && !trans && !titleOpen) { var gdt = dt * timeScale(dt); graveTick(Math.min(dt, 0.1)); homeClock(gdt); tickWaterFx(gdt); if (HOME) homeUpdate(gdt); else if (OCS) ocTick(gdt); else if (cave) caveUpdate(gdt); else update(gdt); } else if (titleOpen && !cave && !OCS && !HOME && !trans) titleTick(dt, now); faintNow(); mpTick(dt); } catch (er) { loopErr(er); }
       try {
@@ -27735,6 +27844,7 @@ var ATK = { on: false, mine: false };
     MAIN.forEach(function (q) { items(q.rw, "the quest " + q.n); if (typeof q.v !== "function") say("the quest " + q.n + " has no way to count progress"); });
     SIDE.forEach(function (q) { items(q.rw, "the side quest " + q.n); });
     if (typeof SbxExtra !== "undefined" && SbxExtra.loot) try { for (var b = 0; b < 3; b++) for (var t = 0; t < 3; t++) ["chest", "pot"].forEach(function (k) { for (var n = 0; n < 12; n++) (SbxExtra.loot(k, b, t) || []).forEach(function (e) { if (!I[e[0]]) say("loot from a " + k + " can give \"" + e[0] + "\", which is not an item"); }); }); } catch (e) { say("rolling loot failed: " + e.message); }
+    try { var seenIc = {}; Object.keys(I).forEach(function (k) { if (I[k].tool || /^(sp|t)_/.test(k)) return; var u = icon(k); if (seenIc[u]) say("the items " + I[seenIc[u]].n + " and " + I[k].n + " share one icon (give the new one its own art)"); else seenIc[u] = k; }); } catch (e) {}   // OWN ICONS
     return out.filter(function (m, i) { return out.indexOf(m) === i; });
   }
   window.__W = { cvStepDown: cvStepDown, enterHome: typeof enterHome !== "undefined" ? enterHome : null, leaveHome: typeof leaveHome !== "undefined" ? leaveHome : null, clean: clean, openStall: openStall, homeS: homeS, flPut: flPut, isPlantT: isPlantT, craftSort: craftSort, trySpecial: trySpecial, get panelOpen() { return panelOpen; }, FOC: FOC, DODGE: DODGE, rarItem: rarItem, rarRec: rarRec, get RECIPES() { return RECIPES; }, openStn: openStn, get drops() { return drops; }, place: place, nearFree: nearFree, get p2() { return p; }, grassGrow: grassGrow, razeStruct: razeStruct, blocks: blocks, setT: setT, breakTile: breakTile, save: save, get rmask() { return rmask; }, get world() { return world; }, get S() { return S; }, get: get, get col() { return col; }, W: W, H: H, T: T, get tiles() { return tiles; }, p: p, cam: cam, TILES: TILES, edit: function () { editN++; }, OPT: OPT, setSel: function (v) { sel = v; bare = false; hbDirty = true; }, get ox() { return ox; }, get oy() { return oy; }, get ts() { return ts; }, setT: setT, recalc: recalc, save: save, get sel() { return sel; }, shapeCount: shapeCount, autoShape: function (x, y) { return autoShape(y * W + x); }, FOOT: FOOT, NLOG: NLOG, pawChop: function (x, y) { return pawChop(get(x, y), x, y); }, pcol: function () { return pcol(); }, place: function (x, y, k) { place(x, y, k); }, tileItem: function (id) { for (var k in ITEMS) if (ITEMS[k].tile === id) return k; return null; }, pscr: function () { return [ox + p.x * ts, oy + p.y * ts, ts]; }, swo: function () { return [SWO.arc.length, SWO.th, heldAmt, toolPose().kind, toolPose().has, toolPose().phi]; }, enterBuilding: function (s) { enterBuilding(s); }, structs: function () { return world.structs; }, showTip: function (m) { showTip(m, "", "#f2c14e"); }, toast: function (m) { toast(m); }, step: function (h, d, j) { step(h, d, j); }, get orig() { return orig; } };
@@ -29063,9 +29173,16 @@ var ATK = { on: false, mine: false };
     g.putImageData(im, 0, 0);
     return (MZARCH = { c: c, fx: FX, fy: FY });
   }
+  function frontGrass(g, x0, x1, gy) {   // FOREGROUND GRASS: a grass lip and blades drawn over the foot of a building, on every grassy block under it
+    var u = ts / 16, P = GRASSP[0];
+    for (var x = x0; x <= x1; x++) { var id = get(x, gy), td = TILES[id]; if (!td || !td.solid || (id !== T.MOSS && !/grass|moss/i.test(td.n || ""))) continue; var pal = GRASSP[varAt(x) === 1 ? 1 : 0] || P;
+      var bx = ox + x * ts, by = oy + gy * ts; g.fillStyle = pal[0]; g.fillRect(bx, by - u, ts, u * 3); g.fillStyle = pal[1]; g.fillRect(bx, by - u, ts, u);
+      for (var b = 0; b < 6; b++) { var hx = SW.hash(x, b, 77), h = 2 + Math.floor(hx * 4), px = bx + Math.floor((b * 2.6 + hx * 2) * u); g.fillStyle = b % 2 ? pal[0] : pal[3]; g.fillRect(px, by - (h + 1) * u, u, h * u); if (h > 3) { g.fillStyle = pal[1]; g.fillRect(px, by - (h + 1) * u, u, u); } } }
+  }
   function mazeDraw(g, now) {   // the arch: a pixel-art mangrove whose two root legs make the doorway (MAZE ART)
     var s = sites(); s = s && s.maze; if (!s || cave || HOME || OCS) return; var sx = ox + (s.x + 2.5) * ts, sy = oy + s.y * ts, t = reduce ? 0 : now / 1000; if (sx < -ts * 5 || sx > vw + ts * 5) return; siteSeen("maze", s);
     var A = mazeArch(), sc = ts / 16; g.imageSmoothingEnabled = false; g.drawImage(A.c, Math.round(sx - A.fx * sc), Math.round(sy - A.fy * sc), Math.round(A.c.width * sc), Math.round(A.c.height * sc));
+    frontGrass(g, s.x - 1, s.x + 6, s.y);   // the grass grows up in front of its root legs, as it does in front of the Mine and the Homestead gate
     for (var f = 0; f < 5; f++) { var bl = 0.5 + 0.5 * Math.sin(t * 2.2 + f * 1.7); if (bl < 0.2) continue; var fx2 = sx + (Math.sin(t * 0.6 + f * 2.3) * 9 + (f - 2) * 4) * sc, fy2 = sy - (14 + f * 9 + Math.sin(t * 0.8 + f) * 4) * sc, r = Math.max(2, sc * 1.2);
       g.fillStyle = "rgba(200,255,120," + (0.18 * bl).toFixed(3) + ")"; g.beginPath(); g.arc(fx2, fy2, r * 3, 0, 7); g.fill(); g.fillStyle = "rgba(230,255,160," + (0.9 * bl).toFixed(2) + ")"; g.fillRect(fx2 - r / 2, fy2 - r / 2, r, r); }
   }
@@ -29302,6 +29419,7 @@ var ATK = { on: false, mine: false };
       ["Mine: floor 1", function () { devMine(1); }],
       ["Mine: floor 10", function () { devMine(10); }],
       ["Mine: floor 20", function () { devMine(20); }],
+      ["Mine: the bottom (floor 31, the Heart Hoard)", function () { devMine(31); }],
       ["Sunken Hollow (Captain Saltjaw)", function () { devMine(SC.LAIR_F || 25); }],
       ["Volcano vent", function () { var V = volcanoes(); dmTp(V[0] ? V[0].x : null, V[0] ? V[0].y : null, "Volcano vent"); }],
       ["Enter the volcano", function () { var V = volcanoes(); if (!V[0]) return toast("No volcano in this world yet.", "#ff8a8a"); dmTp(V[0].x, V[0].y, "Volcano"); setTimeout(function () { enterVolcano(V[0]); }, 400); }],
@@ -29745,7 +29863,7 @@ var ATK = { on: false, mine: false };
   window.__sbx.bld = function (kind) { var h = (world.structs || []).filter(function (q) { return q.kind === kind && !q.razed; })[0]; if (h) { p.x = (h.dx || h.x) + 0.5; enterBuilding(h); } return !!h; };
   window.__sbx.contAny = function () { var F = cave && cave.F; if (!F) return 0; for (var y = 0; y < F.h; y++) for (var x = 0; x < F.w; x++) { var c = contAtCell(x, y); if (c && c.kind === "deco") { openCont(c); return 1; } } return 0; };
   window.__sbxIcon = icon; window.__sbx.cc = function (f) { ccOpen(!!f); }; window.__sbx.ccTab = function (t) { CC.tab = t; ccRender(); }; window.__sbx.ccSet = function (k, v) { CC.d[k] = v; ccRender(); }; window.__sbx.ccDone = function () { ccClose(true); };
-  window.__sbx.dev = { on: DEVON, open: devOpen, act: dmAct, A: DEVA, L: devTabList };
+  window.__sbx.dev = { on: DEVON, open: devOpen, act: dmAct, A: DEVA, L: devTabList, tp: function (x, y) { devTp(x, y); }, mineInfo: function () { if (!cave || !cave.F) return null; var F = cave.F, n = 0, first = -1; for (var i = 0; i < F.node.length; i++) if (F.node[i]) { n++; if (first < 0) first = i; } return { f: cave.f, run: cave.run, n: n, first: first, bottom: !!F.bottom, hoard: F.hoard, down: F.down }; }, mineZap: function (i) { cave.F.node[i] = 0; }, leave: function () { leaveCaveNow(); }, camp: function () { return campPieces(); }, campFits: function (k, x) { var q = campPieces().find(function (o) { return o.k === k; }); return q ? campFits(q, x) : false; } };
   window.__sbx.ess = { get v() { return S.ess | 0; }, drop: function (x, y, n) { essDrop(x, y, n); }, orbs: function () { return ORBS.length; }, lv: function () { return essLevel(S.ess | 0); }, tgt: function () { return essTgt(); }, vox: function (k, ev) { return vxPlay(k, ev || "i", 0, 0, 0, 0, true); }, kinds: function () { return Object.keys(KVOX); }, cx: function (s2, sel) { cxOpen(s2, sel); }, cxData: function () { return cxBuild(); }, cxAct: function (a) { cxAct(a); }, spr: function (i) { return orbSprite(i); } };
   window.__sbx.ui = {hold: function (k, a, ph) { sel = k; bare = false; heldAmt = a; heldPh = ph; }, joy: function (x, y) { joy.x = x; joy.y = y; }, aiOpen: function () { try { return aiOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, altarOpen: function () { try { return altarOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, banOpen: function () { try { return banOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, bankOpen: function () { try { return bankOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, bpOpen: function () { try { return bpOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, btyOpen: function () { try { return btyOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, cardsOpen: function () { try { return cardsOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, carveOpen: function () { try { return carveOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, ccOpen: function () { try { return ccOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, cgOpen: function () { try { return cgOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, cmdOpen: function () { try { return cmdOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, devOpen: function () { try { return devOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, dinOpen: function () { try { return dinOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, festOpen: function () { try { return festOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, flOpen: function () { try { return flOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, heartOpen: function () { try { return heartOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, houseOpen: function () { try { return houseOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, mailOpen: function () { try { return mailOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, merOpen: function () { try { return merOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, moltOpen: function () { try { return moltOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, museumOpen: function () { try { return museumOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, nbOpen: function () { try { return nbOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, quakeOpen: function () { try { return quakeOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, radioOpen: function () { try { return radioOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, sideOpen: function () { try { return sideOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, skillOpen: function () { try { return skillOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, smOpen: function () { try { return smOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, taleOpen: function () { try { return taleOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, terrOpen: function () { try { return terrOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, vaultOpen: function () { try { return vaultOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, wardOpen: function () { try { return wardOpen.apply(null, arguments); } catch (e) { return "ERR " + e.message; } }, stn: function (k) { var kind = STATIONS[k].kind, id = -1; for (var i in TILES) if (TILES[i] && TILES[i].kind === kind) { id = +i; break; } if (id < 0) return "no tile"; var x = Math.floor(p.x) + 2, y = Math.floor(p.y) - 1; setT(x, y, id); openStn(k, x, y); }, cmd: function () { S.cheats = 1; cmdOpen(); }, iconKind: function (id) { var it = ITEMS[id]; if (!it) return "none"; if (it.tool) return "tool"; if (OCI[id]) return "oci"; if (it.pb || it.qb) return "crop"; if (SPR[id]) return "spr"; if (it.mat) return "mat"; if (it.frag) return "frag"; if (it.gem) return "gem"; if (it.tile != null) return "tile"; return "other"; }, items: function () { return Object.keys(ITEMS); }, camp: function () { var c = campSpots(); return { pier: c.pier, farm: c.farm, spawn: Math.floor(world.spawn.x), mine: world.holes && world.holes[0] ? world.holes[0].x : null, mail: mailSpot(), fg: S.campfg, fgTile: c.farm >= 0 ? get(c.farm, col[c.farm] - 1) === T.X_farmgate : false }; }, tp: function (x) { dmTp(x + 0.5, null, "test"); }, put: function (dx, dy, item) { var it = ITEMS[item], id = it && it.tile != null ? it.tile : T[item]; var x = Math.floor(p.x) + dx, y = Math.floor(p.y) + dy; setT(x, y, id); return id; }, probe: function (r) { var o = {}, x0 = Math.floor(p.x), y0 = Math.floor(p.y); for (var y = y0 - r; y <= y0 + 2; y++) for (var x = x0 - r; x <= x0 + r; x++) { var id = get(x, y); if (!TILES[id].solid) continue; var k = TILES[id].n + (MATF[id] ? " M" + (MATF[id].see ? "s" : "") : " -") + (smask && smask[y * W + x] ? " S" : "") + (walls[y * W + x] ? " W" : ""); o[k] = (o[k] || 0) + 1; } return o; }, structs: function () { return (world.structs || []).map(function (q) { return { k: q.kind, dx: q.dx, gy: q.gy, x0: q.mx0, x1: q.mx1 }; }); }, picDump: function (dx) { var x = p.x + (dx || 0), out = []; (world.structs || []).forEach(function (q) { var P = q.pic; if (P && x >= P.x0 && x <= P.x0 + P.w) out.push(q.kind + "|" + P.x0 + "|" + P.w + "|" + structCanvas(P).toDataURL()); }); return out; }, slopeTest: function () { for (var d = 0; d < 40; d++) for (var sg = 1; sg >= -1; sg -= 2) { var x = Math.floor(p.x) + sg * d, y = col[x] - 1; if (get(x, y) === T.LOG && TILES[get(x, y + 1)].solid) { setT(x - 1, y + 1, T.AIR); setT(x - 1, y, T.AIR); return x; } } return -1; }, findVar: function (b) { for (var d = 0; d < W; d++) for (var sg = 1; sg >= -1; sg -= 2) { var x = Math.floor(p.x) + sg * d; if (x > 5 && x < W - 5 && world.bio[x] === b && world.sub && world.sub[x] && world.sub[x + 8] && world.bio[x + 8] === b) return x + 4; } return -1; }};   // UI AUDIT: open any window from tests
   window.__sbx.cmd = { run: cmdRun, open: cmdOpen, close: cmdClose, sug: cmdSuggest, log: function () { return CMD.log; }, on: cheatsOn, worlds: openWorlds, wheel: function () { return [selSlot, sel]; } };

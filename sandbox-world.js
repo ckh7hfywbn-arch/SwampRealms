@@ -1021,6 +1021,16 @@ batwing: { n: "Bat Wing", frag: "bat" },
           if (open(xx, yy + 1) || open(xx - 1, yy) || open(xx + 1, yy)) { t[k] = T.AIR; ch++; } }
         if (!ch) break; }
     })();
+    (function strays() {   // STRAY LEAVES (Nov 2026): a crown cut off from its tree (a building cleared the trunk but not all of its leaves) floated in mid-air. Any clump of
+      // leaves and vines above ground with no log within 3 blocks of it goes (a leafy branch tuft sits within 2 of its trunk, so those stay)
+      var seen = new Uint8Array(W * H), st = [], cl = [], x, y, i, n;
+      var nearLog = function (cx, cy) { for (var dy = -3; dy <= 3; dy++) for (var dx = -3; dx <= 3; dx++) { var a2 = cx + dx, b2 = cy + dy; if (a2 >= 0 && a2 < W && b2 >= 0 && b2 < H && t[b2 * W + a2] === T.LOG) return true; } return false; };
+      for (x = 1; x < W - 1; x++) for (y = Math.max(1, top[x] - 40); y < top[x]; y++) { i = y * W + x; if (t[i] !== T.LEAVES || seen[i] || walls[i]) continue;
+        st.length = 0; cl.length = 0; st.push(i); seen[i] = 1; var keep = false;
+        while (st.length) { var c = st.pop(), cx = c % W, cy = (c / W) | 0; cl.push(c); if (!keep && t[c] === T.LEAVES && nearLog(cx, cy)) keep = true; if (walls[c]) keep = true;
+          for (var dy = -1; dy <= 1; dy++) for (var dx = -1; dx <= 1; dx++) { var nx = cx + dx, ny = cy + dy; if (nx < 1 || nx >= W - 1 || ny < 1 || ny >= H) continue; var ni = ny * W + nx; if (seen[ni]) continue; var q = t[ni]; if (q === T.LEAVES || q === T.VINE) { seen[ni] = 1; st.push(ni); } } }
+        if (!keep && cl.length <= 80) for (n = 0; n < cl.length; n++) t[cl[n]] = T.AIR; }
+    })();
     return { trees: TREES, W: W, H: H, seed: seed, t: t, walls: walls, top: top, bio: bio, sub: sub, marks: marks, holes: holes, structs: structs, feats: feats, aerie: aerie, sky: sky, spawn: { x: SPAWNX + 0.5, y: top[SPAWNX] } };
   }
 
