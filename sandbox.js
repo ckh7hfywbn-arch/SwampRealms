@@ -8114,7 +8114,7 @@
     if (m.t === "join") { q = mpPeer(m.id); q.name = m.name; q.role = m.role; mpCount(); mpMe(); if (MP.on) toast(m.name + " joined the world!", "#4ee6b4"); addChat("", m.name + " joined."); if (MP.role === "host") { var w = worldSnap(); if (w) mpSend({ t: "welcome", to: m.id, world: w, pvp: MP.pvp, room: MP.room, host: MP.myName, wv: SW.WORLDVER }); mpMeta(); } renderMP(); return; }
     if (m.t === "leave") { q = MP.peers[m.id]; if (q) { toast(q.name + " left the world.", "#f6eedb"); addChat("", q.name + " left."); } delete MP.peers[m.id]; mpCount(); if (MP.role === "host") mpMeta(); renderMP(); return; }
     if (m.t === "welcome" && MP.role === "guest" && !MP.on) return mpEnterGuest(m);
-    if (m.t === "me") { q = mpPeer(m.from); q.name = String(m.name || q.name).slice(0, 16); q.animal = m.animal; q.outfit = m.outfit; q.sp = null; return; }
+    if (m.t === "me") { q = mpPeer(m.from); q.name = String(m.name || q.name).replace(/[^\w -]/g, "").trim().slice(0, 16) || q.name; q.animal = m.animal; q.outfit = m.outfit; q.sp = null; return; }
     if (m.t === "p") { q = mpPeer(m.from); mpState(q, m); return; }
     if (m.t === "set") { MP.applying = true; for (var i = 0; i + 2 < m.L.length; i += 3) { var sv = m.L[i + 2] | 0, sid = sv & 4095, slv = (sv >> 12) & 7; if (m.L[i] >= 0 && m.L[i] < W && m.L[i + 1] >= 0 && m.L[i + 1] < H && TILES[sid]) { if (FL && isLiq(sid)) FL.s(m.L[i + 1] * W + m.L[i], slv); setT(m.L[i], m.L[i + 1], sid); } } MP.applying = false; if (DECO) DECO.dirty(); return; }
     if (m.t === "deco") { decoRecv(m); return; }   // DECORATING (Stage 8)
@@ -13089,7 +13089,7 @@
       + r("Frame rate", "30 saves battery on laptops and phones.", optSeg("fps", OPT.fps, [[30, "30"], [60, "60"], [0, "Max"]], "Frame rate limit"))
       + r("Glow", "Soft bloom around torches, lava and glowing things.", optSeg("bloom", OPT.bloom ? 1 : 0, [[1, "On"], [0, "Off"]], "Glow"))
       + r("Fast world drawing", "Paints the ground in big pieces for higher, steadier frame rates. Looks the same. Turn off if anything looks wrong.", optSeg("chunks", OPT.chunks !== false ? 1 : 0, [[1, "On"], [0, "Off"]], "Fast world drawing"))
-      + r("Lighting", "Low keeps the classic look. Medium adds soft sun and lamp shadows and shaded corners. High adds dappled forest shade, sun beams, flickering torches and a warm sunset glow. Lower it if the game feels slow.", optSeg("lq", OPT.lq, [["low", "Low"], ["med", "Medium"], ["high", "High"]], "Lighting"))
+      + r("Lighting", "Low keeps the classic look. Medium adds soft sun and lamp shadows and shaded corners. High adds sun beams, flickering torches and a warm sunset glow. Lower it if the game feels slow.", optSeg("lq", OPT.lq, [["low", "Low"], ["med", "Medium"], ["high", "High"]], "Lighting"))
       + r("Graphics", "Low turns off soft light blending and sharp high-DPI drawing.", optSeg("gq", OPT.gq, [["auto", "Auto"], ["high", "High"], ["low", "Low"]], "Graphics quality")); }
   function setAccess() { var r = optRow;
     return r("Colour-blind mode", "Shifts the game's colours so reds, greens and blues are easier to tell apart.", optSeg("cb", OPT.cb, [["off", "Off"], ["p", "Protan"], ["d", "Deutan"], ["t", "Tritan"]], "Colour-blind mode"))
@@ -16290,7 +16290,7 @@
   }
   // ---------- LIGHTING UPGRADE (Nov 2026): soft shade, cast shadows, sun beams, golden light ----------
   // aoPass: a second little map beside the light map. Open cells next to rock (ceilings most, walls, cave floors least) get a soft dark
-  // tinted by the swamp's own shadow colour; at High, the open ground under a tree crown gets dappled shade that drifts with the wind.
+  // tinted by the swamp's own shadow colour. (No shade under trees.)
   function aoPass(gx0, gy0, gw, gh) {
     var lv = litLv(), n = gw * gh, i, j, c; AOG.fill(0, 0, n); if (lv < 1) return;
     for (j = 1; j < gh - 1; j++) for (i = 1; i < gw - 1; i++) {
@@ -16300,19 +16300,7 @@
       else { var d = OP[c + gw] > LQ ? 1 : 0, dl = OP[c + gw - 1] > LQ ? 1 : 0, dr = OP[c + gw + 1] > LQ ? 1 : 0; w = 0.3 * u + 0.16 * (ul + ur) + 0.17 * (l + r) + 0.1 * d + 0.06 * (dl + dr); }
       if (w > 0) AOG[c] = Math.min(0.78, w) * 185 | 0;
     }
-    if (lv < 2) return;
-    var tn = performance.now() / 1000;
-    for (i = 0; i < gw; i++) {
-      var X2 = gx0 + i; if (X2 < 0 || X2 >= W) continue; var cs = 0, dap = 1;
-      for (j = 0; j < gh; j++) {
-        var Y2 = gy0 + j; if (Y2 < 0) continue; if (Y2 >= H || Y2 >= col[X2]) break;
-        var c2 = j * gw + i;
-        if (tiles.g(Y2 * W + X2) === T.LEAVES) { cs = Math.min(1, cs + 0.34); continue; }
-        if (cs > 0.02) { dap = 0.62 + 0.38 * Math.sin(tn * 0.8 + X2 * 1.9 + Y2 * 2.7); if (OP[c2] <= LQ) { var v = (cs * dap * 88) | 0; if (v > AOG[c2]) AOG[c2] = v; } }
-        cs = Math.max(0, cs - (OP[c2] > LQ ? 0.03 : 0.065));
-      }
-      if (cs > 0.02 && j < gh) { var cg = j * gw + i, vg = (cs * dap * 70) | 0; if (vg > AOG[cg]) AOG[cg] = vg; }   // the ground itself
-    }
+
   }
   function softAdd(g, slot, w, h, dx, dy, bb, a) {   // lay the blurred copy of a light map over the view a second time, added (a hot glowing core)
     var C = SSB[slot]; if (!C || !BLUROK || lowq || !C.c.width || !bb || bb[2] < 0) return; var U = 4, bx0 = Math.max(0, bb[0] - 2), by0 = Math.max(0, bb[1] - 2), bx1 = Math.min(w, bb[2] + 3), by1 = Math.min(h, bb[3] + 3); if (bx1 <= bx0 || by1 <= by0) return;
@@ -16339,31 +16327,21 @@
     var l = 0, r = 0, k, c = j * gw + i; for (k = 1; k <= 5; k++) { var a = WG[c - k], b = WG[c + k]; if (a > l) l = a; if (b > r) r = b; }
     var m = Math.max(l, r); if (m < 6) return [0, 0]; return [l > r ? 1 : -1, clamp(m / 30, 0, 1) * clamp(Math.abs(l - r) / (m + 1) * 1.5 + 0.2, 0, 1)];
   }
-  function drawCastShadows(g, now) {
+  function drawCastShadows(g, now) {   // CONTACT SHADOWS (Nov 2026): a small soft oval right under each figure's feet, leaning a touch away from the sun or the nearest lamp. No tree shadows.
     if (litLv() < 1 || inMC() || cave) return;
-    var sun = sunState(S.time), sa = clamp(sun.a / 0.27, 0, 1) * (sun.up ? 1 : 0.55), day = daylight(S.time), sc = shadowTint(biomeMix(cam.x), 1 - day, 0);
-    var rgb = Math.round(sc[0] * 2 + 4) + "," + Math.round(sc[1] * 2 + 9) + "," + Math.round(sc[2] * 2 + 16), spr = csSpr(rgb), ga = g.globalAlpha, sm = g.imageSmoothingEnabled, k;
-    g.imageSmoothingEnabled = true; var gco = g.globalCompositeOperation; g.globalCompositeOperation = "source-over";
-    var SL = Math.max(sun.len, 0.7), lean = function (sx) { return sx + (sx < 0 ? -0.3 : 0.3); };   // the sun is never quite overhead: shadows always lean a little
-    function blob(cx, gy, rx, ry, a) { if (a < 0.012 || cx + rx < 0 || cx - rx > vw) return; g.globalAlpha = Math.min(0.9, a); g.drawImage(spr, cx - rx, gy - ry * 0.9, rx * 2, ry * 2); }
-    function one(x, y, w, h, a) {   // a figure standing near (x, feet y)
-      var X = Math.floor(x); if (X < 1 || X >= W - 1 || ox + x * ts < -ts * 4 || ox + x * ts > vw + ts * 4) return; var gy = csGround(X, y, 8); if (gy < 0) return;
-      var air = clamp(1 - (gy - y) / 5, 0, 1); if (air <= 0) return;
-      var skyG = gy <= col[X] + 1, dx, st, len; if (skyG) { dx = lean(sun.sx); st = sa * csSun(X, y - h, y - h - 8); len = SL; } else { var ld = csLamp(X, gy - 1); dx = ld[0]; st = ld[1] * 0.8; len = 0.85; }
-      if (st < 0.04) return; blob(ox + (x + dx * h * len * 0.4) * ts, oy + gy * ts, (w * 0.5 + h * len * 0.5) * ts, Math.max(0.17, w * 0.3) * ts, 0.75 * st * a * air);
+    var sun = sunState(S.time), sa = clamp(sun.a / 0.27, 0, 1) * (sun.up ? 1 : 0.6), day = daylight(S.time), sc = shadowTint(biomeMix(cam.x), 1 - day, 0);
+    var rgb = Math.round(sc[0] * 1.5 + 2) + "," + Math.round(sc[1] * 1.5 + 6) + "," + Math.round(sc[2] * 1.5 + 10), spr = csSpr(rgb), ga = g.globalAlpha, sm = g.imageSmoothingEnabled, gco = g.globalCompositeOperation;
+    g.imageSmoothingEnabled = true; g.globalCompositeOperation = "source-over";
+    function one(x, y, w, a) {
+      var X = Math.floor(x); if (X < 1 || X >= W - 1 || ox + x * ts < -ts * 3 || ox + x * ts > vw + ts * 3) return; var gy = csGround(X, y, 6); if (gy < 0) return;
+      var up = Math.max(0, gy - y), air = clamp(1 - up / 4, 0, 1); if (air <= 0) return;   // jumping: the shadow stays on the ground, shrinks and fades
+      var lean, st; if (gy <= col[X] + 1) { lean = clamp(sun.sx, -1, 1) * 0.12; st = 0.45 + 0.55 * sa * csSun(X, y - 1.5, y - 9); } else { var ld = csLamp(X, gy - 1); lean = ld[0] * 0.12; st = 0.5 + 0.5 * ld[1]; }
+      var rx = w * (0.45 + 0.15 * air) * ts, ry = Math.max(3, ts * 0.13 * (0.6 + 0.4 * air)), cx = ox + (x + lean) * ts, cy = oy + gy * ts;
+      g.globalAlpha = Math.min(0.85, 0.55 * st * a * (0.4 + 0.6 * air)); g.drawImage(spr, cx - rx, cy - ry, rx * 2, ry * 2);
     }
-    one(p.x, p.y, PW * 1.15, PH, 1);
-    enemies.forEach(function (e) { if (e.dead || !isFinite(e.x)) return; one(e.x, e.y, Math.max(0.5, e.w || 0.8), Math.max(0.5, e.h || 0.8), 0.9); });
-    allAnimals().forEach(function (a) { var sc2 = a.baby ? 0.62 : 1; one(a.x, a.y, 1.0 * (a.w || 1) * sc2, 0.9 * sc2, 0.9); });
-    if (sa > 0.03) {
-      for (k = 0; k < CANSH.length; k += 4) {   // trees: a slim trunk shadow, then a wide soft crown shadow
-        var x0 = CANSH[k], x1 = CANSH[k + 1], y0 = CANSH[k + 2], y1 = CANSH[k + 3], cx = (x0 + x1) / 2 + 0.5, X3 = Math.floor(cx), gy3 = X3 > 0 && X3 < W ? col[X3] : -1; if (gy3 <= y1 || gy3 - y1 > 20 || ox + cx * ts < -ts * 12 || ox + cx * ts > vw + ts * 12) continue;
-        var H3 = Math.max(2, gy3 - y0), W3 = x1 - x0 + 1, len3 = SL, sh = lean(sun.sx) * H3 * len3, st3 = sa * (gy3 <= col[X3] + 1 ? 1 : 0.3), gyp = oy + gy3 * ts;
-        for (var q = 0; q < 4; q++) { var tq = q / 3; blob(ox + (cx + sh * 0.42 * tq) * ts, gyp, (0.42 + tq * 0.25) * ts, 0.26 * ts, 0.5 * st3); }
-        blob(ox + (cx + sh * 0.44) * ts, gyp, (W3 * 0.42 + H3 * len3 * 0.1) * ts, clamp(W3 * 0.07, 0.32, 0.72) * ts, 0.6 * st3);
-      }
-      (world.structs || []).forEach(function (q2) { var P = q2.pic; if (!P || q2.razed || P.x0 > Math.floor((vw - ox) / ts) + 4 || P.x0 + P.w < Math.floor(-ox / ts) - 4) return; var bx = P.x0 + P.w / 2, X4 = Math.floor(bx), gy4 = csGround(X4, P.y0 + P.h - 0.5, 6); if (gy4 < 0 || gy4 > col[X4] + 1) return; blob(ox + (bx + lean(sun.sx) * P.h * SL * 0.3) * ts, oy + gy4 * ts, (P.w * 0.5 + P.h * SL * 0.25) * ts, Math.min(0.7, 0.22 + P.w * 0.04) * ts, 0.55 * sa); });
-    }
+    one(p.x, p.y, PW * 1.3, 1);
+    enemies.forEach(function (e) { if (e.dead || !isFinite(e.x)) return; one(e.x, e.y, clamp(e.w || 0.8, 0.5, 3), 0.9); });
+    allAnimals().forEach(function (a) { one(a.x, a.y, clamp((a.w || 1) * (a.baby ? 0.62 : 1), 0.4, 2.5), 0.9); });
     g.globalAlpha = ga; g.imageSmoothingEnabled = sm; g.globalCompositeOperation = gco;
   }
   // SKY MOOD: a low sun floods its side of the picture with gold and cools the far side; at High, slanted beams of light slip between the
@@ -27137,7 +27115,7 @@
   // ---------- SCENE LIGHT: one sun, colour grade, light pools and cast shadows for the homestead and the ocean ----------
   // sunState: where the sun is (u: 0 at sunrise t=440 .. 1 at sunset t=280) or, at night, the moon. sx is the light's side (+1 = it is on
   // the left, so shadows fall right), e its height (0..1), len how long the shadows are, a how dark they are.
-  function litLv() { return reduce || OPT.lq === "low" ? 0 : OPT.lq === "med" ? 1 : 2; }   // LIGHTING QUALITY (Options): 0 Low (the classic look), 1 Medium (soft sun and lamp shadows, shaded corners, golden light), 2 High (dappled forest shade, sun beams, flickering lights, warm glow)
+  function litLv() { return reduce || OPT.lq === "low" ? 0 : OPT.lq === "med" ? 1 : 2; }   // LIGHTING QUALITY (Options): 0 Low (the classic look), 1 Medium (soft sun and lamp shadows, shaded corners, golden light), 2 High (sun beams, flickering lights, warm glow)
   function liteFx() { return OPT.lq === "low" || reduce || (lowq && OPT.lq !== "high"); }   // the Lighting option (Simple), or a device that has dropped its extras
   function sunState(t) {
     var u = ((t - 440 + CYCLE) % CYCLE) / 320, up = u <= 1, e, sx;

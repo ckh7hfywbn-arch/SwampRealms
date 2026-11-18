@@ -50,3 +50,6 @@ A fresh player starts with bare paws. The early chain must always be doable in o
   a "Go to" button for any new place, "Give" for new items, gear and mounts, "Set" for states that take time to reach (growth, unlocks,
   time of day, daily resets), and "Open" for new panels. Run each new button once in the test before shipping.
 - Bump the `?v=` tags in `sandbox.html`, add README bullets, and run the smoke test (expect `AUDIT []` and `ERRORS 0`) before committing.
+- **Security:** any change to `worker.js`, `schema.sql`, accounts, cloud saves, leaderboards or multiplayer messages gets a security review before shipping. Check that
+  every route still calls `auth()` and filters by the signed-in `user_id`, no secret or key is in the repo or in client code, text from other players is shown with
+  `esc()` or `textContent` (never raw `innerHTML`), and anything the client sends is size- and type-checked on the server.
