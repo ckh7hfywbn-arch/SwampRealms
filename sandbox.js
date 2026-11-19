@@ -8128,6 +8128,7 @@
       if (m.t === "dmg") { if (!cave) { hurt(m.n, m.why || "hit"); if (m.kx) { p.vx = m.kx * 6.5; p.vy = -6; p.on = false; } } return; }
       if (m.t === "kill") return mpKill(m);
       if (m.t === "bosswin") return mpBossWin(m.k);
+      if (m.t === "dim") { MP.dimWant = m.to === "malc" ? "malc" : ""; MP.dimT = 0; return; }   // the host went through (or back out of) the cracked portal: follow
     } else if (MP.role === "host") {
       if (m.t === "hit") { var e = mpEnemy(m.i); if (e && !e.def) { e.lastHit = m.from; damageEnemy(e, clamp(+m.d || 0, 0, 60), m.f < 0 ? -1 : 1); } return; }
       if (m.t === "fx") { var ef = mpEnemy(m.i); if (ef && !ef.def && /^(venom|numb|sleep|mark)$/.test(m.fx)) coatHit(m.fx, ef, false, 0); return; }   // a guest's special arrow
@@ -8149,7 +8150,7 @@
     save(); var keep = JSON.parse(JSON.stringify(S));
     MP.own = { id: curId }; MP.on = true; if (titleOpen) closeTitle(); MP.pvp = !!m.pvp; MP.room = m.room || MP.room; MP.hostName = m.host || MP.hostName; MP.status = "";
     MP_CHAR.forEach(function (k) { if (keep[k] !== undefined) hostS[k] = keep[k]; }); hostS.pets = []; hostS.bossOn = "";
-    start(hostS); enemies.length = 0; bshots.length = 0; closeMPV();
+    MP.dimWant = undefined; start(hostS); enemies.length = 0; bshots.length = 0; closeMPV();
     toast("You joined " + MP.hostName + "'s world! Your backpack and gear came with you.", "#4ee6b4"); addChat("", "Joined " + MP.hostName + "'s world. Press Enter to chat."); renderMP();
   }
   function mpSaveChar() {   // guest: write the character back into your own world slot (the host's world is never saved here)
@@ -8238,6 +8239,10 @@
     for (var id in MP.peers) { var q = MP.peers[id], k = Math.min(1, dt * 14); q.x += (q.tx - q.x) * k; q.y += (q.ty - q.y) * k; q.grace = Math.max(0, (q.grace || 0) - dt); if (q.sayT > 0) q.sayT -= dt; }
     if (MP.sayT > 0) MP.sayT -= dt;
     if (!MP.on) return;
+    if (MP.role === "guest" && MP.dimWant !== undefined && MP.dimWant !== (inMC() ? "malc" : "")) {   // PLAYING TOGETHER: follow the host through the cracked portal (and back out)
+      MP.dimT = (MP.dimT || 0) - dt;
+      if (MP.dimT <= 0) { MP.dimT = 0.5; if (!trans && hp > 0 && !deadUI) { MP.pull = 1; try { if (MP.dimWant === "malc") mcEnter(); else mcLeave(false); } finally { MP.pull = 0; } } }
+    }
     MP.flushT -= dt;
     if (MP.flushT <= 0) { MP.flushT = 0.1; if (MP.sets.length) { mpSend({ t: "set", L: MP.sets }); MP.sets = []; } if (MP.walls.length) { mpSend({ t: "wall", L: MP.walls }); MP.walls = []; } }
     var tp = toolPose(), me = { x: +p.x.toFixed(2), y: +p.y.toFixed(2), vx: +p.vx.toFixed(1), vy: +p.vy.toFixed(1), on: p.on ? 1 : 0, f: p.face, w: +p.walk.toFixed(1), a: +tp.phi.toFixed(2), hp: Math.round(hp), c: cave ? 1 : 0 };
@@ -11364,6 +11369,7 @@
     glows.push([ox + cxw * ts, by - 22 * u, "255,40,50", 3, 0.3 + 0.1 * pulse]);
   }
   function mcAsk() {   // the first time: what Malcruor is, and what it costs to die there
+    if (MP.on && MP.role === "guest") { nag("Only the host can open the cracked portal. Stay close and you will be pulled through together."); return; }
     if (inNexus() && !molt()) { gdSay("Not yet, little one! Your Swamp Awakening comes first. Step into the Prism Spring.", 5); nag("Do your Swamp Awakening first: stand in the Prism Spring."); return; }
     if (malcS().warned) return mcEnter();
     if (!p4Open(290)) return;
@@ -11375,7 +11381,8 @@
   }
   function mcEnter() {
     if (inMC() || trans || hp <= 0 || !curId || OCS || HOME || (cave && !inNexus())) return;
-    if (MP.on || MP.ws) { nag("Malcruor can only be entered in single player for now."); return; }
+    if (MP.on && MP.role === "guest" && !MP.pull) { nag("Only the host can open the cracked portal. Stay close and you will be pulled through together."); return; }   // PLAYING TOGETHER: the whole room shares one world, so the host takes everybody through
+    if (MP.on && MP.role === "host") mpSend({ t: "dim", to: "malc" });
     stopInput(); thud(90, 0.18); snd("open", "Epic"); MC.fx = 1;
     loadScreen("malc", function () {   // LOADING SCREEN: the cracked portal swirls while Malcruor is built
       var M = malcS(); M.h = cave && cave.hole ? { x: cave.hole.x, y: cave.hole.y } : null; M.v = (M.v || 0) + 1; M.c = 0; S.st.malcvisits = (S.st.malcvisits || 0) + 1; MC.warn = 0; MC.died = false;
@@ -11385,16 +11392,23 @@
   }
   function mcLeave(dead, msg) {   // back through the portal to the SwampRealms (or, after an elimination, wake there)
     if (!inMC()) return;
+    if (!dead && MP.on && MP.role === "guest" && !MP.pull) { nag("Only the host can take the portal back. Stay together!"); return; }
+    if (!dead && MP.on && MP.role === "host") mpSend({ t: "dim", to: "" });
     var go = function () {
       var M = malcS(), best = Math.round(M.c || 0); if (!dead && best > (M.best || 0)) M.best = best; M.c = 0; MC.warn = 0;
+      if (dead && MP.on) {   // PLAYING TOGETHER: the room stays in Malcruor, so you wake up beside its portal instead of leaving without your friends
+        MC.fx = 0; var G = mcGate(); p.x = G.x + 3.5; p.y = mcGateY(); var gd2 = 0; while (boxHit(p.x, p.y) && gd2++ < 60) p.y -= 1;
+        p.vx = p.vy = 0; cam.x = p.x; cam.y = p.y - 1; enemies.length = 0; save();
+        setTimeout(function () { toast("The corruption spat you out beside the portal. Whatever you carried is gone.", "#ff5a5a"); }, 600); return;
+      }
       dimSwap(""); MC.fx = dead ? 0 : 0.8;
       if (dead) respawn(msg || "You woke up at camp.");
       else if (M.h) { enterNexus(M.h.x - 1, M.h.y); cp.x = NXP[2].x + 0.5; cp.y = NXROW + 2.2; cp.vx = cp.vy = 0; cam.x = cp.x; cam.y = cp.y; }   // back out of the cracked portal in the SwampRealms
-      else { p.vx = p.vy = 0; cam.x = p.x; cam.y = p.y - 1; }
+      else { if (MP.pull) { p.x = world.spawn.x; p.y = world.spawn.y; var gd3 = 0; while (boxHit(p.x, p.y) && gd3++ < 120) p.y -= 1; } p.vx = p.vy = 0; cam.x = p.x; cam.y = p.y - 1; }
       save();
       setTimeout(function () { toast(dead ? "The corruption spat you back out into the SwampRealms. Whatever you carried is gone." : "You stagger back into the SwampRealms. The red light fades from your eyes.", dead ? "#ff5a5a" : "#ffb0a0"); }, 1400);
     };
-    if (dead) { loadScreen("home", go, { line: "Waking in the SwampRealms" }); return; }   // LOADING SCREENS: home again
+    if (dead) { loadScreen(MP.on ? "malc" : "home", go, { line: MP.on ? "Waking at the portal" : "Waking in the SwampRealms" }); return; }   // LOADING SCREENS: home again
     if (trans) return; stopInput(); thud(120, 0.12); snd("open", "Rare"); MC.fx = 1; loadScreen("home", go);
   }
   function mcTick(dt) {
