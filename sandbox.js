@@ -8124,10 +8124,11 @@
     if (m.t === "cfg") { MP.pvp = !!m.pvp; toast("The host turned PvP " + (MP.pvp ? "ON: players can hit each other." : "off."), MP.pvp ? "#ff8a7a" : "#4ee6b4"); renderMP(); return; }
     if (MP.role === "guest") {
       if (m.t === "tick") { mpGhosts(m); if (m.h) mpState(mpPeer(m.from), m.h); return; }
-      if (m.t === "env") { if (m.dm !== undefined && MP.dimWant !== m.dm) { MP.dimWant = m.dm; MP.dimT = 0; MP.pullN = 0; } S.time = m.time; if (m.wx) S.wx = m.wx; S.days = m.days | 0; return; }
+      if (m.t === "env") { if (m.rz) mcSyncRz(m.rz); if (m.dm !== undefined && MP.dimWant !== m.dm) { MP.dimWant = m.dm; MP.dimT = 0; MP.pullN = 0; } S.time = m.time; if (m.wx) S.wx = m.wx; S.days = m.days | 0; return; }
       if (m.t === "dmg") { if (!cave) { hurt(m.n, m.why || "hit"); if (m.kx) { p.vx = m.kx * 6.5; p.vy = -6; p.on = false; } } return; }
       if (m.t === "kill") return mpKill(m);
       if (m.t === "bosswin") return mpBossWin(m.k);
+      if (m.t === "mcz") { mcSyncRz(m.rz); return; }
       if (m.t === "dim") { MP.dimWant = m.to === "malc" ? "malc" : ""; MP.dimT = 0; MP.pullN = 0; toast(m.to === "malc" ? "The host is stepping through the cracked portal..." : "The host is heading back to the SwampRealms...", "#ffb0a0"); return; }   // the host went through (or back out of) the cracked portal: follow
     } else if (MP.role === "host") {
       if (m.t === "hit") { var e = mpEnemy(m.i); if (e && !e.def) { e.lastHit = m.from; damageEnemy(e, clamp(+m.d || 0, 0, 60), m.f < 0 ? -1 : 1); } return; }
@@ -8256,7 +8257,7 @@
         var sh = bshots.map(function (s) { return [s.k, +s.x.toFixed(2), +s.y.toFixed(2), +s.vx.toFixed(2), +s.vy.toFixed(2), +(s.wait || 0).toFixed(2), s.r, s.g || 0, s.ground ? 1 : 0]; });
         mpSend({ t: "tick", h: me, en: en, sh: sh });
       }
-      MP.envT -= dt; if (MP.envT <= 0) { MP.envT = 2; mpSend({ t: "env", time: +S.time.toFixed(2), wx: S.wx, days: S.days, dm: inMC() ? "malc" : "" }); }
+      MP.envT -= dt; if (MP.envT <= 0) { MP.envT = 2; mpSend({ t: "env", time: +S.time.toFixed(2), wx: S.wx, days: S.days, dm: inMC() ? "malc" : "", rz: (malcS().rz || []).slice() }); }
     } else {
       MP.sendT -= dt; var key = JSON.stringify(me);
       if (MP.sendT <= 0 && (key !== MP.last || MP.sendT < -1.5)) { MP.sendT = 0.125; MP.last = key; me.t = "p"; mpSend(me); }
@@ -11440,7 +11441,7 @@
   ENEMY.mcheart = { n: "Corrupted Heart", hp: 240, w: 2.2, h: 2.8, dmg: 0, glow: "#ff2a3a", chip: "#5a0a14", frag: "", chance: 0, max: 8 };
   KSTAT.mcheart = "mchearts"; SHADOW.mcheart = 34; HBAR.mcheart = 96;
   function auHeartsTick() {   // a heart is in the world while you are near it and its area is not cleansed yet
-    if (!world.hearts || trans) return;
+    if (!world.hearts || trans || (MP.on && MP.role === "guest")) return;   // (playing together: the host owns the hearts and they reach guests with the rest of its creatures)
     world.hearts.forEach(function (h) {
       if (h.done || Math.abs(p.x - (h.x + 0.5)) > 32) return;
       if (enemies.some(function (e) { return e.k === "mcheart" && e.hk === h.k; })) return;
@@ -11481,10 +11482,17 @@
     for (var i = 0; i < 70; i++) { var a = Math.random() * 6.283, v = 2 + Math.random() * 8; parts.push({ x: h.x + 0.5, y: col[h.x] - 1.5, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 3, g: 2, life: 1.6, max: 1.6, c: ["#ffe08a", "#fff6c8", "#ffb02a", "#ffffff"][i % 4], s: 2 + Math.random() * 3 }); }
     shake = Math.max(shake, 0.5); thud(60, 0.3); snd("open", "Legendary"); MC.gold = 1.6;
     give("au_dawnshard", 3, h.x, col[h.x] - 1.5); give("au_citrine", 2, h.x, col[h.x] - 1.5); give("au_sundraught", 1, h.x, col[h.x] - 1.5); give("goldcoin", 3, h.x, col[h.x] - 1.5);
-    checkGoals(); save();
+    checkGoals(); save(); if (MP.on && MP.role === "host") mpSend({ t: "mcz", rz: M.rz.slice() });   // PLAYING TOGETHER: everyone's Malcruor gets the same cleansed areas
     setTimeout(function () {
       if (!inMC()) return; var go = function () { if (!inMC()) return; if (trans || LS.on) { setTimeout(go, 400); return; } loadScreen("dawn", mcRebuild, { line: all ? "The corruption breaks" : "The light returns", after: function () { banner(all ? AU_NAME : "The light returns", all ? "Malcruor is cleansed. The corruption is gone for good." : "This land is " + AU_NAME + " now. " + M.rz.length + " of " + (SW.MALC_Z || 8) + " hearts cleansed.", all ? "A new swamp in the multiverse" : "Corruption fades here"); } }); }; go();
     }, 1400);
+  }
+  function mcSyncRz(list) {   // PLAYING TOGETHER (guest): the host cleansed more of Malcruor, so rebuild ours to match
+    if (!list || !list.length) return; var M = malcS(); M.rz = M.rz || []; var add = 0;
+    list.forEach(function (k) { if (typeof k === "number" && M.rz.indexOf(k) < 0) { M.rz.push(k); add++; } });
+    if (!add) return; S.st.mchearts = Math.max(S.st.mchearts | 0, M.rz.length); checkGoals();
+    if (!inMC()) return; var all = M.rz.length >= (SW.MALC_Z || 8); MC.gold = 1.4; enemies.forEach(function (q) { if (q.mcMin && !q.def) { q.def = true; q.dead = 0.6; } });
+    var go = function () { if (!inMC()) return; if (trans || LS.on) { setTimeout(go, 400); return; } loadScreen("dawn", mcRebuild, { line: all ? "The corruption breaks" : "The light returns", after: function () { banner(all ? AU_NAME : "The light returns", all ? "Malcruor is cleansed. The corruption is gone for good." : "This land is " + AU_NAME + " now. " + M.rz.length + " of " + (SW.MALC_Z || 8) + " hearts cleansed.", all ? "A new swamp in the multiverse" : "Corruption fades here"); } }); }; setTimeout(go, 900);
   }
   function mcRebuild() {   // rebuild Malcruor in place with its cleansed areas (you stay where you are)
     var px = p.x, py = p.y, ks = sel, kss = selSlot, tr = trans; save();
