@@ -8124,7 +8124,7 @@
     if (m.t === "cfg") { MP.pvp = !!m.pvp; toast("The host turned PvP " + (MP.pvp ? "ON: players can hit each other." : "off."), MP.pvp ? "#ff8a7a" : "#4ee6b4"); renderMP(); return; }
     if (MP.role === "guest") {
       if (m.t === "tick") { mpGhosts(m); if (m.h) mpState(mpPeer(m.from), m.h); return; }
-      if (m.t === "env") { S.time = m.time; if (m.wx) S.wx = m.wx; S.days = m.days | 0; return; }
+      if (m.t === "env") { if (m.dm !== undefined && MP.dimWant !== m.dm) { MP.dimWant = m.dm; MP.dimT = 0; MP.pullN = 0; } S.time = m.time; if (m.wx) S.wx = m.wx; S.days = m.days | 0; return; }
       if (m.t === "dmg") { if (!cave) { hurt(m.n, m.why || "hit"); if (m.kx) { p.vx = m.kx * 6.5; p.vy = -6; p.on = false; } } return; }
       if (m.t === "kill") return mpKill(m);
       if (m.t === "bosswin") return mpBossWin(m.k);
@@ -8256,7 +8256,7 @@
         var sh = bshots.map(function (s) { return [s.k, +s.x.toFixed(2), +s.y.toFixed(2), +s.vx.toFixed(2), +s.vy.toFixed(2), +(s.wait || 0).toFixed(2), s.r, s.g || 0, s.ground ? 1 : 0]; });
         mpSend({ t: "tick", h: me, en: en, sh: sh });
       }
-      MP.envT -= dt; if (MP.envT <= 0) { MP.envT = 2; mpSend({ t: "env", time: +S.time.toFixed(2), wx: S.wx, days: S.days }); }
+      MP.envT -= dt; if (MP.envT <= 0) { MP.envT = 2; mpSend({ t: "env", time: +S.time.toFixed(2), wx: S.wx, days: S.days, dm: inMC() ? "malc" : "" }); }
     } else {
       MP.sendT -= dt; var key = JSON.stringify(me);
       if (MP.sendT <= 0 && (key !== MP.last || MP.sendT < -1.5)) { MP.sendT = 0.125; MP.last = key; me.t = "p"; mpSend(me); }
@@ -11369,7 +11369,7 @@
     glows.push([ox + cxw * ts, by - 22 * u, "255,40,50", 3, 0.3 + 0.1 * pulse]);
   }
   function mcAsk() {   // the first time: what Malcruor is, and what it costs to die there
-    if (MP.on && MP.role === "guest") { nag("Only the host can open the cracked portal. Stay close and you will be pulled through together."); return; }
+    if (MP.on && MP.role === "guest") { if (MP.dimWant === "malc") { MP.pull = 1; try { mcEnter(); } finally { MP.pull = 0; } } else nag("Only the host can open the cracked portal. Stay close and you will be pulled through together."); return; }
     if (inNexus() && !molt()) { gdSay("Not yet, little one! Your Swamp Awakening comes first. Step into the Prism Spring.", 5); nag("Do your Swamp Awakening first: stand in the Prism Spring."); return; }
     if (malcS().warned) return mcEnter();
     if (!p4Open(290)) return;
