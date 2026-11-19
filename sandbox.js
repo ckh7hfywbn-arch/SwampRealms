@@ -8128,7 +8128,7 @@
       if (m.t === "dmg") { if (!cave) { hurt(m.n, m.why || "hit"); if (m.kx) { p.vx = m.kx * 6.5; p.vy = -6; p.on = false; } } return; }
       if (m.t === "kill") return mpKill(m);
       if (m.t === "bosswin") return mpBossWin(m.k);
-      if (m.t === "dim") { MP.dimWant = m.to === "malc" ? "malc" : ""; MP.dimT = 0; return; }   // the host went through (or back out of) the cracked portal: follow
+      if (m.t === "dim") { MP.dimWant = m.to === "malc" ? "malc" : ""; MP.dimT = 0; MP.pullN = 0; toast(m.to === "malc" ? "The host is stepping through the cracked portal..." : "The host is heading back to the SwampRealms...", "#ffb0a0"); return; }   // the host went through (or back out of) the cracked portal: follow
     } else if (MP.role === "host") {
       if (m.t === "hit") { var e = mpEnemy(m.i); if (e && !e.def) { e.lastHit = m.from; damageEnemy(e, clamp(+m.d || 0, 0, 60), m.f < 0 ? -1 : 1); } return; }
       if (m.t === "fx") { var ef = mpEnemy(m.i); if (ef && !ef.def && /^(venom|numb|sleep|mark)$/.test(m.fx)) coatHit(m.fx, ef, false, 0); return; }   // a guest's special arrow
@@ -11380,7 +11380,7 @@
     var b = $("mcGo"); if (b) b.onclick = function () { malcS().warned = 1; closePanel(); setTimeout(mcEnter, 120); };
   }
   function mcEnter() {
-    if (inMC() || trans || hp <= 0 || !curId || OCS || HOME || (cave && !inNexus())) return;
+    if (inMC() || trans || hp <= 0 || (!curId && !MP.pull) || OCS || HOME || (cave && !inNexus())) { if (MP.pull && !inMC() && !trans) { MP.pullN = (MP.pullN || 0) + 1; if (MP.pullN === 6) toast("The host went through to Malcruor. Get back to the surface of the SwampRealms and you will follow.", "#ffb0a0"); } return; }
     if (MP.on && MP.role === "guest" && !MP.pull) { nag("Only the host can open the cracked portal. Stay close and you will be pulled through together."); return; }   // PLAYING TOGETHER: the whole room shares one world, so the host takes everybody through
     if (MP.on && MP.role === "host") mpSend({ t: "dim", to: "malc" });
     stopInput(); thud(90, 0.18); snd("open", "Epic"); MC.fx = 1;
